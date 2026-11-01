@@ -109,6 +109,24 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 @media(max-width:400px){.roam-row,.roaming-details{padding:9px;gap:6px}}
 .origin-bar{margin-top:16px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:15px;display:grid;grid-template-columns:1fr 1fr;gap:9px}.origin-field{min-width:0}.origin-field label{display:block;font-weight:740;font-size:11px;color:#446b60;margin-bottom:5px}.origin-field label span{font-weight:400;color:#9aaca5}.origin-field select,.origin-field input{display:block;width:100%;min-width:0;background:#f8fbf9;border:1px solid #dbe8e2;border-radius:10px;padding:9px 8px;color:#20473e;font-size:12px}.origin-field input{margin-top:6px}.origin-field input[hidden]{display:none}.origin-hint{font-size:11px;line-height:1.5;color:#789187;margin:7px 3px 0}.category.local-market{border:1px solid #9ad6c1;background:#f0faf5}.category.cross-market{border-color:#dbe7f1}.category.unknown-market{border-style:dashed}.flow-chip.domestic{border-color:#92d6be;background:#eaf8f1;color:#0c755c}.flow-chip.cross{background:#f3f6fd;border-color:#d9e5f4;color:#31669a}.flow-chip.unclassified{border-style:dashed}.legend{flex-wrap:wrap;row-gap:4px}
 @media(max-width:400px){.origin-bar{grid-template-columns:1fr 1fr;padding:9px;gap:6px}.origin-field select,.origin-field input{padding:9px 5px;font-size:11px}.origin-field label{font-size:10px}}
+
+.live-status{margin-top:15px;padding:15px!important}.live-status h2{font-size:15px}
+.status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.status-tile{border:1px solid #e4eeea;background:#f8fbf9;border-radius:12px;padding:10px 11px;min-height:91px;min-width:0;text-align:left;display:flex;flex-direction:column}
+.status-tile.primary{background:#e5f7ee;border-color:#bedfd1}
+.status-tile small{color:#687f75;font-size:10px;font-weight:650}
+.status-tile strong{font-size:clamp(15px,3.9vw,22px);font-weight:850;line-height:1.35;margin:5px 0;min-height:21px;overflow-wrap:anywhere;letter-spacing:-.025em}
+.status-tile strong em{font-size:10px;font-weight:600;font-style:normal}
+.status-tile span{display:block;color:#81948a;font-size:10px;line-height:1.4;overflow-wrap:anywhere}
+.network-status-foot{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:#7c9188;margin-top:10px}
+.status-explainer{font-size:10px;line-height:1.6;color:#789084;margin:8px 0 0}
+.manual-context{margin-top:11px;border-radius:15px;background:transparent}
+.manual-context summary{padding:12px 14px;display:block}
+.manual-context summary span{display:flex;justify-content:space-between;gap:7px;align-items:center}
+.manual-context summary small{font-weight:500;color:#82958c;white-space:nowrap;max-width:56%;overflow:hidden;text-overflow:ellipsis}
+.manual-context-body{padding:1px 10px 12px}
+.manual-context .origin-bar{margin-top:0}
+@media(min-width:730px){.status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .footer{font-size:11px;color:#80918b;line-height:1.8;padding:22px 3px}
 .footer a{color:#0b8370}
 .toast{position:fixed;top:65px;left:50%;max-width:92vw;transform:translateX(-50%);background:#234943;color:white;font-size:12px;border-radius:11px;padding:11px 14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30;text-align:center;box-shadow:0 8px 24px #244f4438}
@@ -121,9 +139,25 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <body>
 <main class="container">
 <header>
-<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.2</span></small></div></div>
+<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.3</span></small></div></div>
 <div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span></div>
 </header>
+<section class="container-card live-status" id="liveStatusCard">
+  <div class="row"><div><h2>当前网络状态</h2><p class="sub">自动识别公网连接 · 测速时更新实际请求速率</p></div><button class="btn btn-muted small" id="refreshStatus">刷新状态</button></div>
+  <div class="status-grid">
+    <div class="status-tile primary"><small>当前下载采样</small><strong id="liveSpeed">— <em>Mbps</em></strong><span id="liveSpeedCaption">未在测速 · 不包含其他 App</span></div>
+    <div class="status-tile"><small>HTTP 请求耗时</small><strong id="httpStatus">— <em>ms</em></strong><span id="httpJitter">等待检测</span></div>
+    <div class="status-tile"><small>公网网络组织（ASN）</small><strong id="detectedOrganization">检测中</strong><span id="detectedAsn">不等于 SIM 卡运营商</span></div>
+    <div class="status-tile"><small>公网 IP 地区</small><strong id="detectedCountry">—</strong><span id="detectedEdge">Cloudflare IP 归属估计</span></div>
+    <div class="status-tile"><small>浏览器连接方式</small><strong id="browserType">读取中</strong><span id="browserQuality">LTE / 5G 需手机确认</span></div>
+    <div class="status-tile"><small>蜂窝信号强度</small><strong>不可读取</strong><span>iPhone 网页无法获取 RSRP / SINR</span></div>
+  </div>
+  <div class="network-status-foot"><span id="onlineState">检测浏览器网络状态…</span><span id="statusChecked">尚未刷新</span></div>
+  <p class="status-explainer">公网网络组织自动取自 Cloudflare 的连接 ASN。漫游、VPN 或代理可能使它不同于 SIM 卡和当地接入运营商。HTTP 耗时是网页请求到本站的往返耗时，不是 ICMP Ping。</p>
+</section>
+<details class="manual-context" id="manualContext">
+  <summary><span>位置、SIM 卡与漫游设置 <small id="manualSummary">手动确认 · 点击展开</small></span></summary>
+  <div class="manual-context-body">
 <section class="origin-bar" aria-label="测速环境设置">
 <div class="origin-field"><label for="originCountry">测速所在国家/地区 <span>手动</span></label><select id="originCountry"><option value="">请选择测试地点</option>
 <option value="CN">🇨🇳 中国大陆</option><option value="SG">🇸🇬 新加坡</option><option value="MY">🇲🇾 马来西亚</option><option value="JP">🇯🇵 日本</option><option value="US">🇺🇸 美国</option><option value="UK">🇬🇧 英国</option><option value="AU">🇦🇺 澳大利亚</option><option value="HK">🇭🇰 中国香港</option><option value="TW">中国台湾</option><option value="KR">🇰🇷 韩国</option><option value="IN">🇮🇳 印度</option><option value="DE">🇩🇪 德国</option><option value="FR">🇫🇷 法国</option><option value="OTHER">其他国家/地区</option></select></div>
@@ -139,7 +173,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 </div>
 <p id="egressDetail" class="origin-hint">公网出口按本站 Cloudflare 看到的客户端 IP 地理信息估计，可能受漫游、VPN、代理影响；不是路径追踪。</p>
 <div class="roaming-assessment" id="roamingAssessment">本地/跨境网站按手机物理所在地划分；漫游时另看公网出口，不能混为一谈。</div>
-<p class="origin-hint" id="originHint">选择实际测速地点；本地/跨境按目标网站市场分类，不代表真实数据路径。</p>
+<p class="origin-hint" id="originHint">选择实际测速地点；本地/跨境按目标网站市场分类，不代表真实数据路径。</p></div></details>
 <nav class="nav" aria-label="功能导航">
 <button type="button" class="active" data-page="home">总览</button>
 <button type="button" data-page="local">本地测速</button>
