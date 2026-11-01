@@ -153,7 +153,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
     <div class="status-tile"><small>蜂窝信号强度</small><strong>不可读取</strong><span>iPhone 网页无法获取 RSRP / SINR</span></div>
   </div>
   <div class="network-status-foot"><span id="onlineState">检测浏览器网络状态…</span><span id="statusChecked">尚未刷新</span></div>
-  <p class="status-explainer">公网网络组织自动取自 Cloudflare 的连接 ASN。漫游、VPN 或代理可能使它不同于 SIM 卡和当地接入运营商。HTTP 耗时是网页请求到本站的往返耗时，不是 ICMP Ping。</p>
+  <p class="status-explainer">公网网络组织来自 Cloudflare ASN。漫游、VPN、代理可能使它不同于 SIM 卡或当地运营商。HTTP 请求耗时和可选 Edge RTT 都不是 ICMP Ping；测速过程中显示当前请求的实际传输速率，停止测试后不再代表实时网速。</p>
 </section>
 <details class="manual-context" id="manualContext">
   <summary><span>位置、SIM 卡与漫游设置 <small id="manualSummary">手动确认 · 点击展开</small></span></summary>
@@ -349,7 +349,7 @@ function renderStatus(){
  setValue('detectedOrganization',ip?.organization||'未知 / 等待检测');
  setValue('detectedAsn',ip?.asn?'ASN '+ip.asn+' · 不代表 SIM 卡归属':'不代表 SIM 卡运营商');
  setValue('detectedCountry',ip?.country?countryName(ip.country):'无法判断');
- setValue('detectedEdge',ip?.colo?('Cloudflare '+ip.colo+(ip.protocol?' · '+ip.protocol:'')):'根据公网 IP 估计，非 GPS');
+ setValue('detectedEdge',ip?.colo?('Cloudflare '+ip.colo+(ip.protocol?' · '+ip.protocol:'')+(Number.isFinite(ip.edgeRtt)?' · Edge RTT '+format(ip.edgeRtt,0)+'ms':'')):'根据公网 IP 估计，非 GPS');
  setValue('browserType',conn.type);setValue('browserQuality',conn.quality);
  const good=statusInfo.rtts.filter(Number.isFinite);
  setValue('httpStatus',good.length?format(median(good),0)+' ms':'—');
@@ -443,7 +443,7 @@ const ss=getRows(data.sessions),last=ss.at(-1);setValue('lastTime',last?'上次 
 if(running){setValue('headline','正在检查网络…');setValue('headlineSub','四个阶段完成后，结果会逐项更新在下方卡片。')}
 else if(last){setValue('headline','你的网络报告已就绪');setValue('headlineSub','点选下方四张卡片查看详细结果；也可以重新检测。')}
 else{setValue('headline','让网络表现一目了然');setValue('headlineSub','一次检查本地、跨境、应用服务和视频分片表现。')}
-setValue('recordCount',ss.length+' 次');const ctx=currentContext();displayRoaming();setValue('networkBadge',(ctx.country?countryName(ctx.country):'地点待选')+' / '+(ctx.operator==='未标注运营商'?'运营商待选':ctx.operator)+(ctx.roamingMode==='roaming'?' 漫游':'')+' / '+(ctx.network||'制式未标注'));
+setValue('recordCount',ss.length+' 次');const ctx=currentContext();displayRoaming();setValue('manualSummary',(ctx.country?countryName(ctx.country):'地点未选')+' · '+(ctx.operator==='未标注运营商'?'运营商未标注':ctx.operator)+(ctx.roamingMode==='roaming'?' · 漫游':''));setValue('networkBadge',(ctx.country?countryName(ctx.country):'地点待选')+' / '+(ctx.operator==='未标注运营商'?'运营商待选':ctx.operator)+(ctx.roamingMode==='roaming'?' 漫游':'')+' / '+(ctx.network||'制式未标注'));
 setValue('originHint',ctx.country?'当前：'+countryName(ctx.country)+'。同地区与跨境仅按网站市场分组；实际服务器与线路未验证。':'先选择实际测试国家/地区，才能区分同地区与跨境网站。');
 const nearby=REGIONS.find(g=>g.id===ctx.country);setValue('regionsHeading','7 个地区 · '+(nearby?'同地区目标：'+nearby.name:'暂无同地区网站目标'));
 const scanOrigin=data.regionOriginCountry||'',scanContext=data.regionContext||{};
