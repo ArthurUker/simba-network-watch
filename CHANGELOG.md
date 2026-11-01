@@ -5,6 +5,19 @@ This file is a human-readable index of the Git commit history. **GitHub commits 
 Project: https://github.com/ArthurUker/simba-network-watch  
 Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
+## v4.4 — Unified compact dashboard and feature navigation (2026-11-02)
+
+- [b0a513a](https://github.com/ArthurUker/simba-network-watch/commit/b0a513a83004d823ddfd9afce53f904ba403500c) — Reorganized the mobile home into a concise network summary and six consistent feature tiles; moved detailed status and manual roaming controls into dedicated pages.
+- [91ec5c2](https://github.com/ArthurUker/simba-network-watch/commit/91ec5c2345ff1ff9de3fcaa08d0ecec5a06058aa) — Connected feature navigation and routing, session history, CSV menu, detailed status, settings shortcut and full-diagnosis progress.
+- [3ab4246](https://github.com/ArthurUker/simba-network-watch/commit/3ab4246ec4278d59dbee25a3ed618571fd6a111f) — Tightened mobile tile heights and layout density. **Exact deployed application code commit.**
+- [f90de1a](https://github.com/ArthurUker/simba-network-watch/commit/f90de1a2107b64ab3fcf12c595188514c4eaa5b0) — Updated README to describe v4.4 interaction and tests.
+
+**Cloudflare deployment:** Worker `simba-network-watch` deployment `c26f8598-3d68-4c77-8fbd-519204c181f0` at 2026-11-01 23:54:35 UTC (2026-11-02 07:54:35 Asia/Singapore). API confirms latest version `d5e74115-238c-44a8-9c73-a89458af17dd` receives 100% traffic. The published Worker combines `index.html` from commit `3ab4246` and the existing tracked [Worker template](./worker-template.mjs), SHA `8ec274543a53e3571f9c97c3b9ece38bf0992f85`.
+
+**Testing:** JavaScript parsed successfully; unique HTML IDs; simulated iPhone-like DOM navigation to status, roaming, local speed, region, app and history pages; simulated complete diagnostic, 14 market websites and 17 application websites, CSV export and settings route. All passed in the simulated harness. Real iPhone Safari visual/browser testing is still outstanding; an external public URL fetch was not accessible from the verification environment and therefore has not independently confirmed on-device rendering.
+
+**Data integrity:** Existing `simba-network-watch-v3` localStorage data schema and original measurement behavior retained. Network health is not fabricated from signal strength or browser status. Source remains GitHub-first, Cloudflare deployed manually after commits.
+
 ## v4.3 — Auto-detected public network and live HTTP telemetry (2026-11-02)
 
 - [7af8d2b](https://github.com/ArthurUker/simba-network-watch/commit/7af8d2b3f05338ec124f22474da1ea5afcd75358) — Compact iPhone-first network status panel; manual location, SIM and roaming forms collapsed by default.
