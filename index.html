@@ -412,16 +412,22 @@ stepUpdate(-1,root.aborted?p:100,root.aborted?'已取消，已完成的阶段已
 }catch(e){console.error(e);data.sessions.push({kind,t:started,status:'部分失败'});stateSave();stepUpdate(-1,p,'遇到异常：'+String(e.message||e));toast('发生错误，部分数据已保存')}
 finally{finish();render()}}
 function mark(){const ctx=currentContext(),obj={t:ts(),app:$('videoApp').value,network:ctx.network,location:ctx.location,originCountry:ctx.country,operator:ctx.operator};data.stalls.push(obj);data.stalls=data.stalls.slice(-500);stateSave();render();toast('已记录 '+obj.app+' 卡顿')}
-function csv(){const entries=[['type','time','group','target','network','Mbps','HTTP_ms','detail']],put=(r)=>entries.push(r.map(x=>x===null||x===undefined?'':String(x)));
-for(const x of getRows(data.sessions))put(['session',x.t,x.kind,'','','','',x.status]);
-for(const x of getRows(data.local?.points))put(['local_sample',data.local.t,'SG','Cloudflare',data.local.network,x.mbps,'','t='+x.second+'s bytes='+x.bytes]);
-for(const x of getProbed(data.region).concat(getProbed(data.apps)))for(const s of x.samples)put(['site_probe',x.t,x.group,x.name,'','',s.ms,s.result+' '+x.url]);
-for(const x of getRows(data.video?.samples))put(['video_sample',data.video.t,'SG','simulated','',''+(x.mbps??''),'',x.error||'']);
-for(const x of getRows(data.remote))for(const s of x.samples)put(['remote_sample','',x.id,x.url,'',s.mbps,'',s.error||'']);
-for(const x of getRows(data.stalls))put(['stall',x.t,'',x.app,x.network,'','',x.location||'']);
-for(const x of getRows(data.legacy))put(['legacy_test',x.t,'SG','Cloudflare',x.network,x.speed,x.latency,'short']);
-const quote=s=>'"'+s.replaceAll('"','""')+'"',out='\ufeff'+entries.map(r=>r.map(quote).join(',')).join('\r\n');
-const url=URL.createObjectURL(new Blob([out],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='simba-report-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);toast('CSV 报告已生成')}
+function csv(){
+const entries=[['type','time','origin_country','operator','access_class','market_country','network','group','target','Mbps','HTTP_ms','details']];
+const put=row=>entries.push(row.map(x=>x===undefined||x===null?'':String(x)));
+for(const x of getRows(data.sessions))put(['session',x.t,x.originCountry||'',x.operator||'','', '',x.network||'',x.kind,'','','',x.status]);
+const base=data.local;
+if(base)for(const x of getRows(base.points))put(['baseline_sample',base.t,base.originCountry||'',base.operator||'','baseline_endpoint_unverified','',base.network||'','Cloudflare','Cloudflare __down',x.mbps,'','elapsed='+x.second+'s bytes='+x.bytes]);
+for(const x of getProbed(data.region).concat(getProbed(data.apps)))for(const s of x.samples)put(['site_probe',x.t,x.originCountry||'',x.operator||'',x.marketCategory||'unknown',x.marketCode||'', '',x.group,x.name,'',s.ms,s.result+' '+x.url]);
+const video=data.video;
+if(video)for(const s of getRows(video.samples))put(['video_simulation',video.t,video.originCountry||'',video.operator||'','simulation','', '', 'Cloudflare', 'video_chunk',s.mbps,'',s.error||'not a native video app test']);
+for(const x of getRows(data.remote))for(const s of x.samples)put(['controlled_endpoint',x.t||'',x.originCountry||'',x.operator||'',x.marketCategory||'unknown',x.id||'', '', 'User supplied',x.url,s.mbps,'',s.error||'node location user asserted, not verified']);
+for(const x of getRows(data.stalls))put(['stall',x.t,x.originCountry||'',x.operator||'','manual','',''+(x.network||''),'App',x.app,'','',x.location||'']);
+for(const x of getRows(data.legacy))put(['legacy_short_test',x.t,'','','unknown','',''+(x.network||''),'Legacy','Cloudflare',x.speed,x.latency,'origin unknown; not sustained']);
+const quote=s=>{const safe=/^[=+@-]/.test(s)?'\''+s:s;return '"'+safe.replaceAll('"','""')+'"'};
+const out='\ufeff'+entries.map(row=>row.map(quote).join(',')).join('\r\n');
+const url=URL.createObjectURL(new Blob([out],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='network-watch-report-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);toast('已生成包含测试地点和运营商的 CSV 报告')
+}
 $('chartMode').onclick=()=>{chartView=chartView==='smooth'?'raw':'smooth';$('chartMode').textContent=chartView==='smooth'?'查看原始曲线':'查看平滑趋势';setValue('curveLegend',chartView==='smooth'?'5 点移动中位趋势':'原始下载采样折线');draw('sparkline');draw('localChart')};
 document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>tab(x.dataset.page));
 document.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>tab(x.dataset.go));
