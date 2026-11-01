@@ -14,8 +14,9 @@ Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 - [887e0dd](https://github.com/ArthurUker/simba-network-watch/commit/887e0dd163da698b1a7a6f7fb10aab7354e75225) — Most recent application code commit; handle unknown IP region codes.
 - [7bc8fa5](https://github.com/ArthurUker/simba-network-watch/commit/7bc8fa52bc9ae5ea06f042d706bbd831ffe39a24) — Version-controlled [Cloudflare Worker source template](./worker-template.mjs), including same-origin /api/network-info endpoint (estimated IP country and ASN, never a raw IP response).
 - [a68b1fc](https://github.com/ArthurUker/simba-network-watch/commit/a68b1fcb0e3d7e22bf147240e7ea14ded05fda8c) — Usage documentation and routing caveats.
+- [02204ab](https://github.com/ArthurUker/simba-network-watch/commit/02204ab6f711793a832e3aff0bd40ea209d00ec3) — Clarify the distinction between SIM home provider and visited radio carrier.
 
-**Live deployment:** Cloudflare Worker `simba-network-watch`; deployment ID `9bc96dea-1e7f-4bef-abc8-369816cb211b` at 2026-11-01 22:57:18 UTC (2026-11-02 06:57 SGT). Cloudflare reports 100% rollout to the newest Worker version. Source artifacts: `index.html` at application commit `887e0dd`, `worker-template.mjs` at `7bc8fa5`. Changes were pushed to GitHub before Cloudflare publication.
+**Live deployment:** Cloudflare Worker `simba-network-watch`; deployment ID `0a4d729b-52e2-4a6a-a991-1d11f808b8c1` at 2026-11-01 22:58:39 UTC (2026-11-02 06:58 SGT). Cloudflare reports 100% rollout to the newest Worker version. Source artifacts: `index.html` at application commit `02204ab`, `worker-template.mjs` at `7bc8fa5`. Changes were pushed to GitHub before Cloudflare publication.
 
 **Validation:** Simulated Singapore-egress / SIMBA-home / China-visited China Telecom roaming; Chinese website displays physical-market-same / egress-market-different and Singapore website the reverse. Confirmed persisted context, original throughput results and CSV evidence, Worker route tests, unknown country handling and no raw visitor IP in endpoint payload. Real phone/roaming traffic and independent public URL browsing were not verified.
 
