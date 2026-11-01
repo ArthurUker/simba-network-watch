@@ -2,284 +2,406 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f8f7">
-<meta name="description" content="SIMBA 5G/4G 新加坡本地持续测速、跨境网站连接、视频与社交平台场景诊断。">
-<title>SIMBA Network Watch · 综合网络诊断</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f8f7">
+<meta name="description" content="SIMBA Network Watch：本地速度、跨境访问、社交及视频体验一屏可见。">
+<title>SIMBA Network Watch — 网络体检</title>
 <style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif;--bg:#f4f7f6;--surface:#fff;--ink:#183334;--mute:#72888a;--line:#e1eae8;--green:#087b68;--light:#e8f7f1;--red:#b5524a;--gold:#a8721a;--shadow:0 10px 32px rgba(28,70,62,.05)}
+:root{--bg:#f6f8f7;--card:#fff;--ink:#193330;--secondary:#617771;--line:#e2eae7;--mint:#118473;--mint-dark:#09685b;--mint-light:#e3f4ed;--blue:#3873b6;--blue-light:#e9f1fc;--amber:#aa742e;--amber-light:#fcf3e4;--red:#b64f48;--red-light:#fbedeb;--shadow:0 6px 22px rgba(21,53,44,.04);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.55}
-button,select,input{font:inherit}button{touch-action:manipulation;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #49c9aa;outline-offset:2px}
-.wrap{max-width:1000px;margin:auto;padding:17px 15px 110px}
-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.brand{display:flex;align-items:center;gap:10px}
-.logo{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:#094b43;color:#c1fee8;font-size:26px;flex:none}
-.brand b{display:block;font-size:15px;letter-spacing:-.03em}.brand small{display:block;font-size:11px;color:var(--mute)}
-.state{font-size:11px;color:var(--mute);background:#fff;border:1px solid var(--line);border-radius:30px;padding:7px 10px;white-space:nowrap;max-width:105px;overflow:hidden;text-overflow:ellipsis}
-.tabs{display:flex;gap:5px;background:#e8efed;padding:5px;border-radius:14px;margin:16px 0}
-.tab{border:0;border-radius:10px;flex:1;padding:10px 1px;background:transparent;color:#687e7d;font-size:12px;font-weight:750;white-space:nowrap}
-.tab.on{background:white;color:#067765;box-shadow:0 2px 9px #133f3910}
-.view{display:none}.view.on{display:block}
-.hero{border-radius:23px;background:linear-gradient(140deg,#114e48,#0d7365);color:white;padding:21px;box-shadow:0 15px 35px #064e4418}
-.hint{color:#bce4dc;font-size:12px}.hero h1{font-size:25px;line-height:1.3;letter-spacing:-.045em;margin:9px 0 8px}
-.hero p{font-size:12px;color:#d1ebe5;line-height:1.7;margin:0}
-.herogrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:17px}
-.herometric{border:1px solid #ffffff2c;background:#ffffff0e;border-radius:13px;padding:11px}
-.herometric small{font-size:11px;color:#b5ded6;display:block}
-.herometric strong{display:block;font-variant-numeric:tabular-nums;font-size:27px;letter-spacing:-.04em;line-height:1.4}
-.herometric strong span{font-size:11px;font-weight:500;letter-spacing:0}
-.card{border:1px solid var(--line);border-radius:18px;padding:17px;background:var(--surface);margin-top:12px;box-shadow:var(--shadow)}
-.card h2{font-size:17px;letter-spacing:-.025em;margin:0}
-.card h3{font-size:14px;margin:0}
-.muted{color:var(--mute)}.sub{font-size:12px;color:var(--mute);margin:4px 0 10px}
-.tip{background:#eef5f3;border-radius:12px;padding:11px 13px;color:#4c7572;font-size:12px;line-height:1.65;margin:12px 0}
-.warning{background:#fff7e9;color:#836025}
-.statrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.stat{background:#f7faf9;border:1px solid #e5efed;border-radius:13px;padding:11px;min-width:0}
-.stat small{display:block;color:var(--mute);font-size:10.5px}.stat b{display:block;font-size:21px;letter-spacing:-.05em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.stat b small{display:inline;font-size:10px;font-weight:500;letter-spacing:0}
-.flow{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:12px 0}
-.chip{display:inline-flex;align-items:center;justify-content:center;padding:7px 11px;border-radius:20px;background:#eef5f2;color:#386b64;font-size:12px;font-weight:700;border:1px solid #d8e7e2}
-.chip.mini{padding:4px 9px;font-size:11px}
-.line{height:1px;background:var(--line);margin:14px 0}
-.fieldgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.field{display:block;font-size:12px;font-weight:750;color:#365e5b}
-.field small{display:block;font-weight:400;font-size:10.5px;color:var(--mute);margin:2px 0 5px}
-select,input[type=text],input[type=url],textarea{width:100%;padding:11px 10px;border:1px solid #d6e3df;border-radius:11px;background:white;min-width:0;font-size:13px}
-textarea{width:100%;min-height:110px;resize:vertical;font-size:12px;line-height:1.6} .choice{display:flex;align-items:center;gap:9px;margin-top:12px;color:#3b6460;font-size:12px}
-.choice input{width:18px;height:18px;accent-color:var(--green)}
-.btn{border:0;border-radius:13px;padding:13px 17px;font-weight:800;min-height:45px;background:var(--green);color:white;font-size:14px}
-.btn.soft{background:#e8f4ef;color:#096f5f}.btn.danger{background:#fff0ec;color:#b45249}
-.btnrow{display:flex;gap:9px;margin-top:15px;flex-wrap:wrap}.btnrow>.btn{flex:1}
-.subheading{font-size:12px;color:#345f5c;font-weight:800;letter-spacing:.025em;margin:13px 0 8px}
-.area{border:1px solid var(--line);border-radius:13px;padding:12px;margin-top:9px}
-.areahead{display:flex;justify-content:space-between;gap:8px;align-items:center}
-.areahead b{font-size:13px}.areahead span{font-size:11px;color:var(--mute)}
-.item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);min-width:0}
-.item:last-child{border-bottom:0}
-.itemmain{flex:1;min-width:0}.itemmain b{font-size:12px;display:block}.itemmain small{font-size:10.5px;color:var(--mute);display:block;word-break:break-all}
-.result{font-size:12px;font-weight:800;white-space:nowrap}
-.result.ok{color:#077c67}.result.bad{color:#ae594f}.result.unknown{color:#a06a19}
-#progress{height:7px;background:#dfeae7;border-radius:10px;overflow:hidden;margin-top:12px;display:none}
-#bar{display:block;width:0;height:100%;background:#15a388;transition:width .2s}
-#progressText{font-size:12px;color:#466c68;margin-top:8px;min-height:22px}
-#timeline{display:block;width:100%;max-height:250px}
-.empty{text-align:center;padding:20px 9px;color:#9caeab;font-size:12px}
-.foot{font-size:11px;color:#81918f;line-height:1.75;margin:20px 5px}
-.foot a{color:#087b68}
-.details{margin-top:13px}
-details{margin-top:10px;border:1px solid var(--line);border-radius:13px;background:#fff}
-summary{list-style:none;cursor:pointer;font-size:13px;font-weight:750;padding:13px 14px}summary::-webkit-details-marker{display:none}details[open] summary{border-bottom:1px solid var(--line)}
-.detailsbody{padding:12px 14px}
-.fixed{position:fixed;bottom:0;left:0;right:0;background:#fffffff5;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid #e2eae8;padding:10px 14px calc(10px + env(safe-area-inset-bottom));z-index:10}
-.fixedrow{max-width:980px;margin:auto;display:grid;grid-template-columns:1.5fr 1fr;gap:9px}
-.fixed .btn{min-height:50px;font-size:15px}
-#toast{position:fixed;top:75px;left:50%;transform:translateX(-50%);z-index:25;background:#164941;color:white;padding:10px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;box-shadow:0 9px 25px #123c3933;font-size:12px}
-#toast.show{opacity:1}
-@media(min-width:730px){.wrap{padding:28px 24px 38px}.twocol{display:grid;grid-template-columns:1.1fr 1fr;gap:13px;align-items:start}.twocol>.card{margin-top:0}.fixed{position:static;border:0;background:none;padding:0;backdrop-filter:none;margin:15px auto 0}.fixedrow{max-width:none}.hero h1{font-size:30px}}
-@media(max-width:365px){.brand b{font-size:13px}.wrap{padding-left:11px;padding-right:11px}.card{padding:13px}.stat b{font-size:18px}.tab{font-size:11px}.hero{padding:16px}}
+html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.52}
+button,select,input,textarea{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:3px solid #4fc9a9;outline-offset:3px}
+.container{max-width:940px;margin:0 auto;padding:18px 16px 92px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.identity{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{height:42px;width:42px;display:grid;place-items:center;border-radius:14px;background:#0b554b;color:#b8ffe4;font-size:27px;font-weight:850;flex:none}
+.identity strong{font-size:16px;letter-spacing:-.04em;display:block;white-space:nowrap}.identity small{font-size:11px;display:block;color:var(--secondary)}
+.header-right{display:flex;align-items:center;gap:7px}
+.ring{display:inline-block;height:7px;width:7px;border-radius:50%;background:#92a5a1}.ring.live{background:#24ab87;box-shadow:0 0 0 3px #d5f1e6}
+.tag{background:white;border:1px solid var(--line);border-radius:20px;padding:6px 9px;color:var(--secondary);font-size:11px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.nav{display:flex;gap:2px;border-bottom:1px solid #dfe8e5;margin:19px 0 18px;overflow-x:auto;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}
+.nav button{padding:10px 12px 11px;flex:1;background:transparent;border:0;color:#788b86;white-space:nowrap;font-weight:700;font-size:12px;border-bottom:3px solid transparent}
+.nav button.active{color:var(--mint-dark);border-bottom-color:var(--mint)}
+.view{display:none}.view.active{display:block}
+.hero{background:linear-gradient(135deg,#0b5148 0%,#0b6b5c 80%);color:white;border-radius:22px;padding:19px;box-shadow:0 13px 30px rgba(13,89,75,.13)}
+.hero-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.eyebrow{font-size:11px;letter-spacing:.08em;font-weight:800;color:#b3e8db}
+.hero .last{font-size:11px;color:#b9dbd2}
+.hero-headline{font-size:clamp(23px,6.4vw,30px);font-weight:820;line-height:1.26;letter-spacing:-.045em;margin:10px 0 5px}
+.hero-desc{color:#c6e8df;font-size:12px;margin:0 0 17px;line-height:1.5}
+.action{display:flex;gap:8px}
+.btn{background:#0b7d69;color:white;border:0;border-radius:12px;padding:12px 15px;font-weight:780;font-size:13px;min-height:44px}
+.btn-white{background:white;color:#086254;flex:1;font-size:15px}
+.btn-outline{background:#ffffff18;color:white;border:1px solid #ffffff5a}
+.btn-ghost{color:var(--mint-dark);background:var(--mint-light);border:0}
+.btn-muted{background:#f3f7f5;color:#446a60;border:1px solid var(--line)}
+.btn.small{min-height:34px;padding:7px 11px;font-size:12px;border-radius:9px}
+.btn.full{width:100%}
+.container-card{border:1px solid var(--line);background:var(--card);border-radius:18px;padding:16px;margin-top:12px;box-shadow:var(--shadow)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.row>*{min-width:0}
+h2{margin:0;font-size:16px;letter-spacing:-.025em}
+h3{margin:0;font-size:13px}.sub{color:var(--secondary);font-size:11px;margin:4px 0 0;line-height:1.55}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary{margin-top:13px}
+.summary .metric{position:relative;background:white;border:1px solid var(--line);border-radius:16px;padding:13px 13px 12px;text-align:left;min-width:0;min-height:110px}
+.metric .k{font-weight:720;font-size:12px;color:#5b7770;display:flex;align-items:center;gap:7px}
+.metric .k i{display:inline-block;border-radius:50%;width:8px;height:8px;background:#9fb0a8}
+.metric .k i.complete{background:#16967b}
+.metric .value{font-size:25px;line-height:1.3;font-weight:830;letter-spacing:-.055em;color:#1d3932;margin-top:8px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric .value span{font-size:11px;color:#748a83;font-weight:650;letter-spacing:0}
+.metric .fine{font-size:10px;color:#8b9b95;display:block;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric .arrow{position:absolute;right:12px;top:12px;color:#9badab}
+.module-title{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.module-title .small-label{color:var(--secondary);font-size:11px}
+.status-strip{display:flex;gap:5px;margin-top:15px}
+.status-strip>span{height:5px;background:#e4ebea;border-radius:100px;flex:1}
+.status-strip>span.done{background:#18a583}.status-strip>span.active{background:#6bc5ab}
+.progress-track{height:7px;background:#e8eeec;border-radius:99px;overflow:hidden;margin:13px 0 8px}
+.progress-track i{display:block;width:0;background:#139b81;height:100%;border-radius:99px;transition:width .3s}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:10px}
+.step{font-size:10px;text-align:center;color:#9cadab}
+.step .symbol{display:block;margin:0 auto 4px;height:25px;width:25px;line-height:24px;border-radius:50%;background:#edf1f0;font-weight:800;color:#9aada5}
+.step.done{color:#087962}.step.done .symbol{background:#dff4ea;color:#07876b}
+.step.live{color:#087962;font-weight:700}.step.live .symbol{background:#0e8770;color:white}
+.work-msg{font-size:12px;color:#566f69;margin-top:9px;min-height:32px}
+.progress-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.progress-actions button{min-width:95px}
+.insight{font-size:12px;color:#355f56;padding:11px 13px;border-radius:12px;background:#eef6f2;margin-top:10px;line-height:1.65}
+.visual{margin-top:12px}.visual svg{width:100%;height:165px;display:block}
+.empty{color:#9aacaa;text-align:center;padding:26px 8px;font-size:12px}
+.legend{display:flex;gap:13px;font-size:10px;color:var(--secondary);margin-top:4px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint);margin-right:5px}
+.list-item{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:11px 0;border-bottom:1px solid #edf1f0}
+.list-item:last-child{border:0}
+.list-item .left{min-width:0}.list-item .left b{display:block;font-size:12px;font-weight:680}.list-item .left small{display:block;font-size:10px;color:#869994;line-height:1.5}
+.list-item .right{font-size:12px;font-weight:800;color:#176e62;white-space:nowrap;text-align:right}
+.pill{font-size:10px;font-weight:720;padding:4px 8px;border-radius:100px;background:#eaf4f0;color:#417466;white-space:nowrap}
+.pill.warn{background:var(--amber-light);color:var(--amber)}.pill.muted{background:#f2f5f4;color:#84928e}
+.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.mini-grid .cell{background:#f7f9f8;border-radius:12px;padding:10px;min-width:0}
+.cell small{display:block;color:#78908a;font-size:10px}
+.cell strong{display:block;font-weight:820;letter-spacing:-.035em;font-size:22px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell strong em{font-size:10px;font-weight:500;color:#83948e;font-style:normal}
+.category-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.category{background:#f8faf9;border:1px solid #e8efed;border-radius:12px;padding:12px;min-width:0;text-align:left}
+.category b{font-size:12px;display:block}.category span{font-size:11px;color:#7b908a;display:block;margin-top:5px}
+.category.done{border-color:#b9e8d7;background:#f1faf5}
+details{border:1px solid var(--line);border-radius:13px;margin-top:9px;background:#fff;overflow:hidden}
+details summary{padding:13px 14px;font-size:12px;font-weight:750;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:10px;align-items:center}
+details summary::-webkit-details-marker{display:none}
+details summary:after{content:"+";font-size:17px;color:#839c93}details[open] summary:after{content:"−"}
+.detail-inner{border-top:1px solid var(--line);padding:8px 13px 12px}
+.fieldrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:11px}
+.field label{font-size:11px;font-weight:730;color:#3d6860;display:block;margin-bottom:5px}
+.field small{display:block;font-size:10px;color:#899b95;font-weight:450;margin-top:3px}
+.field input,.field select,.field textarea{width:100%;border:1px solid #d6e4dd;border-radius:10px;padding:10px 9px;background:#fff;color:var(--ink);font-size:12px;min-width:0}
+.field textarea{min-height:92px;resize:vertical}
+.checkbox{display:flex;align-items:center;gap:7px;font-size:11px;color:#55766a;margin-top:12px}.checkbox input{accent-color:var(--mint);width:17px;height:17px}
+.note{font-size:11px;color:#778b85;line-height:1.7;margin:10px 0 0}
+.banner{padding:11px 12px;background:#eef6f2;color:#497168;border-radius:12px;font-size:11px;line-height:1.65;margin-top:10px}
+.banner.warn{background:#fff7ec;color:#926b33}
+.bottom-bar{display:none;position:fixed;bottom:0;left:0;right:0;padding:9px max(14px,env(safe-area-inset-right)) calc(9px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));background:#fffffff5;border-top:1px solid #e0e9e5;z-index:15;backdrop-filter:blur(12px)}
+.bottom-bar.visible{display:block}.bottom-inside{max-width:920px;margin:auto;display:flex;align-items:center;gap:10px}.bottom-label{flex:1;min-width:0}.bottom-label b{display:block;font-size:12px}.bottom-label small{display:block;font-size:10px;color:#859992}
+.roundmark{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:14;border:1px solid #c6ded4;background:#e5f4ee;color:#0c7462;padding:9px 12px;border-radius:22px;font-size:12px;font-weight:750;box-shadow:0 8px 16px #315e4e18}
+.running .roundmark{display:none}
+.footer{font-size:11px;color:#80918b;line-height:1.8;padding:22px 3px}
+.footer a{color:#0b8370}
+.toast{position:fixed;top:65px;left:50%;max-width:92vw;transform:translateX(-50%);background:#234943;color:white;font-size:12px;border-radius:11px;padding:11px 14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30;text-align:center;box-shadow:0 8px 24px #244f4438}
+.toast.show{opacity:1}
+@media(min-width:730px){.container{padding:30px 24px 50px}.cols{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;align-items:start}.cols>.container-card{margin-top:0}.hero{padding:25px}.summary{grid-template-columns:repeat(4,1fr)}.metric{min-height:124px!important}.grid-detail{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid-detail>.container-card{margin-top:0}.nav button{flex:initial;min-width:130px}.roundmark{bottom:25px}.view{min-height:200px}}
+@media(max-width:374px){.container{padding:12px 11px 90px}.nav button{padding-left:7px;padding-right:7px;font-size:11px}.hero{padding:16px}.metric .value{font-size:22px}.container-card{padding:13px}.identity strong{font-size:14px}.mini-grid .cell strong{font-size:19px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
-<main class="wrap">
-<header><div class="brand"><div class="logo">⌁</div><div><b>SIMBA Network Watch</b><small>综合网络诊断 · v3.0</small></div></div><span class="state" id="state">准备就绪</span></header>
-<nav class="tabs" aria-label="功能导航">
-<button type="button" class="tab on" data-tab="overview">总览</button>
-<button type="button" class="tab" data-tab="local">本地测速</button>
-<button type="button" class="tab" data-tab="regions">跨境</button>
-<button type="button" class="tab" data-tab="apps">应用场景</button>
+<main class="container">
+<header>
+<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>SIMBA Network Watch</strong><small>网络体检仪表盘 <span style="color:#a4b2af">/ v4.0</span></small></div></div>
+<div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span></div>
+</header>
+<nav class="nav" aria-label="功能导航">
+<button type="button" class="active" data-page="home">总览</button>
+<button type="button" data-page="local">本地测速</button>
+<button type="button" data-page="global">跨境连接</button>
+<button type="button" data-page="apps">应用体验</button>
 </nav>
-<section class="view on" id="view-overview">
-<div class="hero"><span class="hint">SIMBA 5G / 4G · 新加坡连接诊断</span><h1>不只看一瞬间的网速</h1><p>持续测试本地速度，再检查各国网站与视频、社交、办公平台的连接表现。记录稳定性、失败与耗时差异。</p>
-<div class="herogrid"><div class="herometric"><small>上次本地下载中位速度</small><strong id="headlineSpeed">— <span>Mbps</span></strong></div><div class="herometric"><small>已完成诊断会话</small><strong id="sessionCount">0 <span>次</span></strong></div></div></div>
-<div class="card"><h2>完整诊断</h2><p class="sub">本地持续测试 + 7 个国家/地区网站 + 常用应用场景。通常需要数分钟，请保持网页前台。</p>
-<div class="flow"><span class="chip">① 新加坡链路</span><span class="chip">② 跨境站点</span><span class="chip">③ 常用应用</span></div>
-<div class="tip warning"><b>测速会消耗流量。</b>默认本地阶段约 45 秒，最多约 60 MB 下载；跨境/应用阶段以多次小请求为主。选项可在「本地测速」修改。</div>
-<div class="btnrow"><button class="btn" type="button" id="fullBtn">开始完整诊断</button></div></div>
-<div class="card"><h2>当前诊断过程</h2><p class="sub" id="currentStage">尚未开始 · 不会在后台自动运行</p><div id="progress"><i id="bar"></i></div><div id="progressText">完成后结果会保存在此设备浏览器。</div><div class="btnrow"><button class="btn soft" id="exportBtn" type="button">导出 CSV</button></div></div>
-<div class="card"><h2>最近会话</h2><div id="sessionHistory" class="empty">尚无诊断会话</div></div>
-</section>
-<section class="view" id="view-local">
-<div class="card"><h2>新加坡本地持续测速</h2><p class="sub">通过 Cloudflare 下载端点做多次采样，记录有效下载速率的分布与 HTTP 往返耗时。不同于只测速 2–3 秒。</p>
-<div class="fieldgrid">
-<label class="field">持续时间<small>保持网页前台</small><select id="duration"><option value="30">30 秒</option><option value="45" selected>45 秒（推荐）</option><option value="60">60 秒</option><option value="120">120 秒</option></select></label>
-<label class="field">下载流量预算<small>达到预算后停止下载采样</small><select id="budget"><option value="20">20 MB</option><option value="60" selected>60 MB（推荐）</option><option value="120">120 MB</option><option value="250">250 MB</option></select></label>
-<label class="field">实际手机网络<small>需手动标注，非自动识别</small><select id="network"><option value="5G">5G</option><option value="4G">4G / LTE</option></select></label>
-<label class="field">地点备注<small>方便比较同一位置</small><input id="location" type="text" maxlength="45" placeholder="例如：Changi 室内"></label>
+<section class="view active" id="page-home">
+<div class="hero">
+<div class="hero-top"><span class="eyebrow">NETWORK HEALTH CHECK</span><span class="last" id="lastTime">尚未完成诊断</span></div>
+<div class="hero-headline" id="headline">让网络表现一目了然</div>
+<p class="hero-desc" id="headlineSub">从新加坡本地到海外网站、视频和社交服务，一次诊断，分类查看。</p>
+<div class="action"><button class="btn btn-white" id="startFull">▶ 开始全面诊断</button><button class="btn btn-outline" id="openOptions">设置</button></div>
 </div>
-<label class="choice"><input type="checkbox" id="upload"> 附加上传测速（少量流量；服务端不支持时会标注不可用）</label>
-<div class="tip">根据最近测速自适应调整分片大小（通常约 0.6–6 MB），约每 4 秒取样，持续观察变化；测得的是样本请求有效速度，并非整段时间持续占满链路。所有计时在前台执行。</div>
-<div class="btnrow"><button class="btn" type="button" id="localBtn">开始本地持续测速</button></div>
+<div class="grid2 summary" aria-label="四项诊断结果">
+<button class="metric" data-go="local"><span class="arrow">↗</span><span class="k"><i id="dotLocal"></i>本地下载</span><div class="value" id="kLocal">—</div><span class="fine" id="kLocalSub">待测速 · 新加坡</span></button>
+<button class="metric" data-go="global"><span class="arrow">↗</span><span class="k"><i id="dotGlobal"></i>跨境连接</span><div class="value" id="kGlobal">—</div><span class="fine" id="kGlobalSub">待探测 · 7 地区</span></button>
+<button class="metric" data-go="apps"><span class="arrow">↗</span><span class="k"><i id="dotApps"></i>常用服务</span><div class="value" id="kApps">—</div><span class="fine" id="kAppsSub">待探测 · 6 类</span></button>
+<button class="metric" data-go="apps"><span class="arrow">↗</span><span class="k"><i id="dotVideo"></i>视频分片</span><div class="value" id="kVideo">—</div><span class="fine" id="kVideoSub">待测试 · 20 秒模拟</span></button>
 </div>
-<div class="card"><h2>最近本地结果</h2><div class="statrow">
-<div class="stat"><small>下载中位数</small><b id="medianSpeed">— <small>Mbps</small></b></div>
-<div class="stat"><small>最低十分位 P10</small><b id="p10Speed">— <small>Mbps</small></b></div>
-<div class="stat"><small>HTTP 延迟中位数</small><b id="medianPing">— <small>ms</small></b></div>
-</div><div class="statrow" style="margin-top:8px"><div class="stat"><small>波动（样本变化）</small><b id="jitter">— <small>ms</small></b></div><div class="stat"><small>上传测量</small><b id="uploadSpeed">未测</b></div><div class="stat"><small>实际下载</small><b id="usedMB">— <small>MB</small></b></div></div>
-<p class="sub" style="margin-top:12px" id="localInfo">暂无新版持续测试记录。</p>
-<svg id="timeline" viewBox="0 0 520 195" role="img" aria-label="采样速率走势图"></svg>
+<div class="container-card" id="progressCard">
+<div class="module-title"><h2>诊断进度</h2><span class="pill muted" id="progressState">未开始</span></div>
+<p class="sub" id="progressStage">点击「开始全面诊断」即可按阶段检测。</p>
+<div class="progress-track"><i id="progressBar"></i></div>
+<div class="steps" id="stepRow">
+<div class="step" id="step0"><span class="symbol">1</span>本地链路</div>
+<div class="step" id="step1"><span class="symbol">2</span>海外站点</div>
+<div class="step" id="step2"><span class="symbol">3</span>应用服务</div>
+<div class="step" id="step3"><span class="symbol">4</span>视频模拟</div>
+</div>
+<div class="work-msg" id="workMsg">不会自动消耗流量；开始测试后可随时停止。</div>
+<div class="progress-actions"><button class="btn btn-ghost small" id="exportHome" type="button">导出结果</button></div>
+</div>
+<div class="cols" style="margin-top:12px">
+<div class="container-card"><div class="row"><h2>下载速度趋势</h2><button class="btn btn-muted small" type="button" data-go="local">查看明细 ↗</button></div><p class="sub">来自最近一次本地持续采样，不是瞬时峰值</p><div class="visual"><svg id="sparkline" viewBox="0 0 350 165" role="img" aria-label="下载采样趋势"></svg></div><div class="legend"><span><i class="dot"></i>下载 Mbps</span><span>低值越多，体验越不稳定</span></div></div>
+<div class="container-card"><div class="row"><h2>最近检测</h2><span class="pill muted" id="recordCount">0 次</span></div><div id="recentRecords" class="empty">还没有检测记录</div></div>
+</div>
+<div class="container-card">
+<div class="row"><h2>一键体验</h2><span class="pill">常用快捷操作</span></div>
+<div class="grid2" style="margin-top:11px">
+<button class="btn btn-ghost" id="quickLocal" type="button">↘ 测本地网速</button>
+<button class="btn btn-muted" id="quickStall" type="button">◎ 标记视频卡顿</button>
+</div>
+<p class="note">提示：为了测 SIMBA，请关闭 Wi-Fi。网页无法可靠识别 LTE/5G，也无法读取原生视频 App 的实时吞吐。</p>
+</div>
+<details id="allOptions"><summary>测试设置与流量预算 <span class="sub">（默认已设置好）</span></summary><div class="detail-inner">
+<div class="fieldrow">
+<div class="field"><label for="duration">本地采样时长</label><select id="duration"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60" selected>60 秒（推荐）</option><option value="120">120 秒</option></select></div>
+<div class="field"><label for="budget">本地下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
+<div class="field"><label for="network">实际手机网络（手动）</label><select id="network"><option value="">未标注</option><option value="4G">4G / LTE</option><option value="5G">5G</option></select></div>
+<div class="field"><label for="location">地点备注（选填）</label><input type="text" id="location" maxlength="45" placeholder="例如：Changi"></div>
+</div>
+<label class="checkbox"><input type="checkbox" id="upload">额外尝试上传测试（可能无法跨域访问）</label>
+<p class="note">本地采样默认约 60 秒、预算 80 MB；跨境网站、应用探测、分片模拟会产生额外流量。浏览器在后台或锁屏后不能保证连续测试。</p>
+</div></details>
+</section>
+<section class="view" id="page-local">
+<div class="container-card">
+<div class="row"><div><h2>新加坡本地网络</h2><p class="sub">持续分散采样，记录中位值、低速和延迟</p></div><button class="btn small" id="startLocal">开始测速</button></div>
+<div class="mini-grid">
+<div class="cell"><small>中位下载</small><strong id="localMedian">— <em>Mbps</em></strong></div>
+<div class="cell"><small>低速 P10</small><strong id="localP10">— <em>Mbps</em></strong></div>
+<div class="cell"><small>HTTP 耗时</small><strong id="localLatency">— <em>ms</em></strong></div>
+</div>
+<div class="mini-grid">
+<div class="cell"><small>耗时波动</small><strong id="localJitter">— <em>ms</em></strong></div>
+<div class="cell"><small>上传速率</small><strong id="localUpload">—</strong></div>
+<div class="cell"><small>下载用量</small><strong id="localBytes">— <em>MB</em></strong></div>
+</div>
+<div class="banner" id="localSummary">暂无本地连续测速记录。</div>
+<div class="visual"><svg id="localChart" viewBox="0 0 350 165" role="img" aria-label="本地下载速度变化图"></svg></div>
+</div>
+<div class="container-card"><div class="row"><h2>测试质量与局限</h2><span class="pill muted">HTTP 采样</span></div>
+<p class="note">测速目标为 Cloudflare HTTP 节点，非运营商基站、视频平台或 ICMP Ping。下载采样之间会短暂停顿，以分散覆盖整个时间窗口；流量预算可能导致提前结束下载采样。</p>
+<div id="localFaults" class="note"></div><button class="btn btn-muted small" data-go="home" style="margin-top:12px">返回总览</button>
 </div>
 </section>
-<section class="view" id="view-regions">
-<div class="card"><h2>跨境网站连接探测</h2><p class="sub">新加坡、马来西亚、中国大陆、日本、美国、英国、澳大利亚；每个地区两个目标，默认每站连续重复 2 次请求，记录耗时和超时。</p>
-<div class="tip warning"><b>重要：</b>所列国家是网站所属市场，并非实测服务器物理位置。跨国 CDN 可能在新加坡服务请求。无目标国专用测速节点时，不能推算真实跨境 Mbps 或路由。</div>
-<div class="btnrow"><button class="btn" type="button" id="regionBtn">开始 7 地区连接探测</button></div>
-<div id="regionResults"></div></div><details><summary>可选：使用海外测速节点测量下载 Mbps</summary><div class="detailsbody"><p class="sub">如果有实际部署在目标国的 HTTPS 测速端点，可以在这里填写，一行一个。节点应支持 <code>?bytes=1000000</code> 并返回对应大小的非压缩数据，同时允许浏览器 CORS。节点所在地必须由提供者核实。未配置时不会产生虚构的跨境带宽。</p><textarea id="nodeConfig" spellcheck="false" placeholder="JP|https://your-jp-server.example/down
-US|https://your-us-server.example/down"></textarea><div class="btnrow"><button class="btn soft" id="nodeBtn" type="button">测试已配置海外节点</button></div><div id="nodeResults" class="sub">尚未配置节点</div></div></details>
-<details><summary>跨境测速说明与扩展</summary><div class="detailsbody"><p class="sub">默认使用浏览器 <code>no-cors</code> HEAD 请求。请求结束只能证明浏览器完成了一次受限制的请求，无法读取 HTTP 200 / 403 / 404；请求失败也可能来自站点的浏览器安全策略。不是 ICMP Ping、路由追踪或真实跨境吞吐测试。</p><p class="sub">真正的分国家下载/上传 Mbps，需要在目标国家部署受控 HTTPS 测速节点并允许 CORS，或使用原生网络测试客户端。后续可添加节点地址与节点健康检查。</p></div></details>
+<section class="view" id="page-global">
+<div class="container-card">
+<div class="row"><div><h2>跨境网站连接</h2><p class="sub">7 地区 · 14 站点 · 每站重复 2 次</p></div><button class="btn small" id="startGlobal">开始探测</button></div>
+<div class="banner warn">目标按网站所属市场分类，CDN 可能在新加坡响应。浏览器受限请求不能验证 HTTP 200，也不能测出目标国的真实 Mbps。这里显示的是请求返回情况，不是跨境线路的成功率。</div>
+<div id="globalGrid" class="category-grid"></div>
+<div id="globalDetails"></div></div>
+<details><summary>进阶：配置真实海外测速节点</summary><div class="detail-inner">
+<p class="note">如果有在目标国家真实部署的 HTTPS 节点，支持 <code>?bytes=1000000</code> 返回非压缩数据且设置 CORS，可逐行配置：国别代码|URL。节点物理位置需要另行验证。</p>
+<div class="field"><textarea id="nodeConfig" placeholder="JP|https://your-jp-host.example/down&#10;US|https://your-us-host.example/down"></textarea></div>
+<div class="row" style="margin-top:10px"><button class="btn btn-muted small" id="startNodes">测试节点下载速度</button></div>
+<div id="nodeDetails" class="note"></div>
+</div></details>
 </section>
-<section class="view" id="view-apps">
-<div class="card"><h2>网站与应用场景</h2><p class="sub">普通网页、视频服务、社交平台、即时通信、办公开发及购物，每个站点重复 2 次请求。平台网站探测不代表原生 App 的视频流质量。</p>
-<div class="tip">YouTube、Netflix、TikTok 等平台可能通过不同域名和 CDN 传输视频；本测试只检查公开网站的有限连接行为，不能据此认定视频被专门限速。</div>
-<div class="btnrow"><button class="btn" type="button" id="appBtn">开始应用场景探测</button></div>
-<div id="appResults"></div></div><div class="card"><h2>20 秒视频分片模拟</h2><p class="sub">对 Cloudflare 进行多轮分片下载，观察短时低速与慢分片比例。仅代表模拟传输，不等同于视频 App 真实解码、CDN 或平台带宽。</p><div class="btnrow"><button class="btn soft" id="videoBtn" type="button">开始 20 秒分片模拟</button></div><div id="videoResult" class="tip">尚未测试</div></div>
-<div class="card"><h2>观看视频时卡顿？</h2><p class="sub">点击底部「标记卡顿」记录发生时间，再在同一时间附近测试本地网速。不会自动读取其他 App 的数据。</p>
-<label class="field">出现卡顿的平台<select id="videoApp"><option>YouTube</option><option>Netflix</option><option>TikTok / 抖音</option><option>Bilibili</option><option>Instagram</option><option>其他视频应用</option></select></label>
-<div class="btnrow"><button class="btn soft" type="button" id="markBtn">只标记卡顿（不消耗测速流量）</button></div>
-<div id="stallHistory" class="sub"></div></div>
+<section class="view" id="page-apps">
+<div class="container-card">
+<div class="row"><div><h2>日常应用访问</h2><p class="sub">普通网页 / 视频 / 社交 / 通讯 / 办公 / 购物</p></div><button class="btn small" id="startApps">开始探测</button></div>
+<div class="banner">这里测试各平台官网的有限 HTTP 连接行为，不能直接读取 YouTube、TikTok、Netflix 等原生 App 的视频卡顿率或传输速度。</div>
+<div id="appsGrid" class="category-grid"></div>
+<div id="appsDetails"></div>
+</div>
+<div class="container-card">
+<div class="row"><div><h2>视频分片稳定性</h2><p class="sub">20 秒模拟分片下载，不代表真实视频播放</p></div><button class="btn btn-ghost small" id="startVideo">开始测试</button></div>
+<div class="mini-grid">
+<div class="cell"><small>模拟中位</small><strong id="videoMedian">—</strong></div>
+<div class="cell"><small>低于 5 Mbps</small><strong id="videoLow">—</strong></div>
+<div class="cell"><small>慢分片</small><strong id="videoSlow">—</strong></div>
+</div>
+<div id="videoSummary" class="note"></div>
+</div>
+<div class="container-card">
+<div class="row"><h2>手动记录卡顿</h2><span class="pill muted" id="stallCount">0 次</span></div>
+<p class="sub">视频卡顿时回来点击记录，再比对相近时间的测速。</p>
+<div class="row" style="margin-top:12px">
+<div class="field" style="flex:1"><label for="videoApp">视频平台</label><select id="videoApp"><option>YouTube</option><option>Netflix</option><option>TikTok / 抖音</option><option>Bilibili</option><option>Instagram</option><option>其他平台</option></select></div>
+<button class="btn btn-muted" id="markStall">◎ 记录</button></div>
+<div class="note" id="stallLast"></div>
+</div>
 </section>
-<div class="foot">非 SIMBA、Cloudflare 或第三方网站官方工具。历史结果保存在本浏览器 localStorage；跨境目标可获得常规请求 IP / 浏览器网络信息。网页后台与锁屏后无法可靠持续运行。<br><a href="https://speed.cloudflare.com/" target="_blank" rel="noopener noreferrer">Cloudflare 官方测速</a> · <a href="https://github.com/ArthurUker/simba-network-watch" target="_blank" rel="noopener noreferrer">项目源代码</a></div>
+<div class="footer">非 SIMBA、Cloudflare、YouTube 等平台的官方产品。诊断历史仅存于当前浏览器。测速与网站请求可能向目标服务器暴露常规网络元数据。<br><a href="https://github.com/ArthurUker/simba-network-watch" target="_blank" rel="noopener noreferrer">GitHub 源码</a> · <a href="https://speed.cloudflare.com/" target="_blank" rel="noopener noreferrer">Cloudflare 对照测速</a></div>
 </main>
-<div class="fixed"><div class="fixedrow"><button class="btn" type="button" id="actionBtn">▶ 完整诊断</button><button class="btn soft" id="stallBtn" type="button">◉ 标记卡顿</button></div></div>
-<div id="toast" role="status" aria-live="polite"></div>
+<button class="roundmark" id="floatingStall">◎ 记录卡顿</button>
+<div class="bottom-bar" id="runBar"><div class="bottom-inside"><div class="bottom-label"><b id="runLabel">诊断中</b><small>保持网页前台 · 可停止</small></div><button class="btn btn-ghost small" id="stopBtn">停止诊断</button></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
-const KEY='simba-network-watch-v3',OLD='simba-network-watch-v1',PREF='simba-network-watch-v3-prefs';
-const DOWN='https://speed.cloudflare.com/__down', UP='https://speed.cloudflare.com/__up';
+const KEY='simba-network-watch-v3',PREF='simba-network-watch-v4-prefs';
+const DOWN='https://speed.cloudflare.com/__down',UP='https://speed.cloudflare.com/__up';
 const REGIONS=[
- {id:'sg',name:'新加坡',targets:[['Gov.sg','https://www.gov.sg/'],['CNA','https://www.channelnewsasia.com/']]},
- {id:'my',name:'马来西亚',targets:[['The Star','https://www.thestar.com.my/'],['Malay Mail','https://www.malaymail.com/']]},
- {id:'cn',name:'中国大陆',targets:[['百度','https://www.baidu.com/'],['哔哩哔哩','https://www.bilibili.com/']]},
- {id:'jp',name:'日本',targets:[['Yahoo Japan','https://www.yahoo.co.jp/'],['Rakuten','https://www.rakuten.co.jp/']]},
- {id:'us',name:'美国',targets:[['Google','https://www.google.com/'],['Wikipedia','https://www.wikipedia.org/']]},
- {id:'uk',name:'英国',targets:[['BBC','https://www.bbc.co.uk/'],['The Guardian','https://www.theguardian.com/']]},
- {id:'au',name:'澳大利亚',targets:[['ABC Australia','https://www.abc.net.au/'],['Sydney Morning Herald','https://www.smh.com.au/']]}
-];
+{name:'新加坡',id:'SG',sites:[['Gov.sg','https://www.gov.sg/'],['CNA','https://www.channelnewsasia.com/']]},
+{name:'马来西亚',id:'MY',sites:[['The Star','https://www.thestar.com.my/'],['Malay Mail','https://www.malaymail.com/']]},
+{name:'中国大陆',id:'CN',sites:[['百度','https://www.baidu.com/'],['Bilibili','https://www.bilibili.com/']]},
+{name:'日本',id:'JP',sites:[['Yahoo Japan','https://www.yahoo.co.jp/'],['Rakuten','https://www.rakuten.co.jp/']]},
+{name:'美国',id:'US',sites:[['Google','https://www.google.com/'],['Wikipedia','https://www.wikipedia.org/']]},
+{name:'英国',id:'UK',sites:[['BBC','https://www.bbc.co.uk/'],['The Guardian','https://www.theguardian.com/']]},
+{name:'澳大利亚',id:'AU',sites:[['ABC Australia','https://www.abc.net.au/'],['SMH','https://www.smh.com.au/']]}];
 const APPS=[
- {name:'常规网页',targets:[['Google','https://www.google.com/'],['Wikipedia','https://www.wikipedia.org/'],['CNA','https://www.channelnewsasia.com/']]},
- {name:'视频网站',targets:[['YouTube','https://www.youtube.com/'],['Netflix','https://www.netflix.com/'],['Bilibili','https://www.bilibili.com/']]},
- {name:'社交平台',targets:[['Instagram','https://www.instagram.com/'],['Facebook','https://www.facebook.com/'],['Reddit','https://www.reddit.com/'],['Weibo','https://weibo.com/']]},
- {name:'即时通信',targets:[['WhatsApp Web','https://web.whatsapp.com/'],['Telegram Web','https://web.telegram.org/']]},
- {name:'办公与开发',targets:[['GitHub','https://github.com/'],['Microsoft 365','https://www.microsoft.com/'],['ChatGPT','https://chatgpt.com/']]},
- {name:'购物',targets:[['Amazon','https://www.amazon.com/'],['Shopee SG','https://shopee.sg/']]}
-];
-let state={sessions:[],stalls:[],local:null,region:null,apps:null,remote:null,legacy:[],video:null},busy=false,aborter=null,runId=0,progressValue=0,tab='overview',toastTimer=null;
-const num=(x,d=1)=>Number.isFinite(x)?Number(x).toFixed(d):'—';
-const median=a=>{if(!a.length)return NaN;const x=a.slice().sort((a,b)=>a-b);return (x[Math.floor((x.length-1)/2)]+x[Math.floor(x.length/2)])/2};
-const pctl=(a,p)=>{if(!a.length)return NaN;const x=a.slice().sort((a,b)=>a-b);return x[Math.floor((x.length-1)*p)]};
-const now=()=>new Date().toISOString();
-const time=t=>new Date(t).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-const sleep=(ms,signal)=>new Promise(resolve=>{if(signal&&signal.aborted){resolve();return}const t=setTimeout(finish,ms);function finish(){if(signal)signal.removeEventListener('abort',cancel);resolve()}function cancel(){clearTimeout(t);finish()}if(signal)signal.addEventListener('abort',cancel,{once:true})});
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast('浏览器无法保存数据，建议导出 CSV')}};
-const say=(s)=>{$('progressText').textContent=s};
-function toast(s){const el=$('toast');el.textContent=s;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500)}
-function setTab(t){tab=t;document.querySelectorAll('.tab').forEach(x=>{const on=x.dataset.tab===t;x.classList.toggle('on',on);x.setAttribute('aria-selected',String(on))});document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='view-'+t))}
-function stage(s){$('currentStage').textContent=s;$('state').textContent=busy?'诊断中':'准备就绪'}
-function progress(v,s){progressValue=Math.max(0,Math.min(100,v));$('progress').style.display='block';$('bar').style.width=progressValue+'%';if(s)say(s)}
-function begin(){if(busy)return false;busy=true;runId++;aborter=new AbortController();$('state').textContent='诊断中';$('actionBtn').textContent='■ 停止诊断';[$('fullBtn'),$('localBtn'),$('regionBtn'),$('appBtn'),$('nodeBtn'),$('videoBtn')].forEach(x=>x.disabled=true);progress(1,'诊断已开始…');return true}
-function finish(){busy=false;aborter=null;$('state').textContent='准备就绪';$('actionBtn').textContent='▶ 完整诊断';[$('fullBtn'),$('localBtn'),$('regionBtn'),$('appBtn'),$('nodeBtn'),$('videoBtn')].forEach(x=>x.disabled=false)}
-function prefs(){return{duration:Number($('duration').value),budget:Number($('budget').value),network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,video:$('videoApp').value,nodes:$('nodeConfig').value.trim()}}
+{name:'普通网页',id:'Web',sites:[['Google','https://www.google.com/'],['Wikipedia','https://www.wikipedia.org/'],['CNA','https://www.channelnewsasia.com/']]},
+{name:'视频平台',id:'Video',sites:[['YouTube','https://www.youtube.com/'],['Netflix','https://www.netflix.com/'],['Bilibili','https://www.bilibili.com/']]},
+{name:'社交媒体',id:'Social',sites:[['Instagram','https://www.instagram.com/'],['Facebook','https://www.facebook.com/'],['Reddit','https://www.reddit.com/'],['微博','https://weibo.com/']]},
+{name:'即时通讯',id:'Chat',sites:[['WhatsApp Web','https://web.whatsapp.com/'],['Telegram Web','https://web.telegram.org/']]},
+{name:'办公开发',id:'Work',sites:[['GitHub','https://github.com/'],['Microsoft','https://www.microsoft.com/'],['ChatGPT','https://chatgpt.com/']]},
+{name:'网络购物',id:'Shopping',sites:[['Amazon','https://www.amazon.com/'],['Shopee','https://shopee.sg/']]}];
+let data={sessions:[],stalls:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null;
+const format=(n,d=1)=>Number.isFinite(n)?Number(n).toFixed(d):'—';
+const median=a=>{if(!a.length)return NaN;const v=a.slice().sort((a,b)=>a-b);return(v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2};
+const p10=a=>a.length?a.slice().sort((a,b)=>a-b)[Math.floor((a.length-1)*.1)]:NaN;
+const ts=()=>new Date().toISOString();
+const time=t=>{if(!t)return '暂无';return new Date(t).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})};
+function stateSave(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){toast('保存记录失败，请尝试导出 CSV')}}
+function prefs(){return{duration:$('duration').value,budget:$('budget').value,network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,nodes:$('nodeConfig').value,videoApp:$('videoApp').value}}
 function savePrefs(){try{localStorage.setItem(PREF,JSON.stringify(prefs()))}catch(e){}}
-function read(){try{const data=JSON.parse(localStorage.getItem(KEY)||'null');if(data&&typeof data==='object'){state={...state,...data};if(!Array.isArray(state.sessions))state.sessions=[];if(!Array.isArray(state.stalls))state.stalls=[]}}catch(e){}
-try{const p=JSON.parse(localStorage.getItem(PREF)||'{}');for(const id of ['duration','budget','network','location','videoApp']){const name=id==='videoApp'?'video':id==='nodeConfig'?'nodes':id;if(p[name]!==undefined&&p[name]!==null)$(id).value=String(p[name])}$('upload').checked=!!p.upload;$('nodeConfig').value=String(p.nodes||'')}catch(e){}
-try{const legacy=JSON.parse(localStorage.getItem(OLD)||'[]');if(Array.isArray(legacy)&&!state._legacyImported){state.legacy=legacy.filter(x=>x.kind==='test').map(x=>({t:x.t,network:x.network,speed:x.speed,latency:x.latency,bytes:x.bytes}));state.stalls.push(...legacy.filter(x=>x.kind==='stall').map(x=>({t:x.t,app:x.app||'历史记录',network:x.network})));state._legacyImported=true;save()}}catch(e){}
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3000)}
+function tab(which){activeTab=which;document.querySelectorAll('[data-page]').forEach(n=>n.classList.toggle('active',n.dataset.page===which));document.querySelectorAll('.view').forEach(n=>n.classList.toggle('active',n.id==='page-'+which));window.scrollTo({top:0,behavior:'instant'})}
+function textNode(tag,cls,value){const x=document.createElement(tag);if(cls)x.className=cls;x.textContent=value;return x}
+function setValue(id,t){$(id).textContent=t}
+function setHTML(id,value,unit){const el=$(id);el.replaceChildren(document.createTextNode(value+' '),textNode('em','',unit))}
+function getRows(x){return Array.isArray(x)?x:[]}
+function getProbed(rs){return getRows(rs).filter(r=>r&&Array.isArray(r.samples))}
+function groupStats(group,rows){let attempted=0,returned=0;for(const [name,url] of group.sites){const x=rows.find(r=>r.name===name&&r.url===url);if(!x)continue;attempted++;if(x.samples.some(v=>v.result==='opaque'))returned++}return{attempted,returned}}
+function countSites(rs){const a=getProbed(rs);return{done:a.length,returned:a.filter(x=>x.samples.some(v=>v.result==='opaque')).length}}
+function setComplete(id,ready){$(id).classList.toggle('complete',ready)}
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object')data={...data,...x}}catch(e){}
+for(const key of ['sessions','stalls','legacy'])if(!Array.isArray(data[key]))data[key]=[];
+try{const pf=JSON.parse(localStorage.getItem(PREF)||'null');if(pf){for(const id of ['duration','budget','network','location','nodeConfig','videoApp']){const key=id==='nodeConfig'?'nodes':id;if(pf[key]!==undefined&&pf[key]!==null)$(id).value=String(pf[key])}$('upload').checked=!!pf.upload}}catch(e){}
+try{if(!data._legacyImported){const hist=JSON.parse(localStorage.getItem('simba-network-watch-v1')||'[]');if(Array.isArray(hist)){data.legacy=hist.filter(x=>x.kind==='test');data.stalls.push(...hist.filter(x=>x.kind==='stall').map(x=>({t:x.t,app:x.app||'历史卡顿'})))}data._legacyImported=true;stateSave()}}catch(e){}
 render()}
-function simpleStatus(value){if(value==='opaque')return '请求完成*';if(value==='timeout')return '超时';if(value==='aborted')return '已取消';return '受限/失败'}
-function renderSiteGroup(container,groups,results){const el=$(container);el.replaceChildren();if(!results){const x=document.createElement('div');x.className='empty';x.textContent='尚未执行探测';el.append(x);return}
-for(const group of groups){const area=document.createElement('div');area.className='area';const head=document.createElement('div');head.className='areahead';const bold=document.createElement('b');bold.textContent=group.name;const mini=document.createElement('span');const values=group.targets.map(t=>results.find(r=>r.name===t[0]&&r.url===t[1])).filter(Boolean);mini.textContent=values.length+' / '+group.targets.length+' 站点';head.append(bold,mini);area.append(head);
-for(const t of group.targets){const r=results.find(x=>x.name===t[0]&&x.url===t[1]);const line=document.createElement('div');line.className='item';const info=document.createElement('div');info.className='itemmain';const b=document.createElement('b');b.textContent=t[0];const small=document.createElement('small');small.textContent=r?r.count+' 次尝试 · 中位耗时 '+num(r.duration,0)+' ms':'尚未测';info.append(b,small);const value=document.createElement('div');const any=r&&r.samples.some(x=>x.result==='opaque');value.className='result '+(!r?'unknown':any?'ok':'bad');value.textContent=!r?'—':r.samples.filter(x=>x.result==='opaque').length+'/'+r.count+' 完成';line.append(info,value);area.append(line)}
-el.append(area)}
-const caveat=document.createElement('p');caveat.className='sub';caveat.textContent='*“请求完成”不是 HTTP 200 验证；即使服务器返回错误状态，也可能显示完成。失败也可能来自浏览器限制。所有延迟为 HEAD 请求端到端耗时。';el.append(caveat)}
-function draw(){const s=$('timeline');s.replaceChildren();const data=state.local&&state.local.points||[],ns='http://www.w3.org/2000/svg';const add=(tag,attrs,txt)=>{const x=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>x.setAttribute(k,String(v)));if(txt!==undefined)x.textContent=txt;s.append(x);return x};const W=520,H=195,l=38,r=12,t=14,b=24,ww=W-l-r,hh=H-t-b;
-if(!data.length){add('text',{x:W/2,y:95,'text-anchor':'middle',fill:'#a3b2ae','font-size':13},'完成持续测速后显示趋势');return}
-const high=Math.max(10,Math.ceil(Math.max(...data.map(x=>x.mbps))*1.1/10)*10);for(let i=0;i<4;i++){const y=t+hh-hh*i/3;add('line',{x1:l,x2:W-r,y1:y,y2:y,stroke:'#e3edeb','stroke-dasharray':'3 5'});add('text',{x:l-6,y:y+4,'text-anchor':'end',fill:'#93aaa6','font-size':10},num(high*i/3,0))}
-const dur=Math.max(1,data[data.length-1].second),x=v=>l+v/dur*ww,y=v=>t+hh-Math.min(1,v/high)*hh;
-for(let i=0;i<3;i++){const second=dur*i/2;add('text',{x:x(second),y:H-7,'text-anchor':i===0?'start':i===2?'end':'middle',fill:'#93aaa6','font-size':10},num(second,0)+'s')}
-if(data.length>1)add('polyline',{points:data.map(a=>x(a.second)+','+y(a.mbps)).join(' '),fill:'none',stroke:'#0b9f81','stroke-width':2.4,'stroke-linecap':'round','stroke-linejoin':'round'});
-data.forEach(a=>add('circle',{cx:x(a.second),cy:y(a.mbps),r:3.6,fill:'#0c967e',stroke:'#fff','stroke-width':1.3}))}
-function render(){const ss=Array.isArray(state.sessions)?state.sessions:[];$('sessionCount').textContent=ss.length+' 次';const r=state.local;$('headlineSpeed').innerHTML=(r?num(r.speed):'—')+' <span>Mbps</span>';$('medianSpeed').innerHTML=(r?num(r.speed):'—')+' <small>Mbps</small>';$('p10Speed').innerHTML=(r?num(r.p10):'—')+' <small>Mbps</small>';$('medianPing').innerHTML=(r?num(r.latency,0):'—')+' <small>ms</small>';$('jitter').innerHTML=(r?num(r.jitter,0):'—')+' <small>ms</small>';$('uploadSpeed').textContent=r?(r.uploadSpeed===null?'不可用/未测':num(r.uploadSpeed)+' Mbps'):'未测';$('usedMB').innerHTML=(r?num(r.bytes/1e6,1):'—')+' <small>MB</small>';
-$('localInfo').textContent=r?time(r.t)+' · '+r.network+' · '+r.points.length+' 个下载样本 · '+num(r.elapsed,0)+' 秒 · '+(r.reason||'完成'):'暂无新版持续测试记录。';draw();
-const recent=ss.slice(-8).reverse();const list=$('sessionHistory');list.replaceChildren();if(!recent.length){list.className='empty';list.textContent='尚无诊断会话'}else{list.className='';recent.forEach(x=>{const row=document.createElement('div');row.className='item';const main=document.createElement('div');main.className='itemmain';const b=document.createElement('b');b.textContent=x.kind==='full'?'完整诊断':x.kind==='local'?'本地持续测速':x.kind==='regions'?'跨境连接探测':x.kind==='nodes'?'海外测速节点':x.kind==='video'?'模拟视频分片':'应用场景探测';const small=document.createElement('small');small.textContent=time(x.t)+' · '+(x.status||'完成');main.append(b,small);const val=document.createElement('div');val.className='result '+(x.status==='完成'?'ok':'unknown');val.textContent=x.kind==='local'||x.kind==='full'?(Number.isFinite(x.speed)?num(x.speed)+' Mbps':'—'):'已记录';row.append(main,val);list.append(row)})}
-renderSiteGroup('regionResults',REGIONS,state.region);renderSiteGroup('appResults',APPS,state.apps);renderRemote();const video=state.video;$('videoResult').textContent=video?('采样 '+video.samples.length+' 组 · 下载中位 '+num(video.median)+' Mbps · 低于 5 Mbps '+video.low+' 组 · 单分片超过 2 秒 '+video.slow+' 组 · '+num(video.bytes/1e6,1)+' MB · '+(video.reason||'完成')):'尚未测试';
-$('stallHistory').textContent=state.stalls.length?'已标记 '+state.stalls.length+' 次；最近一次 '+time(state.stalls[state.stalls.length-1].t):'尚未标记卡顿';
+function cards(){
+const l=data.local,r=countSites(data.region),a=countSites(data.apps),v=data.video;
+setValue('kLocal',l&&Number.isFinite(l.speed)?format(l.speed)+' Mbps':'—');
+setValue('kLocalSub',l?l.points.length+' 个样本 · '+time(l.t):'待测速 · 新加坡');
+setValue('kGlobal',r.done?r.returned+'/'+r.done:'—');
+setValue('kGlobalSub',r.done?'请求返回站点 / 已探测站点':'待探测 · 7 地区');
+setValue('kApps',a.done?a.returned+'/'+a.done:'—');
+setValue('kAppsSub',a.done?'请求返回站点 / 已探测站点':'待探测 · 6 类');
+setValue('kVideo',v?v.low+' / '+v.samples.length:'—');
+setValue('kVideoSub',v?'低速分片数 · <5 Mbps':'待测试 · 20 秒模拟');
+setComplete('dotLocal',!!l);setComplete('dotGlobal',r.done>0);setComplete('dotApps',a.done>0);setComplete('dotVideo',!!v);
+const ss=getRows(data.sessions),last=ss.at(-1);setValue('lastTime',last?'上次 '+time(last.t):'尚未完成诊断');
+if(running){setValue('headline','正在检查网络…');setValue('headlineSub','四个阶段完成后，结果会逐项更新在下方卡片。')}
+else if(last){setValue('headline','你的网络报告已就绪');setValue('headlineSub','点选下方四张卡片查看详细结果；也可以重新检测。')}
+else{setValue('headline','让网络表现一目了然');setValue('headlineSub','一次检查本地、跨境、应用服务和视频分片表现。')}
+setValue('recordCount',ss.length+' 次');setValue('localMedian',l&&Number.isFinite(l.speed)?format(l.speed):'—');
+setHTML('localP10',l?format(l.p10):'—','Mbps');setHTML('localLatency',l?format(l.latency,0):'—','ms');
+setHTML('localJitter',l?format(l.jitter,0):'—','ms');setValue('localUpload',l&&Number.isFinite(l.uploadSpeed)?format(l.uploadSpeed)+' Mbps':l?'未测/不可用':'—');setHTML('localBytes',l?format(l.bytes/1e6,1):'—','MB');
+setValue('localSummary',l?time(l.t)+' · '+(l.network||'网络未标注')+' · '+format(l.elapsed,0)+' 秒 · '+(l.reason||'已完成'):'暂无本地连续测速记录。');
+setValue('localFaults',l&&l.failures&&l.failures.length?l.failures.length+' 次请求异常：'+l.failures.slice(0,2).join('；'):'');
+setValue('videoMedian',v?format(v.median)+' Mbps':'—');setValue('videoLow',v?v.low+'/'+v.samples.length:'—');setValue('videoSlow',v?v.slow+'/'+v.samples.length:'—');
+setValue('videoSummary',v?'最近检测 '+time(v.t)+' · 模拟分片 '+v.samples.length+' 组，消耗 '+format(v.bytes/1e6)+' MB，不能当作视频 App 实测':'尚未运行视频分片模拟。');
+setValue('stallCount',data.stalls.length+' 次');setValue('stallLast',data.stalls.length?'最近一次 '+time(data.stalls.at(-1).t)+' · '+(data.stalls.at(-1).app||'视频'):'尚未标记卡顿');
+draw('sparkline');draw('localChart');renderGroups('globalGrid','globalDetails',REGIONS,data.region);renderGroups('appsGrid','appsDetails',APPS,data.apps);renderRemote();renderRecent();
 }
-function bounded(root,timeout){const c=new AbortController();const timer=setTimeout(()=>c.abort(),timeout);const abort=()=>c.abort();if(root.aborted)c.abort();else root.addEventListener('abort',abort,{once:true});return{signal:c.signal,close(){clearTimeout(timer);root.removeEventListener('abort',abort)}}}
-async function download(n,root){const sub=bounded(root,18000);const start=performance.now();try{const resp=await fetch(DOWN+'?bytes='+n+'&t='+Date.now()+'-'+Math.random(),{cache:'no-store',mode:'cors',credentials:'omit',signal:sub.signal});if(!resp.ok)throw Error('HTTP '+resp.status);const raw=await resp.arrayBuffer();if(raw.byteLength<64)throw Error('服务端返回空数据');const sec=(performance.now()-start)/1000;return {bytes:raw.byteLength,seconds:sec,mbps:raw.byteLength*8/sec/1e6}}finally{sub.close()}}
-async function upload(root){const sub=bounded(root,18000);const bytes=500000,body=new Uint8Array(bytes);const start=performance.now();try{const res=await fetch(UP,{method:'POST',body,mode:'cors',cache:'no-store',credentials:'omit',signal:sub.signal});if(!res.ok)throw Error('上传端点返回 '+res.status);return bytes*8/((performance.now()-start)/1000)/1e6}finally{sub.close()}}
-function parsedNodes(){const result=[];const lines=$('nodeConfig').value.split('\n');for(const row of lines){const trimmed=row.trim();if(!trimmed)continue;const pipe=trimmed.indexOf('|');if(pipe<1)continue;const id=trimmed.slice(0,pipe).trim().toUpperCase(),value=trimmed.slice(pipe+1).trim();if(!/^(SG|MY|CN|JP|US|UK|AU)$/.test(id))continue;try{const url=new URL(value);if(url.protocol==='https:'&&url.username===''&&url.password==='')result.push({id,url:url.toString()})}catch(e){}if(result.length>=8)break}return result}
-function renderRemote(){const box=$('nodeResults');box.replaceChildren();const list=state.remote;if(!list){box.textContent='没有已完成的海外节点带宽数据。';return}for(const r of list){const e=document.createElement('div');e.className='item';const l=document.createElement('div');l.className='itemmain';const b=document.createElement('b');b.textContent=r.id+' · 用户指定测速节点';const small=document.createElement('small');small.textContent=r.url+' · '+r.samples.length+' 次尝试 · 地理位置未经本工具验证';l.append(b,small);const v=document.createElement('div');v.className='result '+(Number.isFinite(r.mbps)?'ok':'bad');v.textContent=Number.isFinite(r.mbps)?num(r.mbps)+' Mbps':'不支持/CORS受限';e.append(l,v);box.append(e)}}
-async function nodeStage(signal){const nodes=parsedNodes(),results=[];if(!nodes.length){toast('请先填写受控 HTTPS 海外测速节点');return null}for(let i=0;i<nodes.length;i++){if(signal.aborted)break;const item=nodes[i],samples=[];for(let j=0;j<3;j++){if(signal.aborted)break;const sub=bounded(signal,18000),start=performance.now();try{const u=new URL(item.url);u.searchParams.set('bytes','1000000');u.searchParams.set('test',String(Date.now())+Math.random());const resp=await fetch(u.toString(),{cache:'no-store',mode:'cors',credentials:'omit',signal:sub.signal});if(!resp.ok)throw Error('HTTP '+resp.status);const data=await resp.arrayBuffer();if(data.byteLength<500000)throw Error('返回数据过少');const secs=(performance.now()-start)/1000;samples.push({mbps:data.byteLength*8/secs/1e6,bytes:data.byteLength})}catch(e){samples.push({error:String(e.message||e)})}finally{sub.close()}}results.push({...item,samples,mbps:median(samples.filter(v=>Number.isFinite(v.mbps)).map(v=>v.mbps))});progress((i+1)/nodes.length*100,'海外节点 '+(i+1)+'/'+nodes.length+' 已测 · 不代表一般网站 App 实际路由')}
-state.remote=results;save();render();return results}
-async function localStage(signal,rangeStart,rangeSize){const pref=prefs();savePrefs();setTab('local');const start=performance.now(),dur=pref.duration*1000,budget=pref.budget*1e6;
-const pts=[],lat=[],failures=[];let bytes=0,reason='达到设定持续时间',uploadSpeed=null,uploads=0,lastMbps=NaN;const sampleCount=Math.max(8,Math.round(pref.duration/4)),period=dur/sampleCount,maxChunk=Math.min(6000000,Math.floor(budget/sampleCount));
-const latencyProbe=async()=>{try{const r=await download(256,signal);lat.push(r.seconds*1000);bytes+=r.bytes}catch(e){if(signal.aborted)throw e;failures.push(String(e.message||e))}};
-for(let i=0;i<4;i++){if(signal.aborted)break;await latencyProbe()}
-let lastProbe=-99999;
-while(!signal.aborted&&performance.now()-start<dur){
-const sampleStart=performance.now(),elapsed=sampleStart-start,remaining=dur-elapsed;
-if(remaining<350)break;
-if(bytes+600000>budget){reason='已达流量预算，停止下载采样';break}
-if(elapsed-lastProbe>6000){await latencyProbe();lastProbe=performance.now()-start;if(signal.aborted)break}
-const target=Number.isFinite(lastMbps)?Math.round(lastMbps*1000000/8*0.9):1200000;const chunk=Math.min(Math.floor(budget-bytes),Math.max(600000,Math.min(maxChunk,target)));if(chunk<600000){reason='已达流量预算';break}
-try{const v=await download(chunk,signal);bytes+=v.bytes;lastMbps=v.mbps;pts.push({second:(performance.now()-start)/1000,mbps:v.mbps,bytes:v.bytes});if(pts.length%2===0){const avg=median(pts.map(x=>x.mbps));progress(rangeStart+rangeSize*Math.min(1,(performance.now()-start)/dur),'本地测速中 · '+pts.length+' 组下载样本 · 中位 '+num(avg)+' Mbps · 已下载 '+num(bytes/1e6,1)+' MB')}}catch(e){if(signal.aborted)break;failures.push(String(e.message||e))}
-if(signal.aborted)break;
-const pause=Math.min(Math.max(0,period-(performance.now()-sampleStart)),Math.max(0,dur-(performance.now()-start)));if(pause>100)await sleep(pause,signal);
+function draw(id){const svg=$(id);svg.replaceChildren();const pts=data.local&&Array.isArray(data.local.points)?data.local.points.filter(x=>Number.isFinite(x.mbps)):[],ns='http://www.w3.org/2000/svg';
+const el=(name,props,label)=>{const e=document.createElementNS(ns,name);for(const [k,v] of Object.entries(props))e.setAttribute(k,String(v));if(label!==undefined)e.textContent=label;svg.append(e);return e};
+if(!pts.length){el('text',{x:175,y:80,'text-anchor':'middle','font-size':12,fill:'#9caeaa'},'完成本地测试后显示趋势');return}
+const W=350,H=165,L=35,R=9,T=9,B=24,top=Math.max(10,Math.ceil(Math.max(...pts.map(x=>x.mbps))*1.15/10)*10),seconds=Math.max(1,pts.at(-1).second);
+const x=n=>L+Math.min(1,n/seconds)*(W-L-R),y=n=>T+(H-T-B)*(1-Math.min(1,n/top));
+for(let i=0;i<4;i++){const yy=y(top*i/3);el('line',{x1:L,y1:yy,x2:W-R,y2:yy,stroke:'#e4edeb','stroke-dasharray':'3 6'});el('text',{x:L-7,y:yy+4,'text-anchor':'end',fill:'#94a5a0','font-size':9},format(top*i/3,0))}
+const line=pts.map(pt=>x(pt.second)+','+y(pt.mbps)).join(' ');if(pts.length>1)el('polyline',{points:line,fill:'none',stroke:'#129879','strokeWidth':2.7,'stroke-linejoin':'round','stroke-linecap':'round'});
+for(const pt of pts)el('circle',{cx:x(pt.second),cy:y(pt.mbps),r:3.2,fill:'#128d76',stroke:'white','stroke-width':1.2});
+for(let i=0;i<3;i++)el('text',{x:x(seconds*i/2),y:H-6,'text-anchor':i===0?'start':i===2?'end':'middle',fill:'#91a59d','font-size':9},format(seconds*i/2,0)+'s');
 }
-const elapsed=(performance.now()-start)/1000;if(signal.aborted)reason='用户取消';
-if(!signal.aborted&&pref.upload){try{const values=[];for(let i=0;i<3;i++){values.push(await upload(signal));uploads+=500000}uploadSpeed=median(values)}catch(e){failures.push('上传不可用：'+String(e.message||e));uploadSpeed=null}}
-const jitterValues=lat.slice(1).map((v,i)=>Math.abs(v-lat[i])),v=pts.map(x=>x.mbps);
-const result={t:now(),network:pref.network,location:pref.location,planned:pref.duration,elapsed,bytes,uploads,speed:median(v),p10:pctl(v,.1),p90:pctl(v,.9),latency:median(lat),jitter:median(jitterValues),uploadSpeed,points:pts,latencies:lat,failures,reason};
-state.local=result;save();render();
-if(!v.length&&!signal.aborted)say('未获得有效下载样本，请检查移动网络或 Cloudflare 测速端点。');
-return result}
-async function siteProbe(url,root){const sub=bounded(root,6500);const at=performance.now();try{
-const resp=await fetch(url,{method:'HEAD',mode:'no-cors',redirect:'follow',cache:'no-store',credentials:'omit',signal:sub.signal});
-return {result:resp.type==='opaque'?'opaque':'other',ms:performance.now()-at}
-}catch(e){return{result:root.aborted?'aborted':sub.signal.aborted?'timeout':'blocked',ms:performance.now()-at}}finally{sub.close()}}
-async function videoStage(signal){setTab('apps');const start=performance.now(),samples=[];let bytes=0,low=0,slow=0;while(!signal.aborted&&performance.now()-start<20000){const left=20000-(performance.now()-start);if(left<350)break;try{const x=await download(800000,signal);bytes+=x.bytes;samples.push({second:(performance.now()-start)/1000,mbps:x.mbps,seconds:x.seconds});if(x.mbps<5)low++;if(x.seconds>2)slow++}catch(e){if(signal.aborted)break;samples.push({error:String(e.message||e)});slow++}const v=Math.min(99,(performance.now()-start)/20000*100);progress(v,'视频分片模拟 · 已测 '+samples.length+' 段 · 约 '+num(Math.max(0,(20000-(performance.now()-start))/1000),0)+' 秒剩余');if(signal.aborted)break;await sleep(550,signal)}const result={t:now(),samples,bytes,low,slow,median:median(samples.filter(x=>Number.isFinite(x.mbps)).map(x=>x.mbps)),reason:signal.aborted?'已取消':'完成'};state.video=result;save();render();return result}
-async function groupStage(groups,signal,r0,rs,label){const flat=[];for(const g of groups)for(const t of g.targets)flat.push({group:g.name,name:t[0],url:t[1]});
-const results=[];const rounds=2,total=flat.length*rounds;let index=0;
-for(const item of flat){const samples=[];for(let k=0;k<rounds;k++){if(signal.aborted)break;const x=await siteProbe(item.url,signal);samples.push(x);index++;progress(r0+rs*index/total,label+' '+index+'/'+total+'：'+item.name+' · '+simpleStatus(x.result));if(!signal.aborted)await sleep(450,signal)}
-results.push({...item,t:now(),count:samples.length,duration:median(samples.map(x=>x.ms)),samples});if(signal.aborted)break}
-return results}
-async function run(kind){if(!begin())return;const root=aborter.signal;setTab(kind==='full'?'overview':kind==='local'?'local':(kind==='regions'||kind==='nodes')?'regions':'apps');
-let local=null;const started=now();try{
-if(kind==='local'||kind==='full'){stage('本地链路 · 持续下载与延迟');local=await localStage(root,3,kind==='full'?36:95)}
-if(!root.aborted&&(kind==='regions'||kind==='full')){setTab('regions');stage('跨境 · 多地区网站');state.region=await groupStage(REGIONS,root,kind==='full'?40:2,kind==='full'?28:96,'跨境');save();render()}
-if(!root.aborted&&kind==='video'){stage('模拟视频分片 · 20 秒');await videoStage(root)}
-if(!root.aborted&&kind==='nodes'){setTab('regions');stage('跨境指定节点 · CORS 下载吞吐');await nodeStage(root)}
-if(!root.aborted&&(kind==='apps'||kind==='full')){setTab('apps');stage('应用场景 · 公开视频与社交网站');state.apps=await groupStage(APPS,root,kind==='full'?69:2,kind==='full'?30:96,'场景');save();render()}
-if(!root.aborted&&kind==='full'){stage('模拟视频分片 · 20 秒');await videoStage(root)}
-if(!root.aborted&&kind==='full'&&parsedNodes().length){setTab('regions');stage('跨境指定节点 · CORS 下载吞吐');await nodeStage(root)}
-const statusText=root.aborted?'已取消':'完成';
-state.sessions.push({kind,t:started,status:statusText,speed:local&&local.speed,localPoints:local&&local.points.length,regionSites:state.region&&state.region.length,appSites:state.apps&&state.apps.length});state.sessions=state.sessions.slice(-100);save();render();
-progress(root.aborted?progressValue:100,root.aborted?'诊断已取消，已完成部分已保存。':'本次诊断完成，请分别查看本地、跨境和应用场景结果。');
-stage(root.aborted?'本次诊断已取消':'最近诊断已完成');if(!root.aborted)toast('诊断完成 · 已保存到本机');
-}catch(e){console.error(e);say('出现异常：'+String(e.message||e));state.sessions.push({kind,t:started,status:'部分失败'});save()}finally{finish()}}
-function mark(){const event={t:now(),app:$('videoApp').value,network:$('network').value,location:$('location').value};state.stalls.push(event);state.stalls=state.stalls.slice(-500);save();render();toast('已记录 '+event.app+' 卡顿')}
-function csv(){const lines=[['type','time','group','target','network','speed_mbps','latency_ms','jitter_ms','duration_ms','result','details']];const push=a=>lines.push(a.map(x=>x===null||x===undefined?'':String(x)));
-for(const s of state.sessions)push(['session',s.t,s.kind,'','','','','','',s.status,'']);
-for(const x of state.local?.points||[])push(['local_sample',state.local.t,'Singapore','Cloudflare',state.local.network,x.mbps,'','',x.second*1000,'sample','']);
-for(const x of state.local?.latencies||[])push(['latency_sample',state.local.t,'Singapore','Cloudflare',state.local.network,'',x,'','','sample','']);
-for(const x of [...(state.region||[]),...(state.apps||[])])for(const s of x.samples)push(['site_probe',x.t||'',x.group,x.name,'','','','',s.ms,s.result,x.url]);
-for(const s of state.video?.samples||[])push(['video_segment',state.video.t,'Singapore','Cloudflare','',''+(s.mbps??''),'','',s.seconds?1000*s.seconds:'',s.error?'error':'sample',s.error||'simulated video segment']);
-for(const x of state.remote||[])for(const s of x.samples)push(['remote_download',state.local?.t||'',x.id,x.url,'',s.mbps,'','','',s.error?'error':'sample',s.error||('bytes='+s.bytes)]);
-for(const x of state.legacy||[])push(['legacy_short_test',x.t,'Singapore','Cloudflare',x.network,x.speed,x.latency,'','', 'legacy','not sustained']);
-for(const x of state.stalls)push(['video_stall',x.t,x.app,'',x.network,'','','','', 'manual',x.location||'']);
-const escape=x=>'"'+x.replaceAll('"','""')+'"';const body='\ufeff'+lines.map(a=>a.map(escape).join(',')).join('\r\n');
-const obj=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=obj;a.download='simba-diagnostics-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(obj),15000);toast('已生成 CSV 文件')}
-document.querySelectorAll('.tab').forEach(el=>el.onclick=()=>setTab(el.dataset.tab));
-$('videoBtn').onclick=()=>run('video');$('nodeBtn').onclick=()=>run('nodes');$('fullBtn').onclick=()=>run('full');$('localBtn').onclick=()=>run('local');$('regionBtn').onclick=()=>run('regions');$('appBtn').onclick=()=>run('apps');
-$('actionBtn').onclick=()=>{if(busy){aborter.abort();toast('正在结束当前请求…')}else run('full')};
-$('stallBtn').onclick=()=>{mark();setTab('apps')};$('markBtn').onclick=mark;$('exportBtn').onclick=csv;
-for(const id of ['duration','budget','network','location','upload','videoApp','nodeConfig'])$(id).addEventListener('change',savePrefs);
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&busy){aborter.abort();say('网页进入后台，测量已中断；已完成数据将保留。')}});
-window.addEventListener('offline',()=>{if(busy)aborter.abort();toast('网络已断开')});
-read();
+function renderRecent(){const root=$('recentRecords');root.replaceChildren();const ss=getRows(data.sessions).slice(-4).reverse();if(!ss.length){root.className='empty';root.textContent='还没有检测记录';return}root.className='';
+for(const r of ss){const div=textNode('div','list-item',''),left=textNode('div','left',''),right=textNode('div','right',r.status==='完成'?'已完成':r.status||'部分完成');left.append(textNode('b','',r.kind==='full'?'综合网络诊断':r.kind==='local'?'本地持续测速':r.kind==='regions'?'跨境站点探测':r.kind==='apps'?'应用服务探测':r.kind==='video'?'视频分片模拟':'海外节点测速'),textNode('small','',time(r.t)));div.append(left,right);root.append(div)}}
+function renderGroups(gridId,listId,groups,result){const items=getProbed(result),grid=$(gridId),list=$(listId);grid.replaceChildren();list.replaceChildren();
+for(const g of groups){const stats=groupStats(g,items);const b=textNode('button','category'+(stats.attempted===g.sites.length?' done':''),'');b.type='button';b.append(textNode('b','',g.name),textNode('span','',stats.attempted?('请求返回 '+stats.returned+'/'+stats.attempted+' 站'):'待探测 · '+g.sites.length+' 站'));b.onclick=()=>{const target=$('detail-'+(gridId==='globalGrid'?'G':'A')+'-'+g.id);target.open=!target.open;target.scrollIntoView({block:'nearest',behavior:'smooth'})};grid.append(b);
+const block=document.createElement('details');block.id='detail-'+(gridId==='globalGrid'?'G':'A')+'-'+g.id;const sum=document.createElement('summary');sum.textContent=g.name+' · '+(stats.attempted?stats.returned+'/'+stats.attempted+' 站请求返回':'待探测');const inner=textNode('div','detail-inner','');
+for(const [name,url] of g.sites){const r=items.find(x=>x.name===name&&x.url===url);const row=textNode('div','list-item',''),left=textNode('div','left','');left.append(textNode('b','',name),textNode('small','',r?'尝试 '+r.samples.length+' 次 · 中位耗时 '+format(r.duration,0)+' ms':'尚无测量'));const right=textNode('span','pill '+(r&&r.samples.some(x=>x.result==='opaque')?'':'warn'),r?(r.samples.filter(x=>x.result==='opaque').length+'/'+r.samples.length+' 返回'):'未测');row.append(left,right);inner.append(row)}
+block.append(sum,inner);list.append(block)}
+}
+function renderRemote(){const root=$('nodeDetails');root.replaceChildren();const r=getRows(data.remote);if(!r.length){root.textContent='没有受控海外节点的测速结果。';return}
+for(const x of r){const row=textNode('div','list-item',''),left=textNode('div','left','');left.append(textNode('b','',x.id+' · 用户提供的 HTTPS 节点'),textNode('small','',x.url));const right=textNode('div','right',Number.isFinite(x.mbps)?format(x.mbps)+' Mbps':'测试受限');row.append(left,right);root.append(row)}
+}
+function render(){cards();$('headerDot').classList.toggle('live',running);$('headerState').textContent=running?'诊断中':'准备就绪';$('runBar').classList.toggle('visible',running);document.body.classList.toggle('running',running);$('startFull').disabled=running;for(const id of ['startLocal','startGlobal','startApps','startVideo','startNodes','quickLocal'])$(id).disabled=running;setValue('runLabel',stagedText||'诊断中')}
+function stepUpdate(index,val,msg){stepIndex=index;p=Math.min(100,Math.max(0,val));if(msg)stagedText=msg;setValue('progressBar','');$('progressBar').style.width=p+'%';$('progressState').textContent=running?'执行中 · '+format(p,0)+'%':'未开始';$('progressState').className='pill'+(running?'':' muted');setValue('progressStage',stagedText||'等待开始');setValue('workMsg',stagedText||'诊断进行中');for(let i=0;i<4;i++){$('step'+i).className='step'+(stepDone.includes(i)?' done':i===index?' live':'')}setValue('runLabel',stagedText||'诊断中')}
+function start(){if(running)return false;running=true;controller=new AbortController();stepDone=[];p=0;stagedText='准备开始…';stepUpdate(-1,0,stagedText);render();return true}
+function finish(){running=false;controller=null;render();$('progressState').textContent=stagedText.includes('取消')?'已取消':'已结束';$('headerState').textContent='准备就绪'}
+function stop(){if(controller)controller.abort()}
+function bounded(root,ms){const c=new AbortController(),timeout=setTimeout(()=>c.abort(),ms),fn=()=>c.abort();if(root.aborted)c.abort();else root.addEventListener('abort',fn,{once:true});return{signal:c.signal,close(){clearTimeout(timeout);root.removeEventListener('abort',fn)}}}
+async function sleep(ms,root){if(ms<=0||root.aborted)return;await new Promise(resolve=>{const t=setTimeout(end,ms);function end(){root.removeEventListener('abort',cancel);resolve()}function cancel(){clearTimeout(t);end()}root.addEventListener('abort',cancel,{once:true})})}
+async function down(bytes,root){const b=bounded(root,16000),start=performance.now();try{const res=await fetch(DOWN+'?bytes='+bytes+'&rnd='+Date.now()+Math.random(),{method:'GET',mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!res.ok)throw Error('HTTP '+res.status);const buffer=await res.arrayBuffer();if(buffer.byteLength<64)throw Error('空数据');const sec=(performance.now()-start)/1000;return{bytes:buffer.byteLength,seconds:sec,mbps:buffer.byteLength*8/(sec*1e6)}}finally{b.close()}}
+async function up(root){const b=bounded(root,15000),size=500000,start=performance.now();try{const res=await fetch(UP,{method:'POST',body:new Uint8Array(size),mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!res.ok)throw Error('HTTP '+res.status);return size*8/(1e6*(performance.now()-start)/1000)}finally{b.close()}}
+async function localStage(root,r0,rlen){const startAt=performance.now(),dur=Number($('duration').value)*1000,limit=Number($('budget').value)*1e6,network=$('network').value,location=$('location').value.trim();
+let moved=0,lastMbps=NaN,reason='完成时间窗口',points=[],latencies=[],fails=[],uploadSpeed=null;
+const targetSamples=Math.max(7,Math.round(dur/4)),period=dur/targetSamples,maxChunk=Math.min(6000000,Math.floor(limit/targetSamples));
+for(let k=0;k<4;k++){if(root.aborted)break;try{const ping=await down(256,root);moved+=ping.bytes;latencies.push(ping.seconds*1000)}catch(e){if(root.aborted)break;fails.push(String(e.message||e))}}
+let lastProbe=-1e6;
+while(!root.aborted&&performance.now()-startAt<dur){const started=performance.now(),elapsed=started-startAt;if(dur-elapsed<300)break;if(limit-moved<600000){reason='已达到下载流量预算';break}
+if(elapsed-lastProbe>7000){try{const ping=await down(256,root);latencies.push(ping.seconds*1000);moved+=ping.bytes}catch(e){if(!root.aborted)fails.push(String(e.message||e))}lastProbe=performance.now()-startAt}
+if(root.aborted)break;const aim=Number.isFinite(lastMbps)?Math.floor(lastMbps*1e6/8*1.1):1500000;
+const chunk=Math.min(Math.floor(limit-moved),Math.max(600000,Math.min(maxChunk,aim)));
+if(chunk<600000){reason='已达到下载流量预算';break}
+try{const v=await down(chunk,root);moved+=v.bytes;lastMbps=v.mbps;points.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,bytes:v.bytes});if(points.length%2===0){const progress=Math.min(1,(performance.now()-startAt)/dur);stepUpdate(0,r0+rlen*progress,'本地连续采样 · '+points.length+' 组 · 中位 '+format(median(points.map(x=>x.mbps)))+' Mbps · '+format(moved/1e6)+' MB')}}catch(e){if(!root.aborted)fails.push(String(e.message||e))}
+if(root.aborted)break;await sleep(Math.min(Math.max(0,period-(performance.now()-started)),Math.max(0,dur-(performance.now()-startAt))),root)}
+const elapsed=(performance.now()-startAt)/1000;if(root.aborted)reason='已取消';
+if(!root.aborted&&$('upload').checked){try{const nums=[];for(let i=0;i<2;i++){nums.push(await up(root))}uploadSpeed=median(nums)}catch(e){fails.push('上传未完成：'+String(e.message||e))}}
+const v=points.map(x=>x.mbps),j=latencies.slice(1).map((x,i)=>Math.abs(x-latencies[i]));
+const obj={t:ts(),network,location,elapsed,reason,bytes:moved,points,latencies,failures:fails,speed:median(v),p10:p10(v),latency:median(latencies),jitter:median(j),uploadSpeed};
+if(points.length)data.local=obj;stateSave();render();return obj}
+async function siteProbe(url,root){const b=bounded(root,4800),start=performance.now();try{const res=await fetch(url,{method:'HEAD',mode:'no-cors',redirect:'follow',cache:'no-store',credentials:'omit',signal:b.signal});return{result:res.type==='opaque'?'opaque':'other',ms:performance.now()-start}}catch(e){return{result:root.aborted?'aborted':b.signal.aborted?'timeout':'restricted',ms:performance.now()-start}}finally{b.close()}}
+async function siteStage(groups,root,kind,lo,span){const existing=[],total=groups.reduce((a,g)=>a+g.sites.length,0)*2;let at=0;
+for(const group of groups){for(const [name,url] of group.sites){if(root.aborted)break;const samples=[];for(let k=0;k<2;k++){if(root.aborted)break;const sample=await siteProbe(url,root);samples.push(sample);at++;stepUpdate(kind==='region'?1:2,lo+span*at/total,(kind==='region'?'跨境探测':'应用检查')+' · '+group.name+' / '+name+' · '+at+'/'+total);await sleep(220,root)}
+existing.push({name,url,group:group.name,t:ts(),count:samples.length,samples,duration:median(samples.map(s=>s.ms))});
+if(kind==='region')data.region=existing.slice();else data.apps=existing.slice();
+stateSave();render()}
+if(root.aborted)break}return existing}
+async function videoStage(root,lo,len){const startAt=performance.now(),samples=[];let bytes=0,low=0,slow=0;
+while(!root.aborted&&performance.now()-startAt<20000){if(20000-(performance.now()-startAt)<300)break;
+try{const v=await down(800000,root);samples.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,seconds:v.seconds});bytes+=v.bytes;if(v.mbps<5)low++;if(v.seconds>2)slow++}catch(e){if(root.aborted)break;samples.push({error:String(e.message||e)});slow++}
+stepUpdate(3,lo+len*Math.min(1,(performance.now()-startAt)/20000),'视频分片模拟 · '+samples.length+' 段 · 低速 '+low+' 段');await sleep(550,root)}
+const obj={t:ts(),samples,bytes,low,slow,median:median(samples.filter(x=>Number.isFinite(x.mbps)).map(x=>x.mbps)),reason:root.aborted?'已取消':'完成'};data.video=obj;stateSave();render();return obj}
+function configuredNodes(){const list=[];for(const line of $('nodeConfig').value.split('\n')){const i=line.indexOf('|');if(i<1)continue;const id=line.slice(0,i).trim().toUpperCase();if(!['SG','MY','CN','JP','US','UK','AU'].includes(id))continue;try{const u=new URL(line.slice(i+1).trim());if(u.protocol==='https:'&&!u.username&&!u.password)list.push({id,url:u.toString()})}catch(e){}if(list.length>=8)break}return list}
+async function nodeStage(root){const list=configuredNodes();if(!list.length){toast('请先填写有效的海外 HTTPS 节点');return}const out=[];for(let i=0;i<list.length;i++){if(root.aborted)break;const s=[];for(let k=0;k<3;k++){if(root.aborted)break;const b=bounded(root,16000),start=performance.now();try{const url=new URL(list[i].url);url.searchParams.set('bytes','1000000');url.searchParams.set('nocache',String(Date.now()+Math.random()));const resp=await fetch(url.toString(),{mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!resp.ok)throw Error('HTTP '+resp.status);const arr=await resp.arrayBuffer();if(arr.byteLength<500000)throw Error('数据少于预期');s.push({mbps:arr.byteLength*8/((performance.now()-start)/1000)/1e6,bytes:arr.byteLength})}catch(e){s.push({error:String(e.message||e)})}finally{b.close()}}
+out.push({...list[i],samples:s,mbps:median(s.filter(x=>Number.isFinite(x.mbps)).map(x=>x.mbps))});stepUpdate(1,100*(i+1)/list.length,'海外受控节点 '+(i+1)+'/'+list.length);data.remote=out.slice();stateSave();render()}}
+async function run(kind){if(!start())return;const root=controller.signal,started=ts();if(kind!=='full')tab(kind==='local'?'local':kind==='region'||kind==='nodes'?'global':'apps');else tab('home');
+try{
+if(kind==='full'||kind==='local'){stepUpdate(0,2,'本地链路 · 开始持续采样');await localStage(root,3,kind==='full'?32:94);if(!root.aborted)stepDone.push(0);render()}
+if(!root.aborted&&(kind==='full'||kind==='region')){stepUpdate(1,kind==='full'?36:2,'跨境网站 · 7 个地区');await siteStage(REGIONS,root,'region',kind==='full'?36:2,kind==='full'?27:96);if(!root.aborted)stepDone.push(1)}
+if(!root.aborted&&(kind==='full'||kind==='apps')){stepUpdate(2,kind==='full'?64:2,'应用服务 · 6 类');await siteStage(APPS,root,'apps',kind==='full'?64:2,kind==='full'?24:96);if(!root.aborted)stepDone.push(2)}
+if(!root.aborted&&(kind==='full'||kind==='video')){stepUpdate(3,kind==='full'?89:2,'视频分片 · 20 秒模拟');await videoStage(root,kind==='full'?89:2,kind==='full'?10:96);if(!root.aborted)stepDone.push(3)}
+if(!root.aborted&&kind==='nodes'){stepUpdate(1,5,'受控海外节点测试');await nodeStage(root);if(!root.aborted)stepDone.push(1)}
+const status=root.aborted?'已取消':'完成';data.sessions.push({kind,t:started,status,speed:data.local?.speed});data.sessions=data.sessions.slice(-100);stateSave();
+stepUpdate(-1,root.aborted?p:100,root.aborted?'已取消，已完成的阶段已保存':'诊断完成 · 点击上方卡片查看各项结果');if(!root.aborted)toast('网络诊断已完成');render();
+}catch(e){console.error(e);data.sessions.push({kind,t:started,status:'部分失败'});stateSave();stepUpdate(-1,p,'遇到异常：'+String(e.message||e));toast('发生错误，部分数据已保存')}
+finally{finish();render()}}
+function mark(){const obj={t:ts(),app:$('videoApp').value,network:$('network').value,location:$('location').value.trim()};data.stalls.push(obj);data.stalls=data.stalls.slice(-500);stateSave();render();toast('已记录 '+obj.app+' 卡顿')}
+function csv(){const entries=[['type','time','group','target','network','Mbps','HTTP_ms','detail']],put=(r)=>entries.push(r.map(x=>x===null||x===undefined?'':String(x)));
+for(const x of getRows(data.sessions))put(['session',x.t,x.kind,'','','','',x.status]);
+for(const x of getRows(data.local?.points))put(['local_sample',data.local.t,'SG','Cloudflare',data.local.network,x.mbps,'','t='+x.second+'s bytes='+x.bytes]);
+for(const x of getProbed(data.region).concat(getProbed(data.apps)))for(const s of x.samples)put(['site_probe',x.t,x.group,x.name,'','',s.ms,s.result+' '+x.url]);
+for(const x of getRows(data.video?.samples))put(['video_sample',data.video.t,'SG','simulated','',''+(x.mbps??''),'',x.error||'']);
+for(const x of getRows(data.remote))for(const s of x.samples)put(['remote_sample','',x.id,x.url,'',s.mbps,'',s.error||'']);
+for(const x of getRows(data.stalls))put(['stall',x.t,'',x.app,x.network,'','',x.location||'']);
+for(const x of getRows(data.legacy))put(['legacy_test',x.t,'SG','Cloudflare',x.network,x.speed,x.latency,'short']);
+const quote=s=>'"'+s.replaceAll('"','""')+'"',out='\ufeff'+entries.map(r=>r.map(quote).join(',')).join('\r\n');
+const url=URL.createObjectURL(new Blob([out],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='simba-report-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);toast('CSV 报告已生成')}
+document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>tab(x.dataset.page));
+document.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>tab(x.dataset.go));
+$('startFull').onclick=()=>run('full');$('quickLocal').onclick=()=>run('local');$('startLocal').onclick=()=>run('local');$('startGlobal').onclick=()=>run('region');$('startApps').onclick=()=>run('apps');$('startVideo').onclick=()=>run('video');$('startNodes').onclick=()=>run('nodes');
+$('openOptions').onclick=()=>{$('allOptions').open=true;$('allOptions').scrollIntoView({behavior:'smooth',block:'start'})};
+$('stopBtn').onclick=stop;$('quickStall').onclick=mark;$('floatingStall').onclick=mark;$('markStall').onclick=mark;$('exportHome').onclick=csv;
+for(const id of ['duration','budget','network','location','upload','nodeConfig','videoApp'])$(id).addEventListener('change',savePrefs);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){stop();toast('已离开前台，测速将停止，已完成数据保留')}});
+window.addEventListener('offline',()=>{if(running)stop();toast('网络连接已断开')});
+load();
 })();
 </script>
 </body>
