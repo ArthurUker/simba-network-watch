@@ -1,0 +1,44 @@
+# SIMBA Network Watch — Version History
+
+This file is a human-readable index of the Git commit history. **GitHub commits and diffs are the authoritative record.** Milestone commits below are not Git tags, release objects, or automatically deployed builds.
+
+Project: https://github.com/ArthurUker/simba-network-watch  
+Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
+
+## v4.0 — Dashboard-first interface (2026-11-01)
+
+- [e4fd9e0](https://github.com/ArthurUker/simba-network-watch/commit/e4fd9e038813a4d23a0b4c227bf25e5bbb9541f5) — Redesigned mobile-first dashboard with four at-a-glance results and visible four-stage progress.
+- [0b413a1](https://github.com/ArthurUker/simba-network-watch/commit/0b413a1dafdda6b9ed53d89a563f76ab31aba6c0) — Added seven-market and six-service result chips, explicit manual network labeling, and actionable insights. **Latest v4 app-code commit.**
+- [5cb46a1](https://github.com/ArthurUker/simba-network-watch/commit/5cb46a1c233c08336b37651b04172697fdc9307f) — Updated README, limitations, and design reference notes.
+- Deployment: v4 app manually uploaded to Cloudflare Workers on 2026-11-01 at 14:57:22 UTC; Workers API reported 100% rollout. The GitHub repository is **not** presently configured for automated Cloudflare deployment.
+
+## v3.0 — Multi-stage diagnostics (2026-11-01)
+
+- [8d9890c](https://github.com/ArthurUker/simba-network-watch/commit/8d9890c6fa1af469936c09e660fb6280ca1f65ca) — Long-duration local bandwidth sampling, seven-market browser probes, six application categories, and export.
+- [ee47b66](https://github.com/ArthurUker/simba-network-watch/commit/ee47b66771a187e1ebcb0f745f935693a6d373a1) — Optional real-download measurements from user-supplied HTTPS/CORS region endpoints and legacy records preservation.
+- [e44cbce](https://github.com/ArthurUker/simba-network-watch/commit/e44cbce2a4022c585a434659b59495392b731e42) — Fixed region endpoint settings restoration and active diagnosis stage.
+- [1cb0b5c](https://github.com/ArthurUker/simba-network-watch/commit/1cb0b5c0858bfc95e9cbaefc06b1650205019c27) — Twenty-second video chunk simulation and timed exports.
+- [0b8ec2c](https://github.com/ArthurUker/simba-network-watch/commit/0b8ec2c349d2aaaa1e5d326927a954f817990114) — Documentation for multi-stage test limits.
+- [f1cad3e](https://github.com/ArthurUker/simba-network-watch/commit/f1cad3ebd284f8b505504d4a13a3c7af5e898515) — Adaptive sample sizes for bandwidth tests under a fixed data budget. **Latest v3 app-code commit.**
+
+## v2.1 — iPhone Safari fixes (2026-11-01)
+
+- [4742a70](https://github.com/ArthurUker/simba-network-watch/commit/4742a70fd5e06754ae6db07983c65da4204f56fc) — Fixed undeclared variables in history rendering, separated successful throughput results from UI errors, condensed mobile layout.
+- [cc57fdc](https://github.com/ArthurUker/simba-network-watch/commit/cc57fdcbc8d96b53eecc47b076bef185d8d5f0ae) — Documented v2.1 fixes.
+
+## v2.0 — Mobile-first single-action interface (2026-11-01)
+
+- [fc88209](https://github.com/ArthurUker/simba-network-watch/commit/fc882095ec4eec0bf11f6833c92db44e0feba5f1) — Introduced large one-tap test and buffering marker actions, streamlined mobile UI, short history and trend view.
+- [282653b](https://github.com/ArthurUker/simba-network-watch/commit/282653b98e5ddc53bbc3fbbc962671bb2ee36de7) — Updated v2 documentation.
+
+## v1.0 — Initial published prototype (2026-11-01)
+
+- [f41e8d7](https://github.com/ArthurUker/simba-network-watch/commit/f41e8d75d609d71ed211450980b5501e0781b309) — Repository's initial commit.
+- [48ec5b8](https://github.com/ArthurUker/simba-network-watch/commit/48ec5b8c331ab9c4d002b0b646de1926d5501ab8) — Published initial static web app in `index.html`.
+- [f345415](https://github.com/ArthurUker/simba-network-watch/commit/f345415e22411b319423d5321b067ee9deaf2b4a) — Expanded project documentation.
+
+## Repository housekeeping
+
+- [7610bf6](https://github.com/ArthurUker/simba-network-watch/commit/7610bf61ae80ff4a644fce8dbacc385cfa29113a) — Fixed README license statement to agree with the pre-existing MIT `LICENSE` file.
+- The source code versions above exist as immutable Git commits; **no version tags or formal GitHub Releases are claimed here**.
+- See [DEVELOPMENT.md](./DEVELOPMENT.md) for the requested GitHub-first change and deployment traceability workflow.
