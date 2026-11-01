@@ -47,8 +47,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .fieldgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .field{display:block;font-size:12px;font-weight:750;color:#365e5b}
 .field small{display:block;font-weight:400;font-size:10.5px;color:var(--mute);margin:2px 0 5px}
-select,input[type=text],input[type=url]{width:100%;padding:11px 10px;border:1px solid #d6e3df;border-radius:11px;background:white;min-width:0;font-size:13px}
-.choice{display:flex;align-items:center;gap:9px;margin-top:12px;color:#3b6460;font-size:12px}
+select,input[type=text],input[type=url],textarea{width:100%;padding:11px 10px;border:1px solid #d6e3df;border-radius:11px;background:white;min-width:0;font-size:13px}
+textarea{width:100%;min-height:110px;resize:vertical;font-size:12px;line-height:1.6} .choice{display:flex;align-items:center;gap:9px;margin-top:12px;color:#3b6460;font-size:12px}
 .choice input{width:18px;height:18px;accent-color:var(--green)}
 .btn{border:0;border-radius:13px;padding:13px 17px;font-weight:800;min-height:45px;background:var(--green);color:white;font-size:14px}
 .btn.soft{background:#e8f4ef;color:#096f5f}.btn.danger{background:#fff0ec;color:#b45249}
@@ -126,7 +126,8 @@ summary{list-style:none;cursor:pointer;font-size:13px;font-weight:750;padding:13
 <div class="card"><h2>跨境网站连接探测</h2><p class="sub">新加坡、马来西亚、中国大陆、日本、美国、英国、澳大利亚；每个地区两个目标，默认每站连续重复 2 次请求，记录耗时和超时。</p>
 <div class="tip warning"><b>重要：</b>所列国家是网站所属市场，并非实测服务器物理位置。跨国 CDN 可能在新加坡服务请求。无目标国专用测速节点时，不能推算真实跨境 Mbps 或路由。</div>
 <div class="btnrow"><button class="btn" type="button" id="regionBtn">开始 7 地区连接探测</button></div>
-<div id="regionResults"></div></div>
+<div id="regionResults"></div></div><details><summary>可选：使用海外测速节点测量下载 Mbps</summary><div class="detailsbody"><p class="sub">如果有实际部署在目标国的 HTTPS 测速端点，可以在这里填写，一行一个。节点应支持 <code>?bytes=1000000</code> 并返回对应大小的非压缩数据，同时允许浏览器 CORS。节点所在地必须由提供者核实。未配置时不会产生虚构的跨境带宽。</p><textarea id="nodeConfig" spellcheck="false" placeholder="JP|https://your-jp-server.example/down
+US|https://your-us-server.example/down"></textarea><div class="btnrow"><button class="btn soft" id="nodeBtn" type="button">测试已配置海外节点</button></div><div id="nodeResults" class="sub">尚未配置节点</div></div></details>
 <details><summary>跨境测速说明与扩展</summary><div class="detailsbody"><p class="sub">默认使用浏览器 <code>no-cors</code> HEAD 请求。请求结束只能证明浏览器完成了一次受限制的请求，无法读取 HTTP 200 / 403 / 404；请求失败也可能来自站点的浏览器安全策略。不是 ICMP Ping、路由追踪或真实跨境吞吐测试。</p><p class="sub">真正的分国家下载/上传 Mbps，需要在目标国家部署受控 HTTPS 测速节点并允许 CORS，或使用原生网络测试客户端。后续可添加节点地址与节点健康检查。</p></div></details>
 </section>
 <section class="view" id="view-apps">
@@ -166,7 +167,7 @@ const APPS=[
  {name:'办公与开发',targets:[['GitHub','https://github.com/'],['Microsoft 365','https://www.microsoft.com/'],['ChatGPT','https://chatgpt.com/']]},
  {name:'购物',targets:[['Amazon','https://www.amazon.com/'],['Shopee SG','https://shopee.sg/']]}
 ];
-let state={sessions:[],stalls:[],local:null,region:null,apps:null},busy=false,aborter=null,runId=0,progressValue=0,tab='overview',toastTimer=null;
+let state={sessions:[],stalls:[],local:null,region:null,apps:null,remote:null,legacy:[]},busy=false,aborter=null,runId=0,progressValue=0,tab='overview',toastTimer=null;
 const num=(x,d=1)=>Number.isFinite(x)?Number(x).toFixed(d):'—';
 const median=a=>{if(!a.length)return NaN;const x=a.slice().sort((a,b)=>a-b);return (x[Math.floor((x.length-1)/2)]+x[Math.floor(x.length/2)])/2};
 const pctl=(a,p)=>{if(!a.length)return NaN;const x=a.slice().sort((a,b)=>a-b);return x[Math.floor((x.length-1)*p)]};
@@ -179,13 +180,13 @@ function toast(s){const el=$('toast');el.textContent=s;el.classList.add('show');
 function setTab(t){tab=t;document.querySelectorAll('.tab').forEach(x=>{const on=x.dataset.tab===t;x.classList.toggle('on',on);x.setAttribute('aria-selected',String(on))});document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='view-'+t))}
 function stage(s){$('currentStage').textContent=s;$('state').textContent=busy?'诊断中':'准备就绪'}
 function progress(v,s){progressValue=Math.max(0,Math.min(100,v));$('progress').style.display='block';$('bar').style.width=progressValue+'%';if(s)say(s)}
-function begin(){if(busy)return false;busy=true;runId++;aborter=new AbortController();$('state').textContent='诊断中';$('actionBtn').textContent='■ 停止诊断';[$('fullBtn'),$('localBtn'),$('regionBtn'),$('appBtn')].forEach(x=>x.disabled=true);progress(1,'诊断已开始…');return true}
-function finish(){busy=false;aborter=null;$('state').textContent='准备就绪';$('actionBtn').textContent='▶ 完整诊断';[$('fullBtn'),$('localBtn'),$('regionBtn'),$('appBtn')].forEach(x=>x.disabled=false)}
-function prefs(){return{duration:Number($('duration').value),budget:Number($('budget').value),network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,video:$('videoApp').value}}
+function begin(){if(busy)return false;busy=true;runId++;aborter=new AbortController();$('state').textContent='诊断中';$('actionBtn').textContent='■ 停止诊断';[$('fullBtn'),$('localBtn'),$('regionBtn'),$('appBtn'),$('nodeBtn')].forEach(x=>x.disabled=true);progress(1,'诊断已开始…');return true}
+function finish(){busy=false;aborter=null;$('state').textContent='准备就绪';$('actionBtn').textContent='▶ 完整诊断';[$('fullBtn'),$('localBtn'),$('regionBtn'),$('appBtn'),$('nodeBtn')].forEach(x=>x.disabled=false)}
+function prefs(){return{duration:Number($('duration').value),budget:Number($('budget').value),network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,video:$('videoApp').value,nodes:$('nodeConfig').value.trim()}}
 function savePrefs(){try{localStorage.setItem(PREF,JSON.stringify(prefs()))}catch(e){}}
 function read(){try{const data=JSON.parse(localStorage.getItem(KEY)||'null');if(data&&typeof data==='object'){state={...state,...data};if(!Array.isArray(state.sessions))state.sessions=[];if(!Array.isArray(state.stalls))state.stalls=[]}}catch(e){}
-try{const p=JSON.parse(localStorage.getItem(PREF)||'{}');for(const id of ['duration','budget','network','location','videoApp']){const name=id==='videoApp'?'video':id;if(p[name]!==undefined&&p[name]!==null)$(id).value=String(p[name])}$('upload').checked=!!p.upload}catch(e){}
-try{const legacy=JSON.parse(localStorage.getItem(OLD)||'[]');if(Array.isArray(legacy)&&!state._legacyImported){state.stalls.push(...legacy.filter(x=>x.kind==='stall').map(x=>({t:x.t,app:x.app||'历史记录',network:x.network})));state._legacyImported=true;save()}}catch(e){}
+try{const p=JSON.parse(localStorage.getItem(PREF)||'{}');for(const id of ['duration','budget','network','location','videoApp']){const name=id==='videoApp'?'video':id;if(p[name]!==undefined&&p[name]!==null)$(id).value=String(p[name])}$('upload').checked=!!p.upload;$('nodeConfig').value=String(p.nodes||'')}catch(e){}
+try{const legacy=JSON.parse(localStorage.getItem(OLD)||'[]');if(Array.isArray(legacy)&&!state._legacyImported){state.legacy=legacy.filter(x=>x.kind==='test').map(x=>({t:x.t,network:x.network,speed:x.speed,latency:x.latency,bytes:x.bytes}));state.stalls.push(...legacy.filter(x=>x.kind==='stall').map(x=>({t:x.t,app:x.app||'历史记录',network:x.network})));state._legacyImported=true;save()}}catch(e){}
 render()}
 function simpleStatus(value){if(value==='opaque')return '请求完成*';if(value==='timeout')return '超时';if(value==='aborted')return '已取消';return '受限/失败'}
 function renderSiteGroup(container,groups,results){const el=$(container);el.replaceChildren();if(!results){const x=document.createElement('div');x.className='empty';x.textContent='尚未执行探测';el.append(x);return}
@@ -202,13 +203,17 @@ if(data.length>1)add('polyline',{points:data.map(a=>x(a.second)+','+y(a.mbps)).j
 data.forEach(a=>add('circle',{cx:x(a.second),cy:y(a.mbps),r:3.6,fill:'#0c967e',stroke:'#fff','stroke-width':1.3}))}
 function render(){const ss=Array.isArray(state.sessions)?state.sessions:[];$('sessionCount').textContent=ss.length+' 次';const r=state.local;$('headlineSpeed').innerHTML=(r?num(r.speed):'—')+' <span>Mbps</span>';$('medianSpeed').innerHTML=(r?num(r.speed):'—')+' <small>Mbps</small>';$('p10Speed').innerHTML=(r?num(r.p10):'—')+' <small>Mbps</small>';$('medianPing').innerHTML=(r?num(r.latency,0):'—')+' <small>ms</small>';$('jitter').innerHTML=(r?num(r.jitter,0):'—')+' <small>ms</small>';$('uploadSpeed').textContent=r?(r.uploadSpeed===null?'不可用/未测':num(r.uploadSpeed)+' Mbps'):'未测';$('usedMB').innerHTML=(r?num(r.bytes/1e6,1):'—')+' <small>MB</small>';
 $('localInfo').textContent=r?time(r.t)+' · '+r.network+' · '+r.points.length+' 个下载样本 · '+num(r.elapsed,0)+' 秒 · '+(r.reason||'完成'):'暂无新版持续测试记录。';draw();
-const recent=ss.slice(-8).reverse();const list=$('sessionHistory');list.replaceChildren();if(!recent.length){list.className='empty';list.textContent='尚无诊断会话'}else{list.className='';recent.forEach(x=>{const row=document.createElement('div');row.className='item';const main=document.createElement('div');main.className='itemmain';const b=document.createElement('b');b.textContent=x.kind==='full'?'完整诊断':x.kind==='local'?'本地持续测速':x.kind==='regions'?'跨境连接探测':'应用场景探测';const small=document.createElement('small');small.textContent=time(x.t)+' · '+(x.status||'完成');main.append(b,small);const val=document.createElement('div');val.className='result '+(x.status==='完成'?'ok':'unknown');val.textContent=x.kind==='local'||x.kind==='full'?(Number.isFinite(x.speed)?num(x.speed)+' Mbps':'—'):'已记录';row.append(main,val);list.append(row)})}
-renderSiteGroup('regionResults',REGIONS,state.region);renderSiteGroup('appResults',APPS,state.apps);
+const recent=ss.slice(-8).reverse();const list=$('sessionHistory');list.replaceChildren();if(!recent.length){list.className='empty';list.textContent='尚无诊断会话'}else{list.className='';recent.forEach(x=>{const row=document.createElement('div');row.className='item';const main=document.createElement('div');main.className='itemmain';const b=document.createElement('b');b.textContent=x.kind==='full'?'完整诊断':x.kind==='local'?'本地持续测速':x.kind==='regions'?'跨境连接探测':x.kind==='nodes'?'海外测速节点':'应用场景探测';const small=document.createElement('small');small.textContent=time(x.t)+' · '+(x.status||'完成');main.append(b,small);const val=document.createElement('div');val.className='result '+(x.status==='完成'?'ok':'unknown');val.textContent=x.kind==='local'||x.kind==='full'?(Number.isFinite(x.speed)?num(x.speed)+' Mbps':'—'):'已记录';row.append(main,val);list.append(row)})}
+renderSiteGroup('regionResults',REGIONS,state.region);renderSiteGroup('appResults',APPS,state.apps);renderRemote();
 $('stallHistory').textContent=state.stalls.length?'已标记 '+state.stalls.length+' 次；最近一次 '+time(state.stalls[state.stalls.length-1].t):'尚未标记卡顿';
 }
 function bounded(root,timeout){const c=new AbortController();const timer=setTimeout(()=>c.abort(),timeout);const abort=()=>c.abort();if(root.aborted)c.abort();else root.addEventListener('abort',abort,{once:true});return{signal:c.signal,close(){clearTimeout(timer);root.removeEventListener('abort',abort)}}}
 async function download(n,root){const sub=bounded(root,18000);const start=performance.now();try{const resp=await fetch(DOWN+'?bytes='+n+'&t='+Date.now()+'-'+Math.random(),{cache:'no-store',mode:'cors',credentials:'omit',signal:sub.signal});if(!resp.ok)throw Error('HTTP '+resp.status);const raw=await resp.arrayBuffer();if(raw.byteLength<64)throw Error('服务端返回空数据');const sec=(performance.now()-start)/1000;return {bytes:raw.byteLength,seconds:sec,mbps:raw.byteLength*8/sec/1e6}}finally{sub.close()}}
 async function upload(root){const sub=bounded(root,18000);const bytes=500000,body=new Uint8Array(bytes);const start=performance.now();try{const res=await fetch(UP,{method:'POST',body,mode:'cors',cache:'no-store',credentials:'omit',signal:sub.signal});if(!res.ok)throw Error('上传端点返回 '+res.status);return bytes*8/((performance.now()-start)/1000)/1e6}finally{sub.close()}}
+function parsedNodes(){const result=[];const lines=$('nodeConfig').value.split('\n');for(const row of lines){const trimmed=row.trim();if(!trimmed)continue;const pipe=trimmed.indexOf('|');if(pipe<1)continue;const id=trimmed.slice(0,pipe).trim().toUpperCase(),value=trimmed.slice(pipe+1).trim();if(!/^(SG|MY|CN|JP|US|UK|AU)$/.test(id))continue;try{const url=new URL(value);if(url.protocol==='https:'&&url.username===''&&url.password==='')result.push({id,url:url.toString()})}catch(e){}if(result.length>=8)break}return result}
+function renderRemote(){const box=$('nodeResults');box.replaceChildren();const list=state.remote;if(!list){box.textContent='没有已完成的海外节点带宽数据。';return}for(const r of list){const e=document.createElement('div');e.className='item';const l=document.createElement('div');l.className='itemmain';const b=document.createElement('b');b.textContent=r.id+' · 用户指定测速节点';const small=document.createElement('small');small.textContent=r.url+' · '+r.samples.length+' 次尝试 · 地理位置未经本工具验证';l.append(b,small);const v=document.createElement('div');v.className='result '+(Number.isFinite(r.mbps)?'ok':'bad');v.textContent=Number.isFinite(r.mbps)?num(r.mbps)+' Mbps':'不支持/CORS受限';e.append(l,v);box.append(e)}}
+async function nodeStage(signal){const nodes=parsedNodes(),results=[];if(!nodes.length){toast('请先填写受控 HTTPS 海外测速节点');return null}for(let i=0;i<nodes.length;i++){if(signal.aborted)break;const item=nodes[i],samples=[];for(let j=0;j<3;j++){if(signal.aborted)break;const sub=bounded(signal,18000),start=performance.now();try{const u=new URL(item.url);u.searchParams.set('bytes','1000000');u.searchParams.set('test',String(Date.now())+Math.random());const resp=await fetch(u.toString(),{cache:'no-store',mode:'cors',credentials:'omit',signal:sub.signal});if(!resp.ok)throw Error('HTTP '+resp.status);const data=await resp.arrayBuffer();if(data.byteLength<500000)throw Error('返回数据过少');const secs=(performance.now()-start)/1000;samples.push({mbps:data.byteLength*8/secs/1e6,bytes:data.byteLength})}catch(e){samples.push({error:String(e.message||e)})}finally{sub.close()}}results.push({...item,samples,mbps:median(samples.filter(v=>Number.isFinite(v.mbps)).map(v=>v.mbps))});progress((i+1)/nodes.length*100,'海外节点 '+(i+1)+'/'+nodes.length+' 已测 · 不代表一般网站 App 实际路由')}
+state.remote=results;save();render();return results}
 async function localStage(signal,rangeStart,rangeSize){const pref=prefs();savePrefs();setTab('local');const start=performance.now(),dur=pref.duration*1000,budget=pref.budget*1e6;
 const pts=[],lat=[],failures=[];let bytes=0,reason='达到设定持续时间',uploadSpeed=null,uploads=0;
 const latencyProbe=async()=>{try{const r=await download(256,signal);lat.push(r.seconds*1000);bytes+=r.bytes}catch(e){if(signal.aborted)throw e;failures.push(String(e.message||e))}};
@@ -244,7 +249,9 @@ async function run(kind){if(!begin())return;const root=aborter.signal;setTab(kin
 let local=null;const started=now();try{
 if(kind==='local'||kind==='full'){stage('本地链路 · 持续下载与延迟');local=await localStage(root,3,kind==='full'?36:95)}
 if(!root.aborted&&(kind==='regions'||kind==='full')){stage('跨境 · 多地区网站');state.region=await groupStage(REGIONS,root,kind==='full'?40:2,kind==='full'?28:96,'跨境');save();render()}
+if(!root.aborted&&kind==='nodes'){stage('跨境指定节点 · CORS 下载吞吐');await nodeStage(root)}
 if(!root.aborted&&(kind==='apps'||kind==='full')){stage('应用场景 · 公开视频与社交网站');state.apps=await groupStage(APPS,root,kind==='full'?69:2,kind==='full'?30:96,'场景');save();render()}
+if(!root.aborted&&kind==='full'&&parsedNodes().length){stage('跨境指定节点 · CORS 下载吞吐');await nodeStage(root)}
 const statusText=root.aborted?'已取消':'完成';
 state.sessions.push({kind,t:started,status:statusText,speed:local&&local.speed,localPoints:local&&local.points.length,regionSites:state.region&&state.region.length,appSites:state.apps&&state.apps.length});state.sessions=state.sessions.slice(-100);save();render();
 progress(root.aborted?progressValue:100,root.aborted?'诊断已取消，已完成部分已保存。':'本次诊断完成，请分别查看本地、跨境和应用场景结果。');
@@ -256,14 +263,16 @@ for(const s of state.sessions)push(['session',s.t,s.kind,'','','','','','',s.sta
 for(const x of state.local?.points||[])push(['local_sample',state.local.t,'Singapore','Cloudflare',state.local.network,x.mbps,'','',x.second*1000,'sample','']);
 for(const x of state.local?.latencies||[])push(['latency_sample',state.local.t,'Singapore','Cloudflare',state.local.network,'',x,'','','sample','']);
 for(const x of [...(state.region||[]),...(state.apps||[])])for(const s of x.samples)push(['site_probe',state.local?.t||'',x.group,x.name,'','','','',s.ms,s.result,x.url]);
+for(const x of state.remote||[])for(const s of x.samples)push(['remote_download',state.local?.t||'',x.id,x.url,'',s.mbps,'','','',s.error?'error':'sample',s.error||('bytes='+s.bytes)]);
+for(const x of state.legacy||[])push(['legacy_short_test',x.t,'Singapore','Cloudflare',x.network,x.speed,x.latency,'','', 'legacy','not sustained']);
 for(const x of state.stalls)push(['video_stall',x.t,x.app,'',x.network,'','','','', 'manual',x.location||'']);
 const escape=x=>'"'+x.replaceAll('"','""')+'"';const body='\ufeff'+lines.map(a=>a.map(escape).join(',')).join('\r\n');
 const obj=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=obj;a.download='simba-diagnostics-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(obj),15000);toast('已生成 CSV 文件')}
 document.querySelectorAll('.tab').forEach(el=>el.onclick=()=>setTab(el.dataset.tab));
-$('fullBtn').onclick=()=>run('full');$('localBtn').onclick=()=>run('local');$('regionBtn').onclick=()=>run('regions');$('appBtn').onclick=()=>run('apps');
+$('nodeBtn').onclick=()=>run('nodes');$('fullBtn').onclick=()=>run('full');$('localBtn').onclick=()=>run('local');$('regionBtn').onclick=()=>run('regions');$('appBtn').onclick=()=>run('apps');
 $('actionBtn').onclick=()=>{if(busy){aborter.abort();toast('正在结束当前请求…')}else run('full')};
 $('stallBtn').onclick=()=>{mark();setTab('apps')};$('markBtn').onclick=mark;$('exportBtn').onclick=csv;
-for(const id of ['duration','budget','network','location','upload','videoApp'])$(id).addEventListener('change',savePrefs);
+for(const id of ['duration','budget','network','location','upload','videoApp','nodeConfig'])$(id).addEventListener('change',savePrefs);
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&busy){aborter.abort();say('网页进入后台，测量已中断；已完成数据将保留。')}});
 window.addEventListener('offline',()=>{if(busy)aborter.abort();toast('网络已断开')});
 read();
