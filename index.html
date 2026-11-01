@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f8f7">
 <meta name="description" content="SIMBA Network Watch：本地速度、跨境访问、社交及视频体验一屏可见。">
-<title>SIMBA Network Watch — 网络体检</title>
+<title>Network Watch — 多运营商网络诊断</title>
 <style>
 :root{--bg:#f6f8f7;--card:#fff;--ink:#193330;--secondary:#617771;--line:#e2eae7;--mint:#118473;--mint-dark:#09685b;--mint-light:#e3f4ed;--blue:#3873b6;--blue-light:#e9f1fc;--amber:#aa742e;--amber-light:#fcf3e4;--red:#b64f48;--red-light:#fbedeb;--shadow:0 6px 22px rgba(21,53,44,.04);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box}
@@ -105,6 +105,8 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 .bottom-bar.visible{display:block}.bottom-inside{max-width:920px;margin:auto;display:flex;align-items:center;gap:10px}.bottom-label{flex:1;min-width:0}.bottom-label b{display:block;font-size:12px}.bottom-label small{display:block;font-size:10px;color:#859992}
 .roundmark{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:14;border:1px solid #c6ded4;background:#e5f4ee;color:#0c7462;padding:9px 12px;border-radius:22px;font-size:12px;font-weight:750;box-shadow:0 8px 16px #315e4e18}
 .running .roundmark{display:none}
+.origin-bar{margin-top:16px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:15px;display:grid;grid-template-columns:1fr 1fr;gap:9px}.origin-field{min-width:0}.origin-field label{display:block;font-weight:740;font-size:11px;color:#446b60;margin-bottom:5px}.origin-field label span{font-weight:400;color:#9aaca5}.origin-field select,.origin-field input{display:block;width:100%;min-width:0;background:#f8fbf9;border:1px solid #dbe8e2;border-radius:10px;padding:9px 8px;color:#20473e;font-size:12px}.origin-field input{margin-top:6px}.origin-field input[hidden]{display:none}.origin-hint{font-size:11px;line-height:1.5;color:#789187;margin:7px 3px 0}.category.local-market{border:1px solid #9ad6c1;background:#f0faf5}.category.cross-market{border-color:#dbe7f1}.category.unknown-market{border-style:dashed}.flow-chip.domestic{border-color:#92d6be;background:#eaf8f1;color:#0c755c}.flow-chip.cross{background:#f3f6fd;border-color:#d9e5f4;color:#31669a}.flow-chip.unclassified{border-style:dashed}.legend{flex-wrap:wrap;row-gap:4px}
+@media(max-width:400px){.origin-bar{grid-template-columns:1fr 1fr;padding:9px;gap:6px}.origin-field select,.origin-field input{padding:9px 5px;font-size:11px}.origin-field label{font-size:10px}}
 .footer{font-size:11px;color:#80918b;line-height:1.8;padding:22px 3px}
 .footer a{color:#0b8370}
 .toast{position:fixed;top:65px;left:50%;max-width:92vw;transform:translateX(-50%);background:#234943;color:white;font-size:12px;border-radius:11px;padding:11px 14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30;text-align:center;box-shadow:0 8px 24px #244f4438}
@@ -117,9 +119,15 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <body>
 <main class="container">
 <header>
-<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>SIMBA Network Watch</strong><small>网络体检仪表盘 <span style="color:#a4b2af">/ v4.0</span></small></div></div>
+<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 全球网络诊断 <span style="color:#a4b2af">/ v4.1</span></small></div></div>
 <div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span></div>
 </header>
+<section class="origin-bar" aria-label="测速环境设置">
+<div class="origin-field"><label for="originCountry">测速所在国家/地区 <span>手动</span></label><select id="originCountry"><option value="">请选择测试地点</option>
+<option value="CN">🇨🇳 中国大陆</option><option value="SG">🇸🇬 新加坡</option><option value="MY">🇲🇾 马来西亚</option><option value="JP">🇯🇵 日本</option><option value="US">🇺🇸 美国</option><option value="UK">🇬🇧 英国</option><option value="AU">🇦🇺 澳大利亚</option><option value="HK">🇭🇰 中国香港</option><option value="TW">中国台湾</option><option value="KR">🇰🇷 韩国</option><option value="IN">🇮🇳 印度</option><option value="DE">🇩🇪 德国</option><option value="FR">🇫🇷 法国</option><option value="OTHER">其他国家/地区</option></select></div>
+<div class="origin-field"><label for="operator">网络运营商 <span>手动</span></label><select id="operator"><option value="">未标注运营商</option><option>中国联通</option><option>中国移动</option><option>中国电信</option><option>中国广电</option><option>SIMBA</option><option>Singtel</option><option>StarHub</option><option>M1</option><option value="other">自定义运营商…</option></select><input id="operatorOther" type="text" maxlength="35" placeholder="填写运营商名称" hidden></div>
+</section>
+<p class="origin-hint" id="originHint">选择实际测速地点；本地/跨境按目标网站市场分类，不代表真实数据路径。</p>
 <nav class="nav" aria-label="功能导航">
 <button type="button" class="active" data-page="home">总览</button>
 <button type="button" data-page="local">本地测速</button>
@@ -130,12 +138,12 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <div class="hero">
 <div class="hero-top"><span class="eyebrow">NETWORK HEALTH CHECK</span><span class="last"><span id="networkBadge">未标注网络</span> · <span id="lastTime">尚未完成诊断</span></span></div>
 <div class="hero-headline" id="headline">让网络表现一目了然</div>
-<p class="hero-desc" id="headlineSub">从新加坡本地到海外网站、视频和社交服务，一次诊断，分类查看。</p>
+<p class="hero-desc" id="headlineSub">从当前测速地区到其他国家的网站、视频和社交服务，一次诊断，分类查看。</p>
 <div class="action"><button class="btn btn-white" id="startFull">▶ 开始全面诊断</button><button class="btn btn-outline" id="openOptions">设置</button></div>
 </div>
 <div class="grid2 summary" aria-label="四项诊断结果">
-<button class="metric" data-go="local"><span class="arrow">↗</span><span class="k"><i id="dotLocal"></i>本地下载</span><div class="value" id="kLocal">—</div><span class="fine" id="kLocalSub">待测速 · 新加坡</span></button>
-<button class="metric" data-go="global"><span class="arrow">↗</span><span class="k"><i id="dotGlobal"></i>跨境连接</span><div class="value" id="kGlobal">—</div><span class="fine" id="kGlobalSub">待探测 · 7 地区</span></button>
+<button class="metric" data-go="local"><span class="arrow">↗</span><span class="k"><i id="dotLocal"></i>基准下载</span><div class="value" id="kLocal">—</div><span class="fine" id="kLocalSub">待测速 · Cloudflare 基准节点</span></button>
+<button class="metric" data-go="global"><span class="arrow">↗</span><span class="k"><i id="dotGlobal"></i>各地区站点</span><div class="value" id="kGlobal">—</div><span class="fine" id="kGlobalSub">待探测 · 7 地区</span></button>
 <button class="metric" data-go="apps"><span class="arrow">↗</span><span class="k"><i id="dotApps"></i>常用服务</span><div class="value" id="kApps">—</div><span class="fine" id="kAppsSub">待探测 · 6 类</span></button>
 <button class="metric" data-go="apps"><span class="arrow">↗</span><span class="k"><i id="dotVideo"></i>视频分片</span><div class="value" id="kVideo">—</div><span class="fine" id="kVideoSub">待测试 · 20 秒模拟</span></button>
 </div>
@@ -153,9 +161,9 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <div class="work-msg" id="workMsg">不会自动消耗流量；开始测试后可随时停止。</div>
 <div class="progress-actions"><button class="btn btn-ghost small" id="exportHome" type="button">导出结果</button></div>
 </div>
-<div class="container-card"><div class="row"><h2>地区与服务速览</h2><span style="font-size:10px;color:#879a92">请求返回 ≠ 网站可用</span></div><p class="sub">已测试目标的浏览器请求返回情况；点击标签查看详情</p><h3 style="margin-top:13px">7 个地区</h3><div class="flow-summary" id="regionOverview"></div><h3 style="margin-top:13px">6 类服务</h3><div class="flow-summary" id="appOverview"></div></div>
+<div class="container-card"><div class="row"><h2>地区与服务速览</h2><span style="font-size:10px;color:#879a92">请求返回 ≠ 网站可用</span></div><p class="sub">已测试目标的浏览器请求返回情况；点击标签查看详情</p><h3 style="margin-top:13px" id="regionsHeading">7 个地区（请先选择测速地点）</h3><div class="flow-summary" id="regionOverview"></div><h3 style="margin-top:13px">6 类服务</h3><div class="flow-summary" id="appOverview"></div></div>
 <div class="cols" style="margin-top:12px">
-<div class="container-card"><div class="row"><h2>下载速度趋势</h2><button class="btn btn-muted small" type="button" data-go="local">查看明细 ↗</button></div><p class="sub">来自最近一次本地持续采样，不是瞬时峰值</p><div class="visual"><svg id="sparkline" viewBox="0 0 350 165" role="img" aria-label="下载采样趋势"></svg></div><div class="legend"><span><i class="dot"></i>下载 Mbps</span><span>低值越多，体验越不稳定</span></div></div>
+<div class="container-card"><div class="row"><h2>下载速度趋势</h2><button class="btn btn-muted small" type="button" id="chartMode">查看原始曲线</button></div><p class="sub">来自最近一次本地持续采样，不是瞬时峰值</p><div class="visual"><svg id="sparkline" viewBox="0 0 350 165" role="img" aria-label="下载采样趋势"></svg></div><div class="legend"><span><i class="dot"></i><span id="curveLegend">5 点移动中位趋势</span></span><span>浅色圆点＝原始采样；平滑不改变测速数据</span></div></div>
 <div class="container-card"><div class="row"><h2>最近检测</h2><span class="pill muted" id="recordCount">0 次</span></div><div id="recentRecords" class="empty">还没有检测记录</div></div>
 </div>
 <div class="container-card">
@@ -164,14 +172,14 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <button class="btn btn-ghost" id="quickLocal" type="button">↘ 测本地网速</button>
 <button class="btn btn-muted" id="quickStall" type="button">◎ 标记视频卡顿</button>
 </div>
-<p class="note">提示：为了测 SIMBA，请关闭 Wi-Fi。网页无法可靠识别 LTE/5G，也无法读取原生视频 App 的实时吞吐。</p>
+<p class="note">使用蜂窝网络时请关闭 Wi-Fi；先选实际国家/地区和运营商。网页版不能自动识别 LTE/5G、运营商，也不能监控原生视频 App。</p>
 </div>
-<details id="allOptions"><summary>测试设置与流量预算 <span class="sub">（默认已设置好）</span></summary><div class="detail-inner">
+<details id="allOptions"><summary>高级设置与流量预算 <span class="sub">（默认已设置好）</span></summary><div class="detail-inner">
 <div class="fieldrow">
 <div class="field"><label for="duration">本地采样时长</label><select id="duration"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60" selected>60 秒（推荐）</option><option value="120">120 秒</option></select></div>
 <div class="field"><label for="budget">本地下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
 <div class="field"><label for="network">实际手机网络（手动）</label><select id="network"><option value="">未标注</option><option value="4G">4G / LTE</option><option value="5G">5G</option></select></div>
-<div class="field"><label for="location">地点备注（选填）</label><input type="text" id="location" maxlength="45" placeholder="例如：Changi"></div>
+<div class="field"><label for="location">城市 / 地点备注（选填）</label><input type="text" id="location" maxlength="45" placeholder="例如：北京朝阳 / Singapore"></div>
 </div>
 <label class="checkbox"><input type="checkbox" id="upload">额外尝试上传测试（可能无法跨域访问）</label>
 <p class="note">本地采样默认约 60 秒、预算 80 MB；跨境网站、应用探测、分片模拟会产生额外流量。浏览器在后台或锁屏后不能保证连续测试。</p>
@@ -179,7 +187,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 </section>
 <section class="view" id="page-local">
 <div class="container-card">
-<div class="row"><div><h2>新加坡本地网络</h2><p class="sub">持续分散采样，记录中位值、低速和延迟</p></div><button class="btn small" id="startLocal">开始测速</button></div>
+<div class="row"><div><h2>基准下载与延迟</h2><p class="sub">测量本设备到 Cloudflare 节点的吞吐，实际节点可能在境外</p></div><button class="btn small" id="startLocal">开始测速</button></div>
 <div class="mini-grid">
 <div class="cell"><small>中位下载</small><strong id="localMedian">— <em>Mbps</em></strong></div>
 <div class="cell"><small>低速 P10</small><strong id="localP10">— <em>Mbps</em></strong></div>
@@ -190,22 +198,22 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <div class="cell"><small>上传速率</small><strong id="localUpload">—</strong></div>
 <div class="cell"><small>下载用量</small><strong id="localBytes">— <em>MB</em></strong></div>
 </div>
-<div class="banner" id="localSummary">暂无本地连续测速记录。</div>
+<div class="banner" id="localSummary">暂无持续测速记录。</div>
 <div class="visual"><svg id="localChart" viewBox="0 0 350 165" role="img" aria-label="本地下载速度变化图"></svg></div>
 </div>
 <div class="container-card"><div class="row"><h2>测试质量与局限</h2><span class="pill muted">HTTP 采样</span></div>
-<p class="note">测速目标为 Cloudflare HTTP 节点，非运营商基站、视频平台或 ICMP Ping。下载采样之间会短暂停顿，以分散覆盖整个时间窗口；流量预算可能导致提前结束下载采样。</p>
+<p class="note">测速目标为 Cloudflare HTTP 节点，不保证节点位于测速所在国家；并非运营商基站、视频平台或 ICMP Ping。下载采样之间会短暂停顿，以分散覆盖整个时间窗口；流量预算可能导致提前结束下载采样。</p>
 <div id="localFaults" class="note"></div><button class="btn btn-muted small" data-go="home" style="margin-top:12px">返回总览</button>
 </div>
 </section>
 <section class="view" id="page-global">
 <div class="container-card">
-<div class="row"><div><h2>跨境网站连接</h2><p class="sub">7 地区 · 14 站点 · 每站重复 2 次</p></div><button class="btn small" id="startGlobal">开始探测</button></div>
-<div class="banner warn">目标按网站所属市场分类，CDN 可能在新加坡响应。浏览器受限请求不能验证 HTTP 200，也不能测出目标国的真实 Mbps。这里显示的是请求返回情况，不是跨境线路的成功率。</div>
+<div class="row"><div><h2>同地区 / 跨地区网站连接</h2><p class="sub" id="regionSub">请先选择测速国家或地区 · 14 站点 · 每站重复 2 次</p></div><button class="btn small" id="startGlobal">开始探测</button></div>
+<div class="banner warn">以测速地对照网站所属市场进行分组；CDN 可能在任何地区响应。浏览器受限请求不能验证 HTTP 200，也不能测出目标国的真实 Mbps。这里显示的是请求返回情况，不是跨境线路的成功率。</div>
 <div id="globalGrid" class="category-grid"></div>
 <div id="globalDetails"></div></div>
-<details><summary>进阶：配置真实海外测速节点</summary><div class="detail-inner">
-<p class="note">如果有在目标国家真实部署的 HTTPS 节点，支持 <code>?bytes=1000000</code> 返回非压缩数据且设置 CORS，可逐行配置：国别代码|URL。节点物理位置需要另行验证。</p>
+<details><summary>进阶：配置指定地区的真实测速节点</summary><div class="detail-inner">
+<p class="note">如果有在目标国家或本地真实部署的 HTTPS 节点，支持 <code>?bytes=1000000</code> 返回非压缩数据且设置 CORS，可逐行配置：国别代码|URL。节点物理位置需要另行验证。</p>
 <div class="field"><textarea id="nodeConfig" placeholder="JP|https://your-jp-host.example/down&#10;US|https://your-us-host.example/down"></textarea></div>
 <div class="row" style="margin-top:10px"><button class="btn btn-muted small" id="startNodes">测试节点下载速度</button></div>
 <div id="nodeDetails" class="note"></div>
@@ -236,7 +244,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <div class="note" id="stallLast"></div>
 </div>
 </section>
-<div class="footer">非 SIMBA、Cloudflare、YouTube 等平台的官方产品。诊断历史仅存于当前浏览器。测速与网站请求可能向目标服务器暴露常规网络元数据。<br><a href="https://github.com/ArthurUker/simba-network-watch" target="_blank" rel="noopener noreferrer">GitHub 源码</a> · <a href="https://speed.cloudflare.com/" target="_blank" rel="noopener noreferrer">Cloudflare 对照测速</a></div>
+<div class="footer">非任何运营商、Cloudflare 或第三方平台的官方产品。诊断历史仅存于当前浏览器。测速与网站请求可能向目标服务器暴露常规网络元数据。<br><a href="https://github.com/ArthurUker/simba-network-watch" target="_blank" rel="noopener noreferrer">GitHub 源码</a> · <a href="https://speed.cloudflare.com/" target="_blank" rel="noopener noreferrer">Cloudflare 对照测速</a></div>
 </main>
 <button class="roundmark" id="floatingStall">◎ 记录卡顿</button>
 <div class="bottom-bar" id="runBar"><div class="bottom-inside"><div class="bottom-label"><b id="runLabel">诊断中</b><small>保持网页前台 · 可停止</small></div><button class="btn btn-ghost small" id="stopBtn">停止诊断</button></div></div>
@@ -245,7 +253,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
-const KEY='simba-network-watch-v3',PREF='simba-network-watch-v4-prefs';
+const KEY='simba-network-watch-v3',PREF='network-watch-v41-prefs',OLDPREF='simba-network-watch-v4-prefs';
 const DOWN='https://speed.cloudflare.com/__down',UP='https://speed.cloudflare.com/__up';
 const REGIONS=[
 {name:'新加坡',id:'SG',sites:[['Gov.sg','https://www.gov.sg/'],['CNA','https://www.channelnewsasia.com/']]},
