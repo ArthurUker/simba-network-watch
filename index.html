@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f8f7">
-<meta name="description" content="SIMBA Network Watch：本地速度、跨境访问、社交及视频体验一屏可见。">
+<meta name="description" content="Network Watch：多运营商、按测速地点分类的网站连接与基准网速诊断。">
 <title>Network Watch — 多运营商网络诊断</title>
 <style>
 :root{--bg:#f6f8f7;--card:#fff;--ink:#193330;--secondary:#617771;--line:#e2eae7;--mint:#118473;--mint-dark:#09685b;--mint-light:#e3f4ed;--blue:#3873b6;--blue-light:#e9f1fc;--amber:#aa742e;--amber-light:#fcf3e4;--red:#b64f48;--red-light:#fbedeb;--shadow:0 6px 22px rgba(21,53,44,.04);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif}
@@ -153,7 +153,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <p class="sub" id="progressStage">点击「开始全面诊断」即可按阶段检测。</p>
 <div class="progress-track"><i id="progressBar"></i></div>
 <div class="steps" id="stepRow">
-<div class="step" id="step0"><span class="symbol">1</span>本地链路</div>
+<div class="step" id="step0"><span class="symbol">1</span>基准链路</div>
 <div class="step" id="step1"><span class="symbol">2</span>海外站点</div>
 <div class="step" id="step2"><span class="symbol">3</span>应用服务</div>
 <div class="step" id="step3"><span class="symbol">4</span>视频模拟</div>
@@ -163,26 +163,26 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 </div>
 <div class="container-card"><div class="row"><h2>地区与服务速览</h2><span style="font-size:10px;color:#879a92">请求返回 ≠ 网站可用</span></div><p class="sub">已测试目标的浏览器请求返回情况；点击标签查看详情</p><h3 style="margin-top:13px" id="regionsHeading">7 个地区（请先选择测速地点）</h3><div class="flow-summary" id="regionOverview"></div><h3 style="margin-top:13px">6 类服务</h3><div class="flow-summary" id="appOverview"></div></div>
 <div class="cols" style="margin-top:12px">
-<div class="container-card"><div class="row"><h2>下载速度趋势</h2><button class="btn btn-muted small" type="button" id="chartMode">查看原始曲线</button></div><p class="sub">来自最近一次本地持续采样，不是瞬时峰值</p><div class="visual"><svg id="sparkline" viewBox="0 0 350 165" role="img" aria-label="下载采样趋势"></svg></div><div class="legend"><span><i class="dot"></i><span id="curveLegend">5 点移动中位趋势</span></span><span>浅色圆点＝原始采样；平滑不改变测速数据</span></div></div>
+<div class="container-card"><div class="row"><h2>下载速度趋势</h2><button class="btn btn-muted small" type="button" id="chartMode">查看原始曲线</button></div><p class="sub">来自最近一次 Cloudflare 基准持续采样，不是瞬时峰值</p><div class="visual"><svg id="sparkline" viewBox="0 0 350 165" role="img" aria-label="下载采样趋势"></svg></div><div class="legend"><span><i class="dot"></i><span id="curveLegend">5 点移动中位趋势</span></span><span>浅色圆点＝原始采样；平滑不改变测速数据</span></div></div>
 <div class="container-card"><div class="row"><h2>最近检测</h2><span class="pill muted" id="recordCount">0 次</span></div><div id="recentRecords" class="empty">还没有检测记录</div></div>
 </div>
 <div class="container-card">
 <div class="row"><h2>一键体验</h2><span class="pill">常用快捷操作</span></div>
 <div class="grid2" style="margin-top:11px">
-<button class="btn btn-ghost" id="quickLocal" type="button">↘ 测本地网速</button>
+<button class="btn btn-ghost" id="quickLocal" type="button">↘ 测基准网速</button>
 <button class="btn btn-muted" id="quickStall" type="button">◎ 标记视频卡顿</button>
 </div>
 <p class="note">使用蜂窝网络时请关闭 Wi-Fi；先选实际国家/地区和运营商。网页版不能自动识别 LTE/5G、运营商，也不能监控原生视频 App。</p>
 </div>
 <details id="allOptions"><summary>高级设置与流量预算 <span class="sub">（默认已设置好）</span></summary><div class="detail-inner">
 <div class="fieldrow">
-<div class="field"><label for="duration">本地采样时长</label><select id="duration"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60" selected>60 秒（推荐）</option><option value="120">120 秒</option></select></div>
-<div class="field"><label for="budget">本地下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
+<div class="field"><label for="duration">基准采样时长</label><select id="duration"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60" selected>60 秒（推荐）</option><option value="120">120 秒</option></select></div>
+<div class="field"><label for="budget">基准下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
 <div class="field"><label for="network">实际手机网络（手动）</label><select id="network"><option value="">未标注</option><option value="4G">4G / LTE</option><option value="5G">5G</option><option value="Wi-Fi">Wi-Fi</option><option value="Ethernet">有线 / Ethernet</option></select></div>
 <div class="field"><label for="location">城市 / 地点备注（选填）</label><input type="text" id="location" maxlength="45" placeholder="例如：北京朝阳 / Singapore"></div>
 </div>
 <label class="checkbox"><input type="checkbox" id="upload">额外尝试上传测试（可能无法跨域访问）</label>
-<p class="note">本地采样默认约 60 秒、预算 80 MB；跨境网站、应用探测、分片模拟会产生额外流量。浏览器在后台或锁屏后不能保证连续测试。</p>
+<p class="note">基准测速默认约 60 秒、预算 80 MB；跨境网站、应用探测、分片模拟会产生额外流量。浏览器在后台或锁屏后不能保证连续测试。</p>
 </div></details>
 </section>
 <section class="view" id="page-local">
@@ -199,7 +199,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <div class="cell"><small>下载用量</small><strong id="localBytes">— <em>MB</em></strong></div>
 </div>
 <div class="banner" id="localSummary">暂无持续测速记录。</div>
-<div class="visual"><svg id="localChart" viewBox="0 0 350 165" role="img" aria-label="本地下载速度变化图"></svg></div>
+<div class="visual"><svg id="localChart" viewBox="0 0 350 165" role="img" aria-label="基准下载速度变化图"></svg></div>
 </div>
 <div class="container-card"><div class="row"><h2>测试质量与局限</h2><span class="pill muted">HTTP 采样</span></div>
 <p class="note">测速目标为 Cloudflare HTTP 节点，不保证节点位于测速所在国家；并非运营商基站、视频平台或 ICMP Ping。下载采样之间会短暂停顿，以分散覆盖整个时间窗口；流量预算可能导致提前结束下载采样。</p>
@@ -326,7 +326,7 @@ setValue('localSummary',l?time(l.t)+' · '+countryName(l.originCountry)+' / '+(l
 setValue('localFaults',l&&l.failures&&l.failures.length?l.failures.length+' 次请求异常：'+l.failures.slice(0,2).join('；'):'');
 setValue('videoMedian',v?format(v.median)+' Mbps':'—');setValue('videoLow',v?v.low+'/'+v.samples.length:'—');setValue('videoSlow',v?v.slow+'/'+v.samples.length:'—');
 setValue('videoSummary',v?'最近检测 '+time(v.t)+' · 模拟分片 '+v.samples.length+' 组，消耗 '+format(v.bytes/1e6)+' MB，不能当作视频 App 实测':'尚未运行视频分片模拟。');
-const notes=[];if(l&&Number.isFinite(l.speed)){if(l.speed<5)notes.push('本地速度偏低，可能影响视频缓冲；建议同地比较 LTE 和 5G');else if(l.speed<15)notes.push('本地速度中等，建议关注不同时段的变化');else notes.push('本地下载未明显偏低，若视频仍卡顿应进一步检查平台连接')}if(v&&v.low>0)notes.push('视频分片模拟出现 '+v.low+' 次低速');if(!notes.length)notes.push('诊断完成后显示结果；连接探测不能证明视频 App 被单独限速');setValue('insightBanner',notes.join('。')+'。');overviewChips('regionOverview',REGIONS,data.region,'global',data.regionOriginCountry||'');overviewChips('appOverview',APPS,data.apps,'apps');setValue('stallCount',data.stalls.length+' 次');setValue('stallLast',data.stalls.length?'最近一次 '+time(data.stalls.at(-1).t)+' · '+(data.stalls.at(-1).app||'视频'):'尚未标记卡顿');
+const notes=[];if(l&&Number.isFinite(l.speed)){if(l.speed<5)notes.push('基准速度偏低，可能影响视频缓冲；建议同地比较 LTE 和 5G');else if(l.speed<15)notes.push('基准速度中等，建议关注不同时段的变化');else notes.push('基准下载未明显偏低，若视频仍卡顿应进一步检查平台连接')}if(v&&v.low>0)notes.push('视频分片模拟出现 '+v.low+' 次低速');if(!notes.length)notes.push('诊断完成后显示结果；连接探测不能证明视频 App 被单独限速');setValue('insightBanner',notes.join('。')+'。');overviewChips('regionOverview',REGIONS,data.region,'global',data.regionOriginCountry||'');overviewChips('appOverview',APPS,data.apps,'apps');setValue('stallCount',data.stalls.length+' 次');setValue('stallLast',data.stalls.length?'最近一次 '+time(data.stalls.at(-1).t)+' · '+(data.stalls.at(-1).app||'视频'):'尚未标记卡顿');
 draw('sparkline');draw('localChart');renderGroups('globalGrid','globalDetails',REGIONS,data.region,data.regionOriginCountry||'');renderGroups('appsGrid','appsDetails',APPS,data.apps);renderRemote();renderRecent();
 }
 function draw(id){const svg=$(id);svg.replaceChildren();const pts=data.local&&Array.isArray(data.local.points)?data.local.points.filter(x=>Number.isFinite(x.mbps)&&Number.isFinite(x.second)).slice().sort((a,b)=>a.second-b.second):[],ns='http://www.w3.org/2000/svg';
@@ -378,7 +378,7 @@ if(elapsed-lastProbe>7000){try{const ping=await down(256,root);latencies.push(pi
 if(root.aborted)break;const aim=Number.isFinite(lastMbps)?Math.floor(lastMbps*1e6/8*1.1):1500000;
 const chunk=Math.min(Math.floor(limit-moved),Math.max(600000,Math.min(maxChunk,aim)));
 if(chunk<600000){reason='已达到下载流量预算';break}
-try{const v=await down(chunk,root);moved+=v.bytes;lastMbps=v.mbps;points.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,bytes:v.bytes});if(points.length%2===0){const progress=Math.min(1,(performance.now()-startAt)/dur);stepUpdate(0,r0+rlen*progress,'本地连续采样 · '+points.length+' 组 · 中位 '+format(median(points.map(x=>x.mbps)))+' Mbps · '+format(moved/1e6)+' MB')}}catch(e){if(!root.aborted)fails.push(String(e.message||e))}
+try{const v=await down(chunk,root);moved+=v.bytes;lastMbps=v.mbps;points.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,bytes:v.bytes});if(points.length%2===0){const progress=Math.min(1,(performance.now()-startAt)/dur);stepUpdate(0,r0+rlen*progress,'基准持续采样 · '+points.length+' 组 · 中位 '+format(median(points.map(x=>x.mbps)))+' Mbps · '+format(moved/1e6)+' MB')}}catch(e){if(!root.aborted)fails.push(String(e.message||e))}
 if(root.aborted)break;await sleep(Math.min(Math.max(0,period-(performance.now()-started)),Math.max(0,dur-(performance.now()-startAt))),root)}
 const elapsed=(performance.now()-startAt)/1000;if(root.aborted)reason='已取消';
 if(!root.aborted&&$('upload').checked){try{const nums=[];for(let i=0;i<2;i++){nums.push(await up(root))}uploadSpeed=median(nums)}catch(e){fails.push('上传未完成：'+String(e.message||e))}}
