@@ -316,7 +316,7 @@ const APPS=[
 {name:'即时通讯',id:'Chat',sites:[['WhatsApp Web','https://web.whatsapp.com/'],['Telegram Web','https://web.telegram.org/']]},
 {name:'办公开发',id:'Work',sites:[['GitHub','https://github.com/'],['Microsoft','https://www.microsoft.com/'],['ChatGPT','https://chatgpt.com/']]},
 {name:'网络购物',id:'Shopping',sites:[['Amazon','https://www.amazon.com/'],['Shopee','https://shopee.sg/']]}];
-let data={sessions:[],stalls:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null,chartView='smooth',runContext=null,egressInfo=null,statusInfo={rtts:[],checkedAt:null,errors:0},rateInfo=null;
+let data={sessions:[],stalls:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null,chartView='smooth',runContext=null,egressInfo=null,statusInfo={rtts:[],checkedAt:null,errors:0},rateInfo=null,liveSamplePoints=null;
 const format=(n,d=1)=>Number.isFinite(n)?Number(n).toFixed(d):'—';
 const median=a=>{if(!a.length)return NaN;const v=a.slice().sort((a,b)=>a-b);return(v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2};
 const p10=a=>a.length?a.slice().sort((a,b)=>a-b)[Math.floor((a.length-1)*.1)]:NaN;
@@ -457,7 +457,7 @@ setValue('videoSummary',v?'最近检测 '+time(v.t)+' · 模拟分片 '+v.sample
 const notes=[];if(l&&Number.isFinite(l.speed)){if(l.speed<5)notes.push('基准速度偏低，可能影响视频缓冲；建议同地比较 LTE 和 5G');else if(l.speed<15)notes.push('基准速度中等，建议关注不同时段的变化');else notes.push('基准下载未明显偏低，若视频仍卡顿应进一步检查平台连接')}if(v&&v.low>0)notes.push('视频分片模拟出现 '+v.low+' 次低速');if(!notes.length)notes.push('诊断完成后显示结果；连接探测不能证明视频 App 被单独限速');setValue('insightBanner',notes.join('。')+'。');overviewChips('regionOverview',REGIONS,data.region,'global',data.regionOriginCountry||'',data.regionContext?.egressCountry||'');overviewChips('appOverview',APPS,data.apps,'apps');setValue('stallCount',data.stalls.length+' 次');setValue('stallLast',data.stalls.length?'最近一次 '+time(data.stalls.at(-1).t)+' · '+(data.stalls.at(-1).app||'视频'):'尚未标记卡顿');
 draw('sparkline');draw('localChart');renderGroups('globalGrid','globalDetails',REGIONS,data.region,data.regionOriginCountry||'',data.regionContext?.egressCountry||'');renderGroups('appsGrid','appsDetails',APPS,data.apps);renderRemote();renderRecent();
 }
-function draw(id){const svg=$(id);svg.replaceChildren();const pts=data.local&&Array.isArray(data.local.points)?data.local.points.filter(x=>Number.isFinite(x.mbps)&&Number.isFinite(x.second)).slice().sort((a,b)=>a.second-b.second):[],ns='http://www.w3.org/2000/svg';
+function draw(id){const svg=$(id);svg.replaceChildren();const points=Array.isArray(liveSamplePoints)?liveSamplePoints:(data.local&&Array.isArray(data.local.points)?data.local.points:[]);const pts=points.filter(x=>Number.isFinite(x.mbps)&&Number.isFinite(x.second)).slice().sort((a,b)=>a.second-b.second),ns='http://www.w3.org/2000/svg';
 const el=(name,props,label)=>{const e=document.createElementNS(ns,name);for(const [k,v] of Object.entries(props))e.setAttribute(k,String(v));if(label!==undefined)e.textContent=label;svg.append(e);return e};
 if(!pts.length){el('text',{x:175,y:80,'text-anchor':'middle','font-size':12,fill:'#9caeaa'},'完成本地测试后显示趋势');return}
 const W=350,H=165,L=35,R=9,T=9,B=24,top=Math.max(10,Math.ceil(Math.max(...pts.map(x=>x.mbps))*1.15/10)*10),seconds=Math.max(1,pts.at(-1).second);
@@ -490,7 +490,7 @@ for(const x of r){const row=textNode('div','list-item',''),left=textNode('div','
 function render(){cards();renderStatus();$('headerDot').classList.toggle('live',running);$('headerState').textContent=running?'诊断中':'准备就绪';$('runBar').classList.toggle('visible',running);document.body.classList.toggle('running',running);$('startFull').disabled=running;for(const id of ['startLocal','startGlobal','startApps','startVideo','startNodes','quickLocal'])$(id).disabled=running;setValue('runLabel',stagedText||'诊断中');for(const id of ['originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).disabled=running}
 function stepUpdate(index,val,msg){stepIndex=index;p=Math.min(100,Math.max(0,val));if(msg)stagedText=msg;setValue('progressBar','');$('progressBar').style.width=p+'%';$('progressState').textContent=running?'执行中 · '+format(p,0)+'%':'未开始';$('progressState').className='pill'+(running?'':' muted');setValue('progressStage',stagedText||'等待开始');setValue('workMsg',stagedText||'诊断进行中');for(let i=0;i<4;i++){$('step'+i).className='step'+(stepDone.includes(i)?' done':i===index?' live':'')}setValue('runLabel',stagedText||'诊断中')}
 function start(){if(running)return false;running=true;rateInfo=null;runContext=currentContext();controller=new AbortController();stepDone=[];p=0;stagedText='准备开始…';stepUpdate(-1,0,stagedText);render();return true}
-function finish(){running=false;controller=null;runContext=null;render();$('progressState').textContent=stagedText.includes('取消')?'已取消':'已结束';$('headerState').textContent='准备就绪'}
+function finish(){running=false;controller=null;runContext=null;liveSamplePoints=null;render();$('progressState').textContent=stagedText.includes('取消')?'已取消':'已结束';$('headerState').textContent='准备就绪'}
 function stop(){if(controller)controller.abort()}
 function bounded(root,ms){const c=new AbortController(),timeout=setTimeout(()=>c.abort(),ms),fn=()=>c.abort();if(root.aborted)c.abort();else root.addEventListener('abort',fn,{once:true});return{signal:c.signal,close(){clearTimeout(timeout);root.removeEventListener('abort',fn)}}}
 async function sleep(ms,root){if(ms<=0||root.aborted)return;await new Promise(resolve=>{const t=setTimeout(end,ms);function end(){root.removeEventListener('abort',cancel);resolve()}function cancel(){clearTimeout(t);end()}root.addEventListener('abort',cancel,{once:true})})}
@@ -521,7 +521,7 @@ async function down(bytes,root,onProgress){
 }
 async function up(root){const b=bounded(root,15000),size=500000,start=performance.now();try{const res=await fetch(UP,{method:'POST',body:new Uint8Array(size),mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!res.ok)throw Error('HTTP '+res.status);return size*8/(1e6*(performance.now()-start)/1000)}finally{b.close()}}
 async function localStage(root,r0,rlen){const startAt=performance.now(),dur=Number($('duration').value)*1000,limit=Number($('budget').value)*1e6,ctx=runContext||currentContext(),network=ctx.network,location=ctx.location;
-let moved=0,lastMbps=NaN,reason='完成时间窗口',points=[],latencies=[],fails=[],uploadSpeed=null;
+let moved=0,lastMbps=NaN,reason='完成时间窗口',points=[],latencies=[],fails=[],uploadSpeed=null;liveSamplePoints=[];
 const targetSamples=Math.max(7,Math.round(dur/4)),period=dur/targetSamples,maxChunk=Math.min(6000000,Math.floor(limit/targetSamples));
 for(let k=0;k<4;k++){if(root.aborted)break;try{const ping=await down(256,root);moved+=ping.bytes;latencies.push(ping.seconds*1000)}catch(e){if(root.aborted)break;fails.push(String(e.message||e))}}
 let lastProbe=-1e6;
@@ -530,7 +530,7 @@ if(elapsed-lastProbe>7000){try{const ping=await down(256,root);latencies.push(pi
 if(root.aborted)break;const aim=Number.isFinite(lastMbps)?Math.floor(lastMbps*1e6/8*1.1):1500000;
 const chunk=Math.min(Math.floor(limit-moved),Math.max(600000,Math.min(maxChunk,aim)));
 if(chunk<600000){reason='已达到下载流量预算';break}
-try{const v=await down(chunk,root,(mbps)=>updateRate(mbps,true));moved+=v.bytes;lastMbps=v.mbps;updateRate(v.mbps,false);points.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,bytes:v.bytes});if(points.length%2===0){const progress=Math.min(1,(performance.now()-startAt)/dur);stepUpdate(0,r0+rlen*progress,'基准持续采样 · '+points.length+' 组 · 中位 '+format(median(points.map(x=>x.mbps)))+' Mbps · '+format(moved/1e6)+' MB')}}catch(e){if(!root.aborted)fails.push(String(e.message||e))}
+try{const v=await down(chunk,root,(mbps)=>updateRate(mbps,true));moved+=v.bytes;lastMbps=v.mbps;updateRate(v.mbps,false);points.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,bytes:v.bytes});liveSamplePoints=points.slice();draw('sparkline');draw('localChart');if(points.length%2===0){const progress=Math.min(1,(performance.now()-startAt)/dur);stepUpdate(0,r0+rlen*progress,'基准持续采样 · '+points.length+' 组 · 中位 '+format(median(points.map(x=>x.mbps)))+' Mbps · '+format(moved/1e6)+' MB')}}catch(e){if(!root.aborted)fails.push(String(e.message||e))}
 if(root.aborted)break;await sleep(Math.min(Math.max(0,period-(performance.now()-started)),Math.max(0,dur-(performance.now()-startAt))),root)}
 const elapsed=(performance.now()-startAt)/1000;if(root.aborted)reason='已取消';
 if(!root.aborted&&$('upload').checked){try{const nums=[];for(let i=0;i<2;i++){nums.push(await up(root))}uploadSpeed=median(nums)}catch(e){fails.push('上传未完成：'+String(e.message||e))}}
@@ -589,8 +589,8 @@ $('startFull').onclick=()=>run('full');$('quickLocal').onclick=()=>run('local');
 $('openOptions').onclick=()=>{$('allOptions').open=true;$('allOptions').scrollIntoView({behavior:'smooth',block:'start'})};
 $('stopBtn').onclick=stop;$('quickStall').onclick=mark;$('floatingStall').onclick=mark;$('markStall').onclick=mark;$('exportHome').onclick=csv;
 for(const id of ['duration','budget','network','location','upload','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).addEventListener('change',()=>{if(id==='operator')$('operatorOther').hidden=$('operator').value!=='other';savePrefs();render()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){stop();toast('已离开前台，测速将停止，已完成数据保留')}});
-$('detectEgress').onclick=()=>refreshEgress(false);window.addEventListener('offline',()=>{if(running)stop();toast('网络连接已断开')});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){stop();toast('已离开前台，测速将停止，已完成数据保留')}else if(!document.hidden&&!running){if(egressAgeMs()>60000)refreshStatus();else renderStatus()}});
+$('detectEgress').onclick=()=>refreshEgress(false);window.addEventListener('offline',()=>{if(running)stop();renderStatus();toast('网络连接已断开')});window.addEventListener('online',()=>{if(!running)refreshStatus()});const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;if(connection&&typeof connection.addEventListener==='function')connection.addEventListener('change',()=>{renderStatus();if(!running)refreshStatus()});
 load();refreshStatus();
 })();
 </script>
