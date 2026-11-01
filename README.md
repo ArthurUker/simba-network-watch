@@ -4,8 +4,12 @@ A lightweight, single-page network speed and video buffering monitor for SIMBA T
 
 **Live preview (Cloudflare Workers):** https://simba-network-watch.renkangguo.workers.dev/
 
-## Features
+## Features (v2.0)
 
+- Mobile-first, one-tap speed test and bottom action bar for iPhone
+- One-tap video buffering marker without automatically consuming data
+- Simple performance summary and a compact 24-hour / all-time trend
+- Advanced settings collapsed by default; existing v1 local records retained
 - Download throughput and HTTP round-trip latency sampling against Cloudflare's speed test endpoint
 - Manually select 5G / 4G (browsers cannot reliably determine the radio network)
 - Optional 5-, 15-, and 30-minute tests while the browser tab remains active
@@ -15,12 +19,12 @@ A lightweight, single-page network speed and video buffering monitor for SIMBA T
 
 ## Quick start
 
-Open `index.html` in a browser or host it on any HTTPS static web host. On an iPhone, disable Wi-Fi first to ensure traffic is measured on the SIMBA cellular connection.
+Open the live site in Safari on an iPhone, disable Wi-Fi first to ensure traffic is measured on the SIMBA cellular connection, then mark the current 5G/4G connection and tap **开始测速**. Select video platform in Settings before using **记录卡顿**. Network type is manually tagged, not detected or switched by the webpage.
 
 ## GitHub Pages
 
 1. Create a **public** GitHub repository named `simba-network-watch`.
-2. Upload `index.html`, `.nojekyll`, and `README.md` to the repository's root directory on the `main` branch.
+2. Keep `index.html` and `README.md` at the repository root on `main` (both are already present).
 3. Open **Settings → Pages → Build and deployment → Deploy from a branch**.
 4. Choose `main` and `/(root)`; save. Once publication finishes, visit `https://<GITHUB_USERNAME>.github.io/simba-network-watch/`.
 
@@ -28,7 +32,7 @@ All changes to `index.html` in the selected branch will update the GitHub Pages 
 
 ## Cloudflare
 
-The Cloudflare Workers site linked above was deployed independently of GitHub. Pushes to this repository **will not automatically update that Cloudflare Workers deployment** until a GitHub Actions / Wrangler deployment pipeline is explicitly configured.
+The Cloudflare Workers site linked above runs the redesigned v2.0 interface and was deployed independently of GitHub. Pushes to this repository **will not automatically update that Cloudflare Workers deployment** until a GitHub Actions / Wrangler deployment pipeline is explicitly configured.
 
 The site can alternatively be hosted on Cloudflare Pages by creating a Pages project connected to this repo and setting build command to none, build output directory to `/` (or a directory holding `index.html`, depending on the dashboard configuration).
 
