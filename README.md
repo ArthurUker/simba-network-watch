@@ -4,6 +4,8 @@ A mobile-first network diagnostics dashboard for SIMBA users in Singapore. **v4.
 
 **Live site:** https://simba-network-watch.renkangguo.workers.dev/
 
+**Development traceability:** [Version history](./CHANGELOG.md) · [GitHub-first development and deployment process](./DEVELOPMENT.md) · [All commits](https://github.com/ArthurUker/simba-network-watch/commits/main/)
+
 ## Dashboard-first experience
 
 - A single overview showing local speed (Mbps), browser requests to 7 website markets, requests to 6 everyday service categories, and video-segment simulation results.
