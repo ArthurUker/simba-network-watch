@@ -13,6 +13,9 @@ Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 - [9b20a23](https://github.com/ArthurUker/simba-network-watch/commit/9b20a23181cce8f4957444ec8391d9cfd1e289a6) — Added display-only 5-sample rolling median and smooth curve, with original samples and a raw-trend toggle.
 - [459684f](https://github.com/ArthurUker/simba-network-watch/commit/459684fe1800f4e57e3503843b2be42cf9a35d93) — Exported country, carrier, market classification, and original throughput values in CSV.
 - [e75625b](https://github.com/ArthurUker/simba-network-watch/commit/e75625b6f6ff5e284fb9e0d01ec5ce72cd91784c) — Updated documentation and measurement limits.
+- [78856fa](https://github.com/ArthurUker/simba-network-watch/commit/78856fa85a5411bf6076c646a1b1a39b283bd181) — Clarified Cloudflare-only baseline to prevent confusing it with a verified domestic node.
+
+**Production deployment:** Cloudflare Worker `simba-network-watch`, deployment `4a3aa7a0-8546-4cb6-861d-6601fd564d4a` at 2026-11-01 22:38:21 UTC (2026-11-02 06:38 SGT), source application commit [`78856fa`](https://github.com/ArthurUker/simba-network-watch/commit/78856fa85a5411bf6076c646a1b1a39b283bd181); Cloudflare API reports 100% rollout. Live HTTP/browser validation remains separate.
 
 **Scope caveat:** "same-market / cross-market" is a site-market categorization, not verified server geography or cross-border traffic. Cloudflare baseline is not guaranteed to be in the selected country. The previous `simba-network-watch-v3` history key is retained.
 
