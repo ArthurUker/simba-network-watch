@@ -5,6 +5,22 @@ This file is a human-readable index of the Git commit history. **GitHub commits 
 Project: https://github.com/ArthurUker/simba-network-watch  
 Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
+## v4.3 — Auto-detected public network and live HTTP telemetry (2026-11-02)
+
+- [7af8d2b](https://github.com/ArthurUker/simba-network-watch/commit/7af8d2b3f05338ec124f22474da1ea5afcd75358) — Compact iPhone-first network status panel; manual location, SIM and roaming forms collapsed by default.
+- [a9ac48f](https://github.com/ArthurUker/simba-network-watch/commit/a9ac48f5ff3f172b56aa87f151659e2d2791f8c8) — Cloudflare Worker adds colo, HTTP protocol, optional edge RTT and lightweight no-store /api/ping.
+- [788dbfe](https://github.com/ArthurUker/simba-network-watch/commit/788dbfe6575907bb95e8d5f27cf5418a44b2768f) — Automatic ASN organization and IP region, supported browser connection API, repeated HTTP latency tests, and active test-rate display.
+- [0db575f](https://github.com/ArthurUker/simba-network-watch/commit/0db575fea706325457079000fb9fb371b27a25d7) — Stream HTTP download chunks to update test speed during data receipt without additional traffic; retain buffered response fallback.
+- [22039f5](https://github.com/ArthurUker/simba-network-watch/commit/22039f53fee8d3449b813f174932676b83968fec) — Clearly show manual SIM / roaming provenance and distinguish HTTP RTT from optional Cloudflare edge transport RTT.
+- [48caf91](https://github.com/ArthurUker/simba-network-watch/commit/48caf91b13a7984fe8d5df139d5d74a954413e8b) — Draw speed trend progressively during test; refresh network identity on supported connection changes / browser foreground return.
+- [e596ee3](https://github.com/ArthurUker/simba-network-watch/commit/e596ee3ac786dd44ced259ffe3540aeecb16034a) — README capabilities, data limits, and Safari restrictions.
+
+**Production deployment:** Cloudflare Worker `simba-network-watch`, deployment `35a4cdf6-c5f4-474e-b75a-b26bde2b685c` at 2026-11-01 23:18:18 UTC (2026-11-02 07:18 SGT). Cloudflare API reports 100% rollout. Source app `index.html` at [48caf91](https://github.com/ArthurUker/simba-network-watch/commit/48caf91b13a7984fe8d5df139d5d74a954413e8b) and Worker template at [a9ac48f](https://github.com/ArthurUker/simba-network-watch/commit/a9ac48f5ff3f172b56aa87f151659e2d2791f8c8), both committed before deployment.
+
+**Validation:** JavaScript syntax and DOM ID uniqueness, simulated iPhone without Network Information API, stream-based HTTP test-rate updates, per-sample chart updating, unchanged test-session storage, and Worker route checks for /api/network-info and /api/ping. Browser-level public HTTP access and real physical-device cellular signal tests were not verified.
+
+**Accuracy boundaries:** A public-IP ASN/organization is not reliably the SIM carrier or visited roaming radio network. Safari cannot read LTE/5G RAT, Wi-Fi or cellular signal bars, RSRP, RSRQ or SINR. The displayed "live download" exists only during app-initiated HTTP transfers; it is not the total cellular data rate of other apps. Browser effectiveType `4g` where available means a performance tier, not LTE.
+
 ## v4.2 — International roaming, visited network and IP egress (2026-11-02)
 
 - [89538da](https://github.com/ArthurUker/simba-network-watch/commit/89538da722b6684138ec64dc32b0cd0b9a842e83) — Roaming mode, SIM home country, visited network and public IP egress fields in compact mobile UI.
