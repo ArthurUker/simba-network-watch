@@ -1,10 +1,21 @@
 # Network Watch (formerly SIMBA Network Watch)
 
-A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.3**
+A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.4**
 
 **Live site:** https://simba-network-watch.renkangguo.workers.dev/
 
 **Development traceability:** [Version history](./CHANGELOG.md) · [GitHub-first development and deployment process](./DEVELOPMENT.md) · [All commits](https://github.com/ArthurUker/simba-network-watch/commits/main/)
+
+## v4.4 — Unified feature menu and concise mobile dashboard
+
+- The mobile home page now contains **one compact total-network preview** (last measured download, same-origin HTTP latency, observed IP region and ASN network organization). The overview deliberately avoids inventing a network quality score from limited signals.
+- A uniform **six-tile feature menu** opens: baseline speed test, cross-region website probes, application scenarios, roaming context, local history, and CSV export. The full status panel is accessible from **View details** in the top overview.
+- The large six-card auto-detected status panel now lives exclusively in **Network status details**; manual SIM/visited-network/location fields are in **Roaming analysis**; speed chart and duration/budget settings are in **Speed test**; long recent-result list and CSV download are in **History**.
+- The home page shows **full-diagnosis progress only during/after an initiated run**, not an idle block of empty gauges. A single full-diagnosis button remains available.
+- Every detail page uses the same content card treatment, smaller headers and a consistent **Return home** navigation pattern. The mobile tile heights were reduced to fit more useful actions on screen.
+- Existing test logic, `simba-network-watch-v3` localStorage history, roaming labels, ASN and HTTP health API, upload/download behavior and user-configured regional test nodes are preserved.
+- Tests for v4.4 covered JavaScript parse, unique element IDs, menu navigation to all six functions, switching to settings, a simulated full diagnosis with 14 regional and 17 application website targets, history rendering and CSV export.
+- Cloudflare website publication is separate from GitHub source commits. The deployment ID and associated commit are recorded in [CHANGELOG.md](./CHANGELOG.md).
 
 ## v4.3 — Automatic observable connection status and live test telemetry
 
