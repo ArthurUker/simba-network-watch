@@ -1,10 +1,33 @@
 # Network Watch (formerly SIMBA Network Watch)
 
-A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.1**
+A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.2**
 
 **Live site:** https://simba-network-watch.renkangguo.workers.dev/
 
 **Development traceability:** [Version history](./CHANGELOG.md) · [GitHub-first development and deployment process](./DEVELOPMENT.md) · [All commits](https://github.com/ArthurUker/simba-network-watch/commits/main/)
+
+## v4.2 — International roaming and egress diagnostics
+
+**Example: SIMBA SIM in mainland China roaming**
+
+| Dimension | Example | How recorded |
+| --- | --- | --- |
+| Phone physical country | Mainland China | User selects |
+| SIM home provider | SIMBA | User selects |
+| SIM home country | Singapore | User selects |
+| Visited radio network | China Telecom (SIMBA's listed preferred roaming partner) | User confirms manually from phone |
+| Roaming status | International roaming | User selects |
+| Public IP geolocation as seen by this Cloudflare Worker | May be Singapore, mainland China or elsewhere | Same-origin egress API |
+
+The dashboard keeps **two independent site-market categories**: whether the market matches the physical country, and whether it matches the observed public-IP country. These are **not proof of local breakout, home-routed data, or the physical location of the end server**. Cloudflare IP geolocation is an estimate; VPN/proxies, gateway routing and CDN location can change interpretation.
+
+A serverless same-origin endpoint at /api/network-info returns the client IP's **estimated** country, ASN and AS organization **without returning the complete IP address** or writing it to persistent server storage. The client refreshes this at the beginning of each diagnostic run and can refresh manually. If the check fails, egress country is unknown; previously recorded test attribution is not replaced.
+
+The website still runs as a manually deployed Cloudflare Worker, not an automatically updated GitHub Pages build. A **pure static HTML host without the companion endpoint** can still show a diagnostic page, but public egress observation will be unavailable.
+
+**How to test this case:** choose mainland China as physical location, SIMBA as SIM provider, international roaming as connection mode, Singapore as SIM home, then enter the actual visited network if known. Press the IP-check button to observe IP country before interpreting country categories. SIMBA's China roaming listing currently names **China Telecom** as its preferred operator; do not assume the handset has actually attached to it.
+
+Older v4.1 measurements without a recorded egress IP country remain unknown for egress-based classification. Existing localStorage measurements are retained.
 
 ## v4.1 — carrier-neutral, origin-aware monitoring
 
