@@ -185,7 +185,7 @@ function finish(){busy=false;aborter=null;$('state').textContent='准备就绪';
 function prefs(){return{duration:Number($('duration').value),budget:Number($('budget').value),network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,video:$('videoApp').value,nodes:$('nodeConfig').value.trim()}}
 function savePrefs(){try{localStorage.setItem(PREF,JSON.stringify(prefs()))}catch(e){}}
 function read(){try{const data=JSON.parse(localStorage.getItem(KEY)||'null');if(data&&typeof data==='object'){state={...state,...data};if(!Array.isArray(state.sessions))state.sessions=[];if(!Array.isArray(state.stalls))state.stalls=[]}}catch(e){}
-try{const p=JSON.parse(localStorage.getItem(PREF)||'{}');for(const id of ['duration','budget','network','location','videoApp']){const name=id==='videoApp'?'video':id;if(p[name]!==undefined&&p[name]!==null)$(id).value=String(p[name])}$('upload').checked=!!p.upload;$('nodeConfig').value=String(p.nodes||'')}catch(e){}
+try{const p=JSON.parse(localStorage.getItem(PREF)||'{}');for(const id of ['duration','budget','network','location','videoApp']){const name=id==='videoApp'?'video':id==='nodeConfig'?'nodes':id;if(p[name]!==undefined&&p[name]!==null)$(id).value=String(p[name])}$('upload').checked=!!p.upload;$('nodeConfig').value=String(p.nodes||'')}catch(e){}
 try{const legacy=JSON.parse(localStorage.getItem(OLD)||'[]');if(Array.isArray(legacy)&&!state._legacyImported){state.legacy=legacy.filter(x=>x.kind==='test').map(x=>({t:x.t,network:x.network,speed:x.speed,latency:x.latency,bytes:x.bytes}));state.stalls.push(...legacy.filter(x=>x.kind==='stall').map(x=>({t:x.t,app:x.app||'历史记录',network:x.network})));state._legacyImported=true;save()}}catch(e){}
 render()}
 function simpleStatus(value){if(value==='opaque')return '请求完成*';if(value==='timeout')return '超时';if(value==='aborted')return '已取消';return '受限/失败'}
@@ -245,13 +245,13 @@ const results=[];const rounds=2,total=flat.length*rounds;let index=0;
 for(const item of flat){const samples=[];for(let k=0;k<rounds;k++){if(signal.aborted)break;const x=await siteProbe(item.url,signal);samples.push(x);index++;progress(r0+rs*index/total,label+' '+index+'/'+total+'：'+item.name+' · '+simpleStatus(x.result));if(!signal.aborted)await sleep(450,signal)}
 results.push({...item,count:samples.length,duration:median(samples.map(x=>x.ms)),samples});if(signal.aborted)break}
 return results}
-async function run(kind){if(!begin())return;const root=aborter.signal;setTab(kind==='full'?'overview':kind==='local'?'local':kind==='regions'?'regions':'apps');
+async function run(kind){if(!begin())return;const root=aborter.signal;setTab(kind==='full'?'overview':kind==='local'?'local':(kind==='regions'||kind==='nodes')?'regions':'apps');
 let local=null;const started=now();try{
 if(kind==='local'||kind==='full'){stage('本地链路 · 持续下载与延迟');local=await localStage(root,3,kind==='full'?36:95)}
-if(!root.aborted&&(kind==='regions'||kind==='full')){stage('跨境 · 多地区网站');state.region=await groupStage(REGIONS,root,kind==='full'?40:2,kind==='full'?28:96,'跨境');save();render()}
-if(!root.aborted&&kind==='nodes'){stage('跨境指定节点 · CORS 下载吞吐');await nodeStage(root)}
-if(!root.aborted&&(kind==='apps'||kind==='full')){stage('应用场景 · 公开视频与社交网站');state.apps=await groupStage(APPS,root,kind==='full'?69:2,kind==='full'?30:96,'场景');save();render()}
-if(!root.aborted&&kind==='full'&&parsedNodes().length){stage('跨境指定节点 · CORS 下载吞吐');await nodeStage(root)}
+if(!root.aborted&&(kind==='regions'||kind==='full')){setTab('regions');stage('跨境 · 多地区网站');state.region=await groupStage(REGIONS,root,kind==='full'?40:2,kind==='full'?28:96,'跨境');save();render()}
+if(!root.aborted&&kind==='nodes'){setTab('regions');stage('跨境指定节点 · CORS 下载吞吐');await nodeStage(root)}
+if(!root.aborted&&(kind==='apps'||kind==='full')){setTab('apps');stage('应用场景 · 公开视频与社交网站');state.apps=await groupStage(APPS,root,kind==='full'?69:2,kind==='full'?30:96,'场景');save();render()}
+if(!root.aborted&&kind==='full'&&parsedNodes().length){setTab('regions');stage('跨境指定节点 · CORS 下载吞吐');await nodeStage(root)}
 const statusText=root.aborted?'已取消':'完成';
 state.sessions.push({kind,t:started,status:statusText,speed:local&&local.speed,localPoints:local&&local.points.length,regionSites:state.region&&state.region.length,appSites:state.apps&&state.apps.length});state.sessions=state.sessions.slice(-100);save();render();
 progress(root.aborted?progressValue:100,root.aborted?'诊断已取消，已完成部分已保存。':'本次诊断完成，请分别查看本地、跨境和应用场景结果。');
