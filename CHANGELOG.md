@@ -5,6 +5,19 @@ This file is a human-readable index of the Git commit history. **GitHub commits 
 Project: https://github.com/ArthurUker/simba-network-watch  
 Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
+## v4.1 — Multi-carrier, location-relative reporting and smoother charts (2026-11-02)
+
+- [db7896f](https://github.com/ArthurUker/simba-network-watch/commit/db7896f5873e2675278a7c63c43d6b2353ece6d3) — Removed SIMBA-only product wording; added measurement country and carrier selector with China Unicom and other carriers.
+- [7bbc22f](https://github.com/ArthurUker/simba-network-watch/commit/7bbc22f2728ea6da1fcec6c072e96833d46ab51e) — Saved country and carrier per test, migrated previous browser preferences.
+- [8437ee4](https://github.com/ArthurUker/simba-network-watch/commit/8437ee478ecd10dfb70a989f933e5a5a79b96b6f) — Classified website markets relative to country **at test time**, without retroactive reinterpretation.
+- [9b20a23](https://github.com/ArthurUker/simba-network-watch/commit/9b20a23181cce8f4957444ec8391d9cfd1e289a6) — Added display-only 5-sample rolling median and smooth curve, with original samples and a raw-trend toggle.
+- [459684f](https://github.com/ArthurUker/simba-network-watch/commit/459684fe1800f4e57e3503843b2be42cf9a35d93) — Exported country, carrier, market classification, and original throughput values in CSV.
+- [e75625b](https://github.com/ArthurUker/simba-network-watch/commit/e75625b6f6ff5e284fb9e0d01ec5ce72cd91784c) — Updated documentation and measurement limits.
+
+**Scope caveat:** "same-market / cross-market" is a site-market categorization, not verified server geography or cross-border traffic. Cloudflare baseline is not guaranteed to be in the selected country. The previous `simba-network-watch-v3` history key is retained.
+
+**Validation:** Static JavaScript syntax check, simulated full-run checks for China mainland + China Unicom and Singapore + SIMBA, preserved historical scan attribution after switching origin, smooth and raw chart rendering, and origin-aware CSV contents. Real China Unicom / SIMBA network verification and on-device Safari screenshot testing were not performed in this development session.
+
 ## v4.0 — Dashboard-first interface (2026-11-01)
 
 - [e4fd9e0](https://github.com/ArthurUker/simba-network-watch/commit/e4fd9e038813a4d23a0b4c227bf25e5bbb9541f5) — Redesigned mobile-first dashboard with four at-a-glance results and visible four-stage progress.
