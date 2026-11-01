@@ -45,4 +45,4 @@ These are design references. The UI and JavaScript in this repository are origin
 
 ## License
 
-No open-source license has been selected. Public source visibility does not grant redistribution rights. This independent project is not endorsed by SIMBA, Cloudflare or the services it tests.
+This project is licensed under the **MIT License**. See [LICENSE](./LICENSE) for the existing copyright and license terms. This independent project is not endorsed by SIMBA, Cloudflare or the services it tests.
