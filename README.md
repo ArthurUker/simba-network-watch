@@ -4,9 +4,11 @@ A lightweight, single-page network speed and video buffering monitor for SIMBA T
 
 **Live preview (Cloudflare Workers):** https://simba-network-watch.renkangguo.workers.dev/
 
-## Features (v2.0)
+## Features (v2.1)
 
-- Mobile-first, one-tap speed test and bottom action bar for iPhone
+- Mobile-first, compact one-tap speed test and bottom action bar for iPhone
+- Fixed Safari `Can't find variable: ic` exception in history rendering
+- A completed download test stays successful even if result-list rendering fails
 - One-tap video buffering marker without automatically consuming data
 - Simple performance summary and a compact 24-hour / all-time trend
 - Advanced settings collapsed by default; existing v1 local records retained
@@ -32,7 +34,7 @@ All changes to `index.html` in the selected branch will update the GitHub Pages 
 
 ## Cloudflare
 
-The Cloudflare Workers site linked above runs the redesigned v2.0 interface and was deployed independently of GitHub. Pushes to this repository **will not automatically update that Cloudflare Workers deployment** until a GitHub Actions / Wrangler deployment pipeline is explicitly configured.
+The Cloudflare Workers site linked above runs the redesigned v2.1 interface and was deployed independently of GitHub. Pushes to this repository **will not automatically update that Cloudflare Workers deployment** until a GitHub Actions / Wrangler deployment pipeline is explicitly configured.
 
 The site can alternatively be hosted on Cloudflare Pages by creating a Pages project connected to this repo and setting build command to none, build output directory to `/` (or a directory holding `index.html`, depending on the dashboard configuration).
 
