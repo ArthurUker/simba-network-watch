@@ -5,6 +5,22 @@ This file is a human-readable index of the Git commit history. **GitHub commits 
 Project: https://github.com/ArthurUker/simba-network-watch  
 Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
+## v4.2 — International roaming, visited network and IP egress (2026-11-02)
+
+- [89538da](https://github.com/ArthurUker/simba-network-watch/commit/89538da722b6684138ec64dc32b0cd0b9a842e83) — Roaming mode, SIM home country, visited network and public IP egress fields in compact mobile UI.
+- [88b6fc1](https://github.com/ArthurUker/simba-network-watch/commit/88b6fc1a197dc296cfc4688fb9881c86550cedbd) — IP egress observation from Cloudflare, persisted per-test roaming metadata, and refresh before a run.
+- [edbe38c](https://github.com/ArthurUker/simba-network-watch/commit/edbe38c8df73e5b9b3ba3d285e9b607184e340dd) — Separate physical-origin market and public-IP market labels in regional results.
+- [502cb70](https://github.com/ArthurUker/simba-network-watch/commit/502cb701d7902303668ed7ca75eaaf610360b4b7) — Full CSV roaming fields and evidence context.
+- [887e0dd](https://github.com/ArthurUker/simba-network-watch/commit/887e0dd163da698b1a7a6f7fb10aab7354e75225) — Most recent application code commit; handle unknown IP region codes.
+- [7bc8fa5](https://github.com/ArthurUker/simba-network-watch/commit/7bc8fa52bc9ae5ea06f042d706bbd831ffe39a24) — Version-controlled [Cloudflare Worker source template](./worker-template.mjs), including same-origin /api/network-info endpoint (estimated IP country and ASN, never a raw IP response).
+- [a68b1fc](https://github.com/ArthurUker/simba-network-watch/commit/a68b1fcb0e3d7e22bf147240e7ea14ded05fda8c) — Usage documentation and routing caveats.
+
+**Live deployment:** Cloudflare Worker `simba-network-watch`; deployment ID `9bc96dea-1e7f-4bef-abc8-369816cb211b` at 2026-11-01 22:57:18 UTC (2026-11-02 06:57 SGT). Cloudflare reports 100% rollout to the newest Worker version. Source artifacts: `index.html` at application commit `887e0dd`, `worker-template.mjs` at `7bc8fa5`. Changes were pushed to GitHub before Cloudflare publication.
+
+**Validation:** Simulated Singapore-egress / SIMBA-home / China-visited China Telecom roaming; Chinese website displays physical-market-same / egress-market-different and Singapore website the reverse. Confirmed persisted context, original throughput results and CSV evidence, Worker route tests, unknown country handling and no raw visitor IP in endpoint payload. Real phone/roaming traffic and independent public URL browsing were not verified.
+
+**Limitations:** A Cloudflare-estimated public IP country is not proof of physical location, actual network path, local breakout or home routing; classifications are market-relative indicators. No automatic detection of SIM ownership, radio attachment or roaming status is claimed.
+
 ## v4.1 — Multi-carrier, location-relative reporting and smoother charts (2026-11-02)
 
 - [db7896f](https://github.com/ArthurUker/simba-network-watch/commit/db7896f5873e2675278a7c63c43d6b2353ece6d3) — Removed SIMBA-only product wording; added measurement country and carrier selector with China Unicom and other carriers.
