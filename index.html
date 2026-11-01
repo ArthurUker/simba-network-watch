@@ -265,7 +265,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
-const KEY='simba-network-watch-v3',PREF='network-watch-v41-prefs',OLDPREF='simba-network-watch-v4-prefs';
+const KEY='simba-network-watch-v3',PREF='network-watch-v42-prefs',PREVPREF='network-watch-v41-prefs',OLDPREF='simba-network-watch-v4-prefs';
 const DOWN='https://speed.cloudflare.com/__down',UP='https://speed.cloudflare.com/__up';
 const REGIONS=[
 {name:'新加坡',id:'SG',sites:[['Gov.sg','https://www.gov.sg/'],['CNA','https://www.channelnewsasia.com/']]},
@@ -282,7 +282,7 @@ const APPS=[
 {name:'即时通讯',id:'Chat',sites:[['WhatsApp Web','https://web.whatsapp.com/'],['Telegram Web','https://web.telegram.org/']]},
 {name:'办公开发',id:'Work',sites:[['GitHub','https://github.com/'],['Microsoft','https://www.microsoft.com/'],['ChatGPT','https://chatgpt.com/']]},
 {name:'网络购物',id:'Shopping',sites:[['Amazon','https://www.amazon.com/'],['Shopee','https://shopee.sg/']]}];
-let data={sessions:[],stalls:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null,chartView='smooth',runContext=null;
+let data={sessions:[],stalls:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null,chartView='smooth',runContext=null,egressInfo=null;
 const format=(n,d=1)=>Number.isFinite(n)?Number(n).toFixed(d):'—';
 const median=a=>{if(!a.length)return NaN;const v=a.slice().sort((a,b)=>a-b);return(v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2};
 const p10=a=>a.length?a.slice().sort((a,b)=>a-b)[Math.floor((a.length-1)*.1)]:NaN;
@@ -290,13 +290,44 @@ const COUNTRY_NAMES={CN:'中国大陆',SG:'新加坡',MY:'马来西亚',JP:'日�
 const countryName=c=>COUNTRY_NAMES[c]||'未标注';
 const currentCountry=()=>$('originCountry').value||'';
 const currentOperator=()=>$('operator').value==='other'?($('operatorOther').value.trim()||'自定义运营商'):$('operator').value||'未标注运营商';
-const currentContext=()=>({country:currentCountry(),operator:currentOperator(),network:$('network').value,location:$('location').value.trim()});
+const currentContext=()=>({country:currentCountry(),operator:currentOperator(),network:$('network').value,location:$('location').value.trim(),roamingMode:$('roamingMode').value,simHomeCountry:$('simHomeCountry').value,visitedOperator:$('visitedOperator').value.trim(),egressCountry:egressInfo?.country||'',egressAsn:egressInfo?.asn||null,egressOrganization:egressInfo?.organization||'',egressCheckedAt:egressInfo?.checkedAt||null});
+const egressAgeMs=()=>egressInfo?.checkedAt?Date.now()-Date.parse(egressInfo.checkedAt):Infinity;
+async function refreshEgress(quiet=false){
+ const btn=$('detectEgress');btn.disabled=true;$('egressStatus').textContent='检测中…';
+ const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),5500);
+ try{const response=await fetch('/api/network-info?ts='+Date.now(),{cache:'no-store',credentials:'omit',signal:ctl.signal});
+ if(!response.ok)throw Error('HTTP '+response.status);
+ const body=await response.json();if(!body||typeof body.country!=='string')throw Error('缺少出口地信息');
+ const country=/^[A-Z]{2}$/.test(body.country)?body.country:'';
+ egressInfo={country,asn:Number.isInteger(body.asn)?body.asn:null,organization:String(body.organization||'').slice(0,90),checkedAt:ts(),source:'cloudflare-client-ip-geolocation'};
+ }catch(err){egressInfo=null;if(!quiet)toast('出口地检测暂不可用');}
+ finally{clearTimeout(timer);btn.disabled=false;render()}
+ return egressInfo
+}
+function roamingHint(ctx){if(ctx.roamingMode==='roaming'){
+ if(!ctx.country)return '请先标注手机实际所在地。';
+ if(!ctx.simHomeCountry)return '已标记漫游；请填写 SIM 归属国家/地区，以判断是否可能发生归属地回传。';
+ if(ctx.country===ctx.simHomeCountry)return '漫游模式与相同的 SIM 归属地可能不一致，请核对设置。';
+ if(!ctx.egressCountry)return '已标记漫游，但出口未知。可点“检测”，观察 Cloudflare 看到的 IP 归属地。';
+ if(ctx.egressCountry===ctx.simHomeCountry)return 'Cloudflare 看到的 IP 地区与 SIM 归属地一致；可能归属路由，不能仅凭 IP 证明流量回传。';
+ if(ctx.egressCountry===ctx.country)return 'Cloudflare 看到的 IP 地区与手机所在地一致；可能当地出口，也可能受代理和地址注册影响。';
+ return 'Cloudflare 看到的 IP 地区与所在地、SIM 归属地都不同；可能涉及第三地网络或代理，需进一步检查。';
+ }
+ if(ctx.roamingMode==='home')return '已标记非漫游；公网出口地仍可能受运营商网关、VPN、代理和 CDN 影响。';
+ return '接入方式未确认。请标注是否漫游；公网出口地不等于手机物理位置。';
+}
+function displayRoaming(){const ctx=currentContext();$('roamingDetails').hidden=ctx.roamingMode!=='roaming';
+ $('egressStatus').textContent=ctx.egressCountry?countryName(ctx.egressCountry):'未知 / 未检测';
+ $('egressDetail').textContent=ctx.egressCountry?('Cloudflare 看到的客户端 IP 估计位置：'+countryName(ctx.egressCountry)+(ctx.egressAsn?' · ASN '+ctx.egressAsn:'')+(ctx.egressOrganization?' · '+ctx.egressOrganization:'')+'。仅为 IP 归属地线索，不能证明物理位置或回传路径。'):'Cloudflare 出口检测尚无结果；网站分类先按实际手机所在地进行。';
+ $('roamingAssessment').textContent=roamingHint(ctx)
+}
+
 const marketClass=(target,origin)=>!origin||origin==='OTHER'?'unknown':origin===target?'local':'cross';
 const marketLabel=(target,origin)=>{const x=marketClass(target,origin);return x==='local'?'同地区市场':x==='cross'?'其他地区市场':'地点未分类'};
 const ts=()=>new Date().toISOString();
 const time=t=>{if(!t)return '暂无';return new Date(t).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})};
 function stateSave(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){toast('保存记录失败，请尝试导出 CSV')}}
-function prefs(){return{duration:$('duration').value,budget:$('budget').value,network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,nodes:$('nodeConfig').value,videoApp:$('videoApp').value,originCountry:currentCountry(),operator:$('operator').value,operatorOther:$('operatorOther').value.trim()}}
+function prefs(){return{duration:$('duration').value,budget:$('budget').value,network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,nodes:$('nodeConfig').value,videoApp:$('videoApp').value,originCountry:currentCountry(),operator:$('operator').value,operatorOther:$('operatorOther').value.trim(),roamingMode:$('roamingMode').value,simHomeCountry:$('simHomeCountry').value,visitedOperator:$('visitedOperator').value.trim()}}
 function savePrefs(){try{localStorage.setItem(PREF,JSON.stringify(prefs()))}catch(e){}}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3000)}
 function tab(which){activeTab=which;document.querySelectorAll('[data-page]').forEach(n=>n.classList.toggle('active',n.dataset.page===which));document.querySelectorAll('.view').forEach(n=>n.classList.toggle('active',n.id==='page-'+which));window.scrollTo({top:0,behavior:'instant'})}
@@ -310,7 +341,7 @@ function countSites(rs){const a=getProbed(rs);return{done:a.length,returned:a.fi
 function setComplete(id,ready){$(id).classList.toggle('complete',ready)}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object')data={...data,...x}}catch(e){}
 for(const key of ['sessions','stalls','legacy'])if(!Array.isArray(data[key]))data[key]=[];
-try{const pf=JSON.parse(localStorage.getItem(PREF)||localStorage.getItem(OLDPREF)||'null');if(pf){for(const id of ['duration','budget','network','location','nodeConfig','videoApp','originCountry','operator','operatorOther']){const key=id==='nodeConfig'?'nodes':id;if(pf[key]!==undefined&&pf[key]!==null)$(id).value=String(pf[key])}$('upload').checked=!!pf.upload}}catch(e){}$('operatorOther').hidden=$('operator').value!=='other';
+try{const pf=JSON.parse(localStorage.getItem(PREF)||localStorage.getItem(PREVPREF)||localStorage.getItem(OLDPREF)||'null');if(pf){for(const id of ['duration','budget','network','location','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator']){const key=id==='nodeConfig'?'nodes':id;if(pf[key]!==undefined&&pf[key]!==null)$(id).value=String(pf[key])}$('upload').checked=!!pf.upload}}catch(e){}$('operatorOther').hidden=$('operator').value!=='other';
 try{if(!data._legacyImported){const hist=JSON.parse(localStorage.getItem('simba-network-watch-v1')||'[]');if(Array.isArray(hist)){data.legacy=hist.filter(x=>x.kind==='test');data.stalls.push(...hist.filter(x=>x.kind==='stall').map(x=>({t:x.t,app:x.app||'历史卡顿'})))}data._legacyImported=true;stateSave()}}catch(e){}
 render()}
 function cards(){
@@ -328,7 +359,7 @@ const ss=getRows(data.sessions),last=ss.at(-1);setValue('lastTime',last?'上次 
 if(running){setValue('headline','正在检查网络…');setValue('headlineSub','四个阶段完成后，结果会逐项更新在下方卡片。')}
 else if(last){setValue('headline','你的网络报告已就绪');setValue('headlineSub','点选下方四张卡片查看详细结果；也可以重新检测。')}
 else{setValue('headline','让网络表现一目了然');setValue('headlineSub','一次检查本地、跨境、应用服务和视频分片表现。')}
-setValue('recordCount',ss.length+' 次');const ctx=currentContext();setValue('networkBadge',(ctx.country?countryName(ctx.country):'地点待选')+' / '+(ctx.operator==='未标注运营商'?'运营商待选':ctx.operator)+' / '+(ctx.network||'制式未标注'));
+setValue('recordCount',ss.length+' 次');const ctx=currentContext();displayRoaming();setValue('networkBadge',(ctx.country?countryName(ctx.country):'地点待选')+' / '+(ctx.operator==='未标注运营商'?'运营商待选':ctx.operator)+(ctx.roamingMode==='roaming'?' 漫游':'')+' / '+(ctx.network||'制式未标注'));
 setValue('originHint',ctx.country?'当前：'+countryName(ctx.country)+'。同地区与跨境仅按网站市场分组；实际服务器与线路未验证。':'先选择实际测试国家/地区，才能区分同地区与跨境网站。');
 const nearby=REGIONS.find(g=>g.id===ctx.country);setValue('regionsHeading','7 个地区 · '+(nearby?'同地区目标：'+nearby.name:'暂无同地区网站目标'));
 const scanOrigin=data.regionOriginCountry||'';setValue('regionSub',scanOrigin?('本轮测自 '+countryName(scanOrigin)+' · 同地区 '+(REGIONS.some(g=>g.id===scanOrigin)?2:0)+' 站；其余为跨地区市场'):'暂无带有来源国家的站点结果；请重新测试后分类');setHTML('localMedian',l&&Number.isFinite(l.speed)?format(l.speed):'—','Mbps');
@@ -371,7 +402,7 @@ block.append(sum,inner);list.append(block)}
 function renderRemote(){const root=$('nodeDetails');root.replaceChildren();const r=getRows(data.remote);if(!r.length){root.textContent='没有受控海外节点的测速结果。';return}
 for(const x of r){const row=textNode('div','list-item',''),left=textNode('div','left','');left.append(textNode('b','',x.id+' · '+(x.marketCategory==='local'?'同地区':x.marketCategory==='cross'?'跨地区':'地区未分类')+' · 用户提供的 HTTPS 节点'),textNode('small','',x.url));const right=textNode('div','right',Number.isFinite(x.mbps)?format(x.mbps)+' Mbps':'测试受限');row.append(left,right);root.append(row)}
 }
-function render(){cards();$('headerDot').classList.toggle('live',running);$('headerState').textContent=running?'诊断中':'准备就绪';$('runBar').classList.toggle('visible',running);document.body.classList.toggle('running',running);$('startFull').disabled=running;for(const id of ['startLocal','startGlobal','startApps','startVideo','startNodes','quickLocal'])$(id).disabled=running;setValue('runLabel',stagedText||'诊断中');for(const id of ['originCountry','operator','operatorOther'])$(id).disabled=running}
+function render(){cards();$('headerDot').classList.toggle('live',running);$('headerState').textContent=running?'诊断中':'准备就绪';$('runBar').classList.toggle('visible',running);document.body.classList.toggle('running',running);$('startFull').disabled=running;for(const id of ['startLocal','startGlobal','startApps','startVideo','startNodes','quickLocal'])$(id).disabled=running;setValue('runLabel',stagedText||'诊断中');for(const id of ['originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).disabled=running}
 function stepUpdate(index,val,msg){stepIndex=index;p=Math.min(100,Math.max(0,val));if(msg)stagedText=msg;setValue('progressBar','');$('progressBar').style.width=p+'%';$('progressState').textContent=running?'执行中 · '+format(p,0)+'%':'未开始';$('progressState').className='pill'+(running?'':' muted');setValue('progressStage',stagedText||'等待开始');setValue('workMsg',stagedText||'诊断进行中');for(let i=0;i<4;i++){$('step'+i).className='step'+(stepDone.includes(i)?' done':i===index?' live':'')}setValue('runLabel',stagedText||'诊断中')}
 function start(){if(running)return false;running=true;runContext=currentContext();controller=new AbortController();stepDone=[];p=0;stagedText='准备开始…';stepUpdate(-1,0,stagedText);render();return true}
 function finish(){running=false;controller=null;runContext=null;render();$('progressState').textContent=stagedText.includes('取消')?'已取消':'已结束';$('headerState').textContent='准备就绪'}
@@ -395,12 +426,12 @@ if(root.aborted)break;await sleep(Math.min(Math.max(0,period-(performance.now()-
 const elapsed=(performance.now()-startAt)/1000;if(root.aborted)reason='已取消';
 if(!root.aborted&&$('upload').checked){try{const nums=[];for(let i=0;i<2;i++){nums.push(await up(root))}uploadSpeed=median(nums)}catch(e){fails.push('上传未完成：'+String(e.message||e))}}
 const v=points.map(x=>x.mbps),j=latencies.slice(1).map((x,i)=>Math.abs(x-latencies[i]));
-const obj={t:ts(),network,location,originCountry:ctx.country,operator:ctx.operator,elapsed,reason,bytes:moved,points,latencies,failures:fails,speed:median(v),p10:p10(v),latency:median(latencies),jitter:median(j),uploadSpeed,endpointType:'Cloudflare region not verified'};
+const obj={t:ts(),network,location,originCountry:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt,elapsed,reason,bytes:moved,points,latencies,failures:fails,speed:median(v),p10:p10(v),latency:median(latencies),jitter:median(j),uploadSpeed,endpointType:'Cloudflare region not verified'};
 if(points.length)data.local=obj;stateSave();render();return obj}
 async function siteProbe(url,root){const b=bounded(root,4800),start=performance.now();try{const res=await fetch(url,{method:'HEAD',mode:'no-cors',redirect:'follow',cache:'no-store',credentials:'omit',signal:b.signal});return{result:res.type==='opaque'?'opaque':'other',ms:performance.now()-start}}catch(e){return{result:root.aborted?'aborted':b.signal.aborted?'timeout':'restricted',ms:performance.now()-start}}finally{b.close()}}
-async function siteStage(groups,root,kind,lo,span){const existing=[],ctx=runContext||currentContext(),total=groups.reduce((a,g)=>a+g.sites.length,0)*2;let at=0;if(kind==='region'){data.region=[];data.regionOriginCountry=ctx.country}else{data.apps=[];data.appsOriginCountry=ctx.country}
+async function siteStage(groups,root,kind,lo,span){const existing=[],ctx=runContext||currentContext(),total=groups.reduce((a,g)=>a+g.sites.length,0)*2;let at=0;if(kind==='region'){data.region=[];data.regionOriginCountry=ctx.country;data.regionContext={country:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt}}else{data.apps=[];data.appsOriginCountry=ctx.country}
 for(const group of groups){for(const [name,url] of group.sites){if(root.aborted)break;const samples=[];for(let k=0;k<2;k++){if(root.aborted)break;const sample=await siteProbe(url,root);samples.push(sample);at++;stepUpdate(kind==='region'?1:2,lo+span*at/total,(kind==='region'?'跨境探测':'应用检查')+' · '+group.name+' / '+name+' · '+at+'/'+total);await sleep(220,root)}
-existing.push({name,url,group:group.name,t:ts(),originCountry:ctx.country,operator:ctx.operator,marketCode:group.id,marketCategory:kind==='region'?marketClass(group.id,ctx.country):'app',count:samples.length,samples,duration:median(samples.map(s=>s.ms))});
+existing.push({name,url,group:group.name,t:ts(),originCountry:ctx.country,operator:ctx.operator,marketCode:group.id,marketCategory:kind==='region'?marketClass(group.id,ctx.country):'app',egressMarketCategory:kind==='region'?marketClass(group.id,ctx.egressCountry):'app',simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,roamingMode:ctx.roamingMode,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,count:samples.length,samples,duration:median(samples.map(s=>s.ms))});
 if(kind==='region')data.region=existing.slice();else data.apps=existing.slice();
 stateSave();render()}
 if(root.aborted)break}return existing}
@@ -414,12 +445,13 @@ async function nodeStage(root){const list=configuredNodes();if(!list.length){toa
 out.push({...list[i],originCountry:(runContext||currentContext()).country,operator:(runContext||currentContext()).operator,marketCategory:marketClass(list[i].id,(runContext||currentContext()).country),samples:s,mbps:median(s.filter(x=>Number.isFinite(x.mbps)).map(x=>x.mbps))});stepUpdate(1,100*(i+1)/list.length,'海外受控节点 '+(i+1)+'/'+list.length);data.remote=out.slice();stateSave();render()}}
 async function run(kind){if(!start())return;const root=controller.signal,started=ts();if(kind!=='full')tab(kind==='local'?'local':kind==='region'||kind==='nodes'?'global':'apps');else tab('home');
 try{
+await refreshEgress(true);if(root.aborted)return;runContext=currentContext();
 if(kind==='full'||kind==='local'){stepUpdate(0,2,'基准网络 · 开始持续采样');await localStage(root,3,kind==='full'?32:94);if(!root.aborted)stepDone.push(0);render()}
 if(!root.aborted&&(kind==='full'||kind==='region')){stepUpdate(1,kind==='full'?36:2,'同地区与跨地区网站 · 7 个市场');await siteStage(REGIONS,root,'region',kind==='full'?36:2,kind==='full'?27:96);if(!root.aborted)stepDone.push(1)}
 if(!root.aborted&&(kind==='full'||kind==='apps')){stepUpdate(2,kind==='full'?64:2,'应用服务 · 6 类');await siteStage(APPS,root,'apps',kind==='full'?64:2,kind==='full'?24:96);if(!root.aborted)stepDone.push(2)}
 if(!root.aborted&&(kind==='full'||kind==='video')){stepUpdate(3,kind==='full'?89:2,'视频分片 · 20 秒模拟');await videoStage(root,kind==='full'?89:2,kind==='full'?10:96);if(!root.aborted)stepDone.push(3)}
 if(!root.aborted&&kind==='nodes'){stepUpdate(1,5,'受控海外节点测试');await nodeStage(root);if(!root.aborted)stepDone.push(1)}
-const status=root.aborted?'已取消':'完成';data.sessions.push({kind,t:started,status,originCountry:(runContext||currentContext()).country,operator:(runContext||currentContext()).operator,network:(runContext||currentContext()).network,speed:data.local?.speed});data.sessions=data.sessions.slice(-100);stateSave();
+const status=root.aborted?'已取消':'完成';data.sessions.push({kind,t:started,status,originCountry:(runContext||currentContext()).country,operator:(runContext||currentContext()).operator,network:(runContext||currentContext()).network,roamingMode:(runContext||currentContext()).roamingMode,simHomeCountry:(runContext||currentContext()).simHomeCountry,visitedOperator:(runContext||currentContext()).visitedOperator,egressCountry:(runContext||currentContext()).egressCountry,egressAsn:(runContext||currentContext()).egressAsn,speed:data.local?.speed});data.sessions=data.sessions.slice(-100);stateSave();
 stepUpdate(-1,root.aborted?p:100,root.aborted?'已取消，已完成的阶段已保存':'诊断完成 · 点击上方卡片查看各项结果');if(!root.aborted)toast('网络诊断已完成');render();
 }catch(e){console.error(e);data.sessions.push({kind,t:started,status:'部分失败'});stateSave();stepUpdate(-1,p,'遇到异常：'+String(e.message||e));toast('发生错误，部分数据已保存')}
 finally{finish();render()}}
@@ -446,10 +478,10 @@ document.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>tab(x.dataset.go
 $('startFull').onclick=()=>run('full');$('quickLocal').onclick=()=>run('local');$('startLocal').onclick=()=>run('local');$('startGlobal').onclick=()=>run('region');$('startApps').onclick=()=>run('apps');$('startVideo').onclick=()=>run('video');$('startNodes').onclick=()=>run('nodes');
 $('openOptions').onclick=()=>{$('allOptions').open=true;$('allOptions').scrollIntoView({behavior:'smooth',block:'start'})};
 $('stopBtn').onclick=stop;$('quickStall').onclick=mark;$('floatingStall').onclick=mark;$('markStall').onclick=mark;$('exportHome').onclick=csv;
-for(const id of ['duration','budget','network','location','upload','nodeConfig','videoApp','originCountry','operator','operatorOther'])$(id).addEventListener('change',()=>{if(id==='operator')$('operatorOther').hidden=$('operator').value!=='other';savePrefs();render()});
+for(const id of ['duration','budget','network','location','upload','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).addEventListener('change',()=>{if(id==='operator')$('operatorOther').hidden=$('operator').value!=='other';savePrefs();render()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){stop();toast('已离开前台，测速将停止，已完成数据保留')}});
-window.addEventListener('offline',()=>{if(running)stop();toast('网络连接已断开')});
-load();
+$('detectEgress').onclick=()=>refreshEgress(false);window.addEventListener('offline',()=>{if(running)stop();toast('网络连接已断开')});
+load();refreshEgress(true);
 })();
 </script>
 </body>
