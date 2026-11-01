@@ -287,7 +287,7 @@ const format=(n,d=1)=>Number.isFinite(n)?Number(n).toFixed(d):'—';
 const median=a=>{if(!a.length)return NaN;const v=a.slice().sort((a,b)=>a-b);return(v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2};
 const p10=a=>a.length?a.slice().sort((a,b)=>a-b)[Math.floor((a.length-1)*.1)]:NaN;
 const COUNTRY_NAMES={CN:'中国大陆',SG:'新加坡',MY:'马来西亚',JP:'日本',US:'美国',UK:'英国',AU:'澳大利亚',HK:'中国香港',TW:'中国台湾',KR:'韩国',IN:'印度',DE:'德国',FR:'法国',OTHER:'其他地区'};
-const countryName=c=>COUNTRY_NAMES[c]||'未标注';
+const countryName=c=>COUNTRY_NAMES[c]||(c&&c!=='XX'?c:'未标注');
 const currentCountry=()=>$('originCountry').value||'';
 const currentOperator=()=>$('operator').value==='other'?($('operatorOther').value.trim()||'自定义运营商'):$('operator').value||'未标注运营商';
 const currentContext=()=>({country:currentCountry(),operator:currentOperator(),network:$('network').value,location:$('location').value.trim(),roamingMode:$('roamingMode').value,simHomeCountry:$('simHomeCountry').value,visitedOperator:$('visitedOperator').value.trim(),egressCountry:egressInfo?.country||'',egressAsn:egressInfo?.asn||null,egressOrganization:egressInfo?.organization||'',egressCheckedAt:egressInfo?.checkedAt||null});
