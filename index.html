@@ -1,128 +1,237 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<meta name="theme-color" content="#0a1020" />
-<meta name="description" content="SIMBA 5G / 4G 轻量网速监控与视频卡顿分析，支持本地历史记录和CSV导出。" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f7f8">
+<meta name="description" content="SIMBA Network Watch — 手机优先的 5G/4G 网速、延迟与视频卡顿记录工具。">
 <title>SIMBA Network Watch · 网速监控</title>
 <style>
-:root{color-scheme:dark;--bg:#080d18;--paper:#10192b;--paper2:#131f34;--line:#273650;--ink:#eaf2ff;--muted:#90a4c0;--mint:#49ecc7;--sky:#70aaff;--coral:#ff9d80;--yellow:#ffe08a;--accent:#5ce3d2;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse 75% 30% at 50% -8%,#1b3d62 0%,transparent 75%),var(--bg);color:var(--ink);font-size:14px;line-height:1.6;min-height:100vh}button,input,select{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{opacity:.5;cursor:not-allowed}.wrap{max-width:1040px;margin:0 auto;padding:30px 22px 70px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.logo{display:flex;align-items:center;gap:12px}.logoicon{width:42px;height:42px;border:1px solid #3d6980;border-radius:13px;display:grid;place-items:center;background:#103744;box-shadow:0 0 27px #1a8c8650}.brand{font-size:13px;letter-spacing:.18em;color:#79dfd4;font-weight:800}.subbrand{font-size:11px;color:#839bb8;letter-spacing:.09em}.pill{border:1px solid var(--line);border-radius:100px;padding:7px 11px;background:#15243a;color:#bad0e7;font-size:12px;display:flex;align-items:center;gap:7px;white-space:nowrap}.dot{height:7px;width:7px;border-radius:50%;background:#647b97}.dot.good{background:var(--mint);box-shadow:0 0 10px var(--mint)}.dot.busy{background:var(--yellow);animation:pulse 1.4s infinite}@keyframes pulse{50%{opacity:.35}}
-h1{font-size:clamp(26px,5vw,42px);font-weight:800;letter-spacing:-.045em;margin:28px 0 7px;line-height:1.22}h1 span{color:var(--mint)}.lead{color:#9cacc3;line-height:1.7;margin:0 0 26px;max-width:720px;font-size:13px}.gridtop{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.tile,.panel{border:1px solid var(--line);background:linear-gradient(165deg,#142039e8,#10192beb);border-radius:18px}.tile{padding:16px 18px;min-width:0}.tile .k{color:#9aadc7;font-size:12px;display:flex;gap:7px;align-items:center}.tile .value{font-size:clamp(23px,3.5vw,32px);font-weight:800;letter-spacing:-.04em;white-space:nowrap;margin:4px 0 0}.tile .unit{font-size:12px;font-weight:500;color:#95aaca;letter-spacing:0}.tile .hint{font-size:11px;color:#738aa7;margin-top:1px}.tile.primary{background:linear-gradient(140deg,#124a55,#102438);border-color:#1e7b7d}.tile.primary .value{color:#71ffe4}.sectiongrid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,1fr);gap:14px;margin-top:14px}.panel{padding:20px}.sectiontitle{font-size:15px;font-weight:750;margin:0;letter-spacing:.002em}.eyebrow{font-size:11px;color:#92a6c2;margin:0 0 4px}.charthead{display:flex;justify-content:space-between;gap:12px;align-items:center}.tabs{display:flex;gap:4px;padding:3px;border-radius:9px;background:#081321;border:1px solid #26364f}.tabs button{border:0;border-radius:7px;padding:6px 9px;font-size:11px;color:#8fa7c5;background:transparent}.tabs button.active{color:#e2f5ff;background:#233850}.plot{margin-top:12px;height:245px;position:relative;overflow:hidden}.plot svg{width:100%;height:100%;display:block}.legend{display:flex;gap:16px;flex-wrap:wrap;color:#93a9c4;font-size:11px;margin-top:3px}.swatch{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.controlrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #23334b}.controlrow:last-child{border:0}.lbl{font-size:12px;color:#99adc9}.labelhint{color:#6e88a7;font-size:10.5px;margin-top:2px}select,input[type=text]{background:#0c1727;color:#e3efff;border:1px solid #30425c;border-radius:10px;padding:10px 11px;outline:none;min-width:0}select:focus,input:focus{border-color:#56bfc6}select{max-width:195px}.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.btn{border-radius:10px;padding:11px 15px;border:1px solid #334861;background:#15243b;color:#dceafe;font-weight:700;font-size:12px}.btn:active{transform:translateY(1px)}.btn.primary{background:var(--mint);color:#06251f;border-color:transparent}.btn.warn{border-color:#715044;color:#ffb9a0}.btn.ghost{border-color:#2b4056;background:transparent;color:#9ebad5}.full{width:100%}.statusbar{margin-top:12px;border-radius:10px;background:#0c1727;padding:10px 12px;color:#9aadc5;font-size:11px;min-height:38px}.statusbar.error{color:#ffb29a;border:1px solid #824c44}.statusbar.ok{color:#72ead7}.statusbar.working{color:#f6db9b}.mini{font-size:11px;color:#8198b5}.inputrow{display:flex;gap:8px;margin-top:12px}.inputrow input{width:100%;min-width:0}.networkpick{display:flex;gap:7px}.networkpick button{background:#0b1728;color:#9baec9;border:1px solid #293a52;border-radius:10px;padding:9px 15px;font-weight:700}.networkpick button.active{border-color:#41b3b4;color:#80f9e3;background:#10373e}.fullwidth{margin-top:14px}.cardheading{display:flex;justify-content:space-between;align-items:center;gap:10px}.stattext{font-size:12px;color:#9cadc6}.stattext strong{color:#e5f4ff}.analysis{background:#0b1727;border:1px solid #263951;border-radius:12px;padding:15px;margin-top:15px;color:#b3c6db;font-size:12px;line-height:1.8}.analysis strong{color:#e2f6ff}.history{max-height:308px;overflow:auto;margin-top:15px}.record{padding:12px 0;border-bottom:1px solid #26374c;display:grid;grid-template-columns:1fr auto;gap:4px 12px}.record:last-child{border:0}.timestamp{font-size:12px;color:#b8cae0}.record small{font-size:10px;color:#728aa9}.speed{color:#79ecd5;font-weight:800;font-size:16px}.video{color:#ffb08f;font-weight:700}.note{color:#91a6c2;font-size:11px;grid-column:1 / -1;line-height:1.5}.empty{text-align:center;color:#7f96b2;font-size:12px;padding:38px 12px}.footerline{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:24px;color:#788eab;font-size:11px}.footerline a{color:#90c7d7}.info{border:1px solid #2d3c50;padding:13px 16px;border-radius:12px;background:#111e31;margin-top:14px;font-size:11px;color:#8da3be;line-height:1.8}.info strong{color:#d0e5f7}.warning{color:#edc78c}.check{display:flex;align-items:center;gap:8px;color:#a6bad0;font-size:12px}.check input{accent-color:var(--mint);width:16px;height:16px}.progress{height:5px;border-radius:8px;background:#26354e;overflow:hidden;margin-top:10px;display:none}.progress i{display:block;width:0;height:100%;background:var(--mint);transition:width .2s}.smallbtn{padding:6px 9px;font-size:11px}@media(max-width:760px){.wrap{padding:19px 13px 65px}.sectiongrid{grid-template-columns:1fr}.gridtop{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{padding:13px}.panel{padding:16px}.plot{height:220px}.top{align-items:flex-start}.lead{font-size:12px}select{max-width:170px}.tile .value{font-size:25px}}
-@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif;color-scheme:light;--bg:#f5f7f8;--card:#fff;--text:#152b34;--muted:#6c7c85;--border:#e6eced;--accent:#087a68;--deep:#07584f;--accentbg:#e2f7ef;--danger:#ba5144;--shadow:0 8px 32px rgba(20,48,61,.05);--radius:20px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
+button,input,select{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #50c8af;outline-offset:2px}
+.wrap{width:min(100%,920px);margin:auto;padding:20px 18px 120px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{width:40px;height:40px;flex:none;border-radius:13px;background:#083f3d;color:#b9f8da;display:grid;place-items:center;font-size:25px;font-weight:900;line-height:1}
+.brand strong{display:block;font-weight:800;font-size:15px;letter-spacing:-.03em}.brand small{display:block;color:var(--muted);font-size:11px}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;border:1px solid var(--border);background:white;color:var(--muted);font-size:11px;white-space:nowrap}
+.led{height:7px;width:7px;border-radius:50%;background:#95aaa9}.led.good{background:#0ca883}.led.busy{background:#e5a349;animation:pulse 1s infinite}.led.bad{background:#cd6651}@keyframes pulse{50%{opacity:.4}}
+.important{display:flex;align-items:flex-start;gap:9px;padding:12px 14px;margin-bottom:16px;background:#e8f1f1;border:1px solid #dbe8e8;color:#3c6165;border-radius:14px;font-size:12px}
+.important .symbol{font-size:17px;line-height:1.1}.important strong{color:#1b444b}
+.hero{background:linear-gradient(145deg,#0c4b48,#0a655a);color:white;border-radius:24px;padding:22px 22px 18px;box-shadow:0 16px 40px rgba(4,79,67,.16);position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-100px;top:-110px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(111,239,197,.2),transparent 70%);pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.overline{letter-spacing:.09em;font-size:11px;font-weight:750;color:#a8e7d7}
+.herohead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.herohead .right{font-size:12px;color:#cce7e1}
+.speedrow{display:flex;align-items:baseline;gap:9px;margin:11px 0 2px}
+.speednumber{font-size:clamp(56px,12vw,82px);font-weight:800;line-height:1;letter-spacing:-.075em;font-variant-numeric:tabular-nums}
+.speedunit{font-size:16px;color:#c8eae1;font-weight:600}
+#speedNote{color:#c7e4de;font-size:12px;min-height:20px}
+.networkline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,.18)}
+.networkline>span{font-size:12px;color:#ccece5}
+.networkpick{display:flex;background:rgba(0,0,0,.22);padding:4px;border-radius:11px;gap:3px}
+.networkpick button{border:0;background:transparent;color:#b4dcd3;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:750}
+.networkpick button.active{background:white;color:#075f53;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.manualnote{font-size:10px;color:#badad3;margin:9px 0 0;text-align:right}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.metric{padding:14px 13px;background:var(--card);border:1px solid var(--border);border-radius:16px;min-width:0}
+.metric label{display:block;color:var(--muted);font-size:11px;white-space:nowrap}
+.metric b{display:block;font-size:24px;font-weight:800;letter-spacing:-.055em;font-variant-numeric:tabular-nums;margin-top:3px}
+.metric b small{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:0}
+.progress{height:5px;background:#e1eeeb;border-radius:5px;overflow:hidden;display:none;margin:12px 0 0}
+.progress>i{display:block;background:#10a788;width:0;height:100%;transition:width .25s}
+.statusmsg{min-height:24px;color:var(--muted);font-size:12px;margin:10px 2px 0}
+.statusmsg.error{color:var(--danger)}.statusmsg.ok{color:#0a866e}
+.card{background:var(--card);border-radius:20px;border:1px solid var(--border);padding:18px;margin-top:14px;box-shadow:var(--shadow)}
+.rowtitle{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h2{margin:0;font-size:17px;letter-spacing:-.025em}
+.sub{font-size:12px;color:var(--muted);margin:4px 0 0}
+.linkbtn{border:0;background:transparent;padding:6px 0;color:var(--accent);font-size:12px;font-weight:700}
+.feedback{border-radius:14px;padding:12px 14px;background:#eff7f5;color:#2f635b;font-size:13px;line-height:1.6;margin-top:14px}
+.feedback strong{display:block;color:#0b6557;margin-bottom:3px}
+#chart{display:block;width:100%;height:auto;min-height:180px;margin-top:12px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin:8px 0 0}
+.sq{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.tabs{display:flex;gap:3px;background:#edf2f2;padding:3px;border-radius:10px}
+.tabs button{border:0;border-radius:8px;padding:6px 9px;color:var(--muted);background:transparent;font-size:11px}
+.tabs button.active{background:white;color:var(--text);font-weight:700}
+.empty{padding:30px 10px;text-align:center;color:#9ba7ad;font-size:13px}
+.entry{display:flex;gap:11px;align-items:center;border-bottom:1px solid var(--border);padding:12px 0}
+.entry:last-child{border:0}
+.entryicon{width:35px;height:35px;border-radius:11px;flex:none;background:#e8f7f1;display:grid;place-items:center;color:#087765;font-size:15px}
+.entryicon.warn{background:#fff0eb;color:#ad5a42}
+.entrymain{min-width:0;flex:1}
+.entrymain strong{display:block;font-size:13px;font-weight:700}.entrymain small{display:block;color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+.entryval{font-size:14px;font-weight:800;white-space:nowrap;color:var(--accent)}
+.entryval.warn{color:#b45f48}
+details{border:1px solid var(--border);border-radius:16px;background:white;margin-top:14px;overflow:hidden}
+summary{cursor:pointer;padding:15px 17px;font-weight:750;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"＋";color:var(--muted);font-size:19px}
+details[open] summary:after{content:"−"}
+.detailsbody{border-top:1px solid var(--border);padding:16px}
+.fieldrow{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--border)}
+.fieldrow:first-child{padding-top:2px}.fieldrow:last-child{border:0}
+.fieldrow label{display:block;font-weight:650;font-size:13px}.fieldrow small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+select,input[type=text]{max-width:175px;width:100%;border:1px solid #d8e2e4;background:#fff;color:var(--text);border-radius:11px;padding:10px;font-size:13px;outline:none}
+.inputfull{max-width:none!important;margin-top:10px}
+.check{display:flex;align-items:center;gap:8px;font-size:13px}.check input{width:18px;height:18px;accent-color:var(--accent)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:13px}
+.softbtn{border:1px solid var(--border);background:#f9fbfa;color:#46636a;border-radius:11px;padding:11px 14px;font-size:13px;font-weight:700}
+.softbtn.danger{color:#b75b52}
+.note{font-size:11px;line-height:1.7;color:var(--muted);margin:10px 0 0}
+.fixedactions{position:fixed;z-index:20;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid #e3ebea;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:12px max(16px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:flex;justify-content:center;gap:10px;box-shadow:0 -8px 30px rgba(33,55,61,.05)}
+.actionwrap{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:10px;width:min(100%,920px)}
+.primarybtn,.secondarybtn{min-height:54px;border-radius:14px;font-weight:800;border:0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px}
+.primarybtn{background:#097b68;color:#fff}.primarybtn:active{background:#075c51}.secondarybtn{background:#e9f2f0;color:#145e53}
+.footer{font-size:11px;line-height:1.7;color:var(--muted);margin:22px 4px}.footer a{color:var(--accent)}
+.toast{position:fixed;top:82px;left:50%;transform:translateX(-50%);z-index:50;background:#183b3a;color:white;padding:12px 17px;border-radius:12px;box-shadow:0 8px 24px #102e2d40;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center;font-size:12px}
+.toast.show{opacity:1}
+@media(min-width:720px){.wrap{padding:32px 24px 44px}.hero{padding:27px 29px 23px}.layout{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;align-items:start}.layout>*{min-width:0}.metrics{gap:14px}.fixedactions{position:static;background:transparent;padding:0;box-shadow:none;border:0;backdrop-filter:none;margin:13px auto 0;width:min(100%,920px)}.actionwrap{width:100%;grid-template-columns:1.5fr 1fr}.footer{margin-top:24px}}
+@media(max-width:390px){.wrap{padding:14px 13px 120px}.hero{padding:19px 17px 17px}.networkpick button{padding:8px 13px}.metric{padding:12px 10px}.metric b{font-size:21px} .metric label{font-size:10px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
-<body><main class="wrap">
-  <header class="top"><div class="logo"><div class="logoicon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M2 17h4l3-9 5 15 3-11 2 5h5" stroke="#69f4d8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="brand">SIMBA / NETWORK WATCH</div><div class="subbrand">PERSONAL CONNECTION MONITOR · v1.0</div></div></div><div class="pill"><span id="statusdot" class="dot"></span><span id="state">等待测试</span></div></header>
-  <h1>看清每一次<span>网络卡顿</span></h1>
-  <p class="lead">为新加坡 SIMBA 5G / 4G 设计。测量到 Cloudflare 的连接质量，记录视频卡顿时间点，对比速度趋势，辅助判断拥堵或疑似限速。<strong style="color:#d7edfa">请先关闭 Wi-Fi，确保正在使用 SIMBA 手机数据。</strong></p>
-  <section class="gridtop" aria-label="最新测试结果">
-    <div class="tile primary"><div class="k">↓ 下载速度</div><div class="value"><span id="download">—</span> <span class="unit">Mbps</span></div><div class="hint" id="downloadhint">等待首次测速</div></div>
-    <div class="tile"><div class="k">◷ HTTP 往返耗时</div><div class="value"><span id="latency">—</span> <span class="unit">ms</span></div><div class="hint">并非 ICMP Ping</div></div>
-    <div class="tile"><div class="k">≋ 延迟波动</div><div class="value"><span id="jitter">—</span> <span class="unit">ms</span></div><div class="hint">5 次请求的波动估计</div></div>
-    <div class="tile"><div class="k">◉ 近24小时成功测速流量</div><div class="value"><span id="volume">0</span> <span class="unit">MB</span></div><div class="hint">仅统计已成功保存的测速，失败测试也可能耗流量</div></div>
-  </section>
-  <div class="sectiongrid">
-    <section class="panel"><div class="charthead"><div><div class="eyebrow">PERFORMANCE HISTORY</div><h2 class="sectiontitle">下载速度趋势</h2></div><div class="tabs" role="group" aria-label="图表时间范围"><button id="range24" class="active" type="button">24 小时</button><button id="rangeAll" type="button">全部</button></div></div>
-      <div class="plot"><svg id="chart" aria-label="下载速度走势图" role="img" viewBox="0 0 670 245" preserveAspectRatio="none"></svg></div>
-      <div class="legend"><span><i class="swatch" style="background:#49ecc7"></i>5G</span><span><i class="swatch" style="background:#70aaff"></i>4G / LTE</span><span><i class="swatch" style="background:#ff9d80"></i>视频卡顿记录</span><span><span style="display:inline-block;border-top:1px dashed #ffcf75;width:11px;vertical-align:middle;margin-right:5px"></span>5 Mbps 参考线</span></div>
-      <div class="analysis" id="analysis"><strong>诊断建议：</strong>先记录多次测速，并在视频发生卡顿时点击「记录卡顿并测速」。如果 5G 一直偏慢、4G 反而更快，更需要排查 5G 小区拥堵，而不是直接认定每天用量触发限速。</div>
-    </section>
-    <section class="panel"><div class="eyebrow">TEST CONFIGURATION</div><h2 class="sectiontitle">测速设置</h2>
-      <div class="controlrow"><div><div class="lbl">网络类型（手动选择）</div><div class="labelhint">iPhone 浏览器无法可靠识别 5G / 4G</div></div></div>
-      <div class="networkpick" style="margin-top:9px"><button type="button" id="pick5g" class="active">5G</button><button type="button" id="pick4g">4G / LTE</button></div>
-      <div class="controlrow"><div><div class="lbl">测试模式</div><div class="labelhint" id="modehint">轻量：约 2.5 MB / 次</div></div><select id="mode" aria-label="测试模式"><option value="light">轻量测试</option><option value="full">标准测试</option></select></div>
-      <div class="controlrow"><div><div class="lbl">定时监控</div><div class="labelhint">仅页面在前台时运行</div></div><select id="interval" aria-label="定时监控间隔"><option value="0">关闭（推荐）</option><option value="5">每 5 分钟</option><option value="15">每 15 分钟</option><option value="30">每 30 分钟</option></select></div>
-      <div class="controlrow"><div><div class="lbl">VPN / 代理</div><div class="labelhint">在记录中标注，便于对比</div></div><label class="check"><input type="checkbox" id="vpn"/>已开启</label></div>
-      <div class="mini" style="margin-top:12px">测试地点（选填，如：Marine Parade / 室内）</div>
-      <div class="inputrow"><input id="location" type="text" maxlength="50" placeholder="当前位置描述（手动填写）" autocomplete="off" /></div>
-      <div class="controls"><button type="button" class="btn primary" id="testbtn">▶ 立即测速</button><button type="button" class="btn ghost" id="stopbtn" disabled>■ 停止</button></div>
-      <div class="progress" id="progress"><i id="progressbar"></i></div>
-      <div class="statusbar" id="statusmsg" role="status" aria-live="polite">准备就绪 · 测试会消耗 SIMBA 数据流量</div>
-    </section>
-  </div>
-  <div class="sectiongrid fullwidth">
-    <section class="panel"><div class="cardheading"><div><div class="eyebrow">VIDEO BUFFERING EVENT</div><h2 class="sectiontitle">视频卡顿标记</h2></div><span class="pill" style="font-size:11px">将与测速记录关联</span></div>
-      <p class="mini">播放视频发生转圈、缓冲或画面停顿时，切回这个页面，点击下方按钮。记录时间，并发起一次测速（手机切换应用可能改变网络表现）。</p>
-      <div class="controlrow"><div class="lbl">视频应用</div><select id="videoapp" aria-label="视频应用"><option>YouTube</option><option>TikTok / 抖音</option><option>Netflix</option><option>其他视频应用</option></select></div>
-      <div class="controls"><button type="button" class="btn warn" id="stallbtn">◉ 记录卡顿并测速</button><button type="button" class="btn ghost" id="markerbtn">仅记录卡顿</button></div>
-      <p class="mini">视频平台独立限速无法仅凭通用测速证明；需要在同一时间比较视频平台与其他流量的表现。</p>
-    </section>
-    <section class="panel"><div class="cardheading"><div><div class="eyebrow">LOCAL TEST LOG</div><h2 class="sectiontitle">历史记录</h2></div><span id="recordCount" class="pill">0 条</span></div>
-      <div class="history" id="history"><div class="empty">目前还没有记录</div></div>
-      <div class="controls"><button type="button" class="btn ghost" id="exportbtn">↓ 导出 CSV</button><button type="button" class="btn ghost" id="clearbtn">清空记录</button></div>
-    </section>
-  </div>
-  <div class="info"><strong>测试原理和局限：</strong>测速请求通过 Cloudflare 官方 <code>__down</code> 接口发起，轻量模式约消耗 2.5 MB、标准模式约消耗 11 MB（实际可能有额外协议开销）。这是到 Cloudflare 节点的 HTTP 速度与耗时，不代表到视频平台的速度，也不是 ICMP 丢包检测。测试数据保存在本机浏览器的 localStorage 中，不会上传历史记录；Cloudflare 会收到测速连接的 IP 等网络信息。<span class="warning">iPhone Safari 切入后台或锁屏后可能暂停页面与计时器，无法保证全天候后台监控。</span> 没有采用手机系统总流量统计功能。</div>
-  <div class="footerline"><span>SIMBA NETWORK WATCH · 本地独立页面 · 非 SIMBA / Cloudflare 官方产品</span><span><a href="https://speed.cloudflare.com/" target="_blank" rel="noopener noreferrer">对照：Cloudflare 官方测速</a></span></div>
+<body>
+<main class="wrap">
+<header>
+ <div class="brand"><div class="mark" aria-hidden="true">⌁</div><div><strong>SIMBA Network Watch</strong><small>新加坡 · 5G / 4G 网速监控</small></div></div>
+ <div class="tag"><span class="led" id="statusDot"></span><span id="state">准备就绪</span></div>
+</header>
+<div class="important"><span class="symbol" aria-hidden="true">ⓘ</span><div><strong>测试前请先关闭 Wi-Fi，使用 SIMBA 手机数据。</strong> 此工具测量连接质量，不会自动识别或切换 5G/4G。</div></div>
+<div class="layout">
+<div>
+<section class="hero" aria-label="最新下载测速结果">
+ <div class="herohead"><span class="overline">最新下载速度</span><span id="testTime" class="right">尚未测速</span></div>
+ <div class="speedrow"><span class="speednumber" id="download">—</span><span class="speedunit">Mbps</span></div>
+ <div id="speedNote">点击下方「开始测速」了解当前网络表现</div>
+ <div class="networkline"><span>当前手机网络</span><div class="networkpick" role="group" aria-label="当前网络标签"><button id="pick5g" type="button" class="active" aria-pressed="true">5G</button><button id="pick4g" type="button" aria-pressed="false">4G</button></div></div>
+ <div class="manualnote">仅用于标注记录，实际切换需在手机设置中完成</div>
+</section>
+<div class="metrics" aria-label="网络指标">
+ <div class="metric"><label>HTTP 延迟</label><b><span id="latency">—</span> <small>ms</small></b></div>
+ <div class="metric"><label>延迟波动</label><b><span id="jitter">—</span> <small>ms</small></b></div>
+ <div class="metric"><label>24h 测试用量</label><b><span id="volume">0</span> <small>MB</small></b></div>
+</div>
+<div class="progress" id="progress" aria-hidden="true"><i id="progressBar"></i></div>
+<div class="statusmsg" id="statusMsg" role="status" aria-live="polite">轻量模式单次约消耗 2.5 MB 流量。</div>
+<section class="card">
+ <div class="rowtitle"><h2>网络状况判断</h2><span class="tag" id="grade">尚无数据</span></div>
+ <div class="feedback" id="insight"><strong>先测一次</strong>建议在同一地点分别测 5G 和 4G，并标记视频卡顿时间点，比较结果才有意义。</div>
+</section>
+</div>
+<div>
+<section class="card" id="trend">
+ <div class="rowtitle"><div><h2>速度趋势</h2><p class="sub">看是否反复变慢，而不是只看一次测试</p></div><div class="tabs" role="group" aria-label="趋势时间范围"><button type="button" class="active" id="tab24">24h</button><button type="button" id="tabAll">全部</button></div></div>
+ <svg id="chart" viewBox="0 0 500 220" role="img" aria-label="下载速度趋势图"></svg>
+ <div class="legend"><span><i class="sq" style="background:#0fa787"></i>5G</span><span><i class="sq" style="background:#5286c6"></i>4G</span><span><i class="sq" style="background:#dc7459"></i>卡顿</span></div>
+</section>
+<section class="card" id="logSection">
+ <div class="rowtitle"><div><h2>最近记录</h2><p class="sub" id="count">0 条记录，仅保存在此浏览器</p></div><button class="linkbtn" type="button" id="exportBtn">导出 CSV</button></div>
+ <div id="history"><div class="empty">测速和卡顿事件会显示在这里</div></div>
+ <button class="linkbtn" type="button" id="moreHistory" style="display:none;width:100%">查看全部记录</button>
+</section>
+</div>
+</div>
+<details id="settings">
+ <summary><span>⚙ 测试设置 <span style="color:#84949b;font-weight:400;font-size:12px">· 自动监控、流量模式、地点</span></span></summary>
+ <div class="detailsbody">
+  <div class="fieldrow"><div><label for="mode">测速模式</label><small id="modeHint">轻量：约 2.5 MB / 次</small></div><select id="mode"><option value="light">轻量（推荐）</option><option value="full">标准（更稳定）</option></select></div>
+  <div class="fieldrow"><div><label for="interval">自动监控</label><small>只在网页处于前台时运行</small></div><select id="interval"><option value="0">关闭（默认）</option><option value="5">每 5 分钟</option><option value="15">每 15 分钟</option><option value="30">每 30 分钟</option></select></div>
+  <div class="fieldrow"><div><label for="videoApp">卡顿视频平台</label><small>点击底部「记录卡顿」时使用</small></div><select id="videoApp"><option>YouTube</option><option>TikTok / 抖音</option><option>Netflix</option><option>其他平台</option></select></div>
+  <div class="fieldrow"><div><label for="vpn">VPN / 代理</label><small>仅标注记录，不检测 VPN</small></div><label class="check"><input type="checkbox" id="vpn">已开启</label></div>
+  <label for="location" style="display:block;font-size:13px;font-weight:650;margin-top:14px">地点备注（选填）</label>
+  <input class="inputfull" id="location" type="text" maxlength="50" placeholder="例如：Changi，室内" autocomplete="off">
+  <p class="note">自动监控会消耗 SIMBA 套餐流量，例如轻量模式每 5 分钟约 30 MB / 小时。Safari 锁屏或退到后台后无法稳定监测，返回前台会重排定时。网页无法读取手机套餐剩余流量。</p>
+  <div class="tools"><button class="softbtn danger" type="button" id="clearBtn">清空本地记录</button><button class="softbtn" type="button" id="exportBtn2">导出全部 CSV</button></div>
+ </div>
+</details>
+<div class="footer"><strong>测量说明：</strong>测速通过 Cloudflare 公共 HTTP 接口获得估算下载速率、往返耗时与波动；不是 ICMP Ping，不代表视频平台的直接吞吐量，也不能凭单次结果证明 SIMBA 实施限速。测试数据只保存在本机浏览器；测速服务器可收到 IP 等常规网络连接信息。<a href="https://speed.cloudflare.com/" target="_blank" rel="noopener noreferrer">对照 Cloudflare 官方测速</a>。<br>非 SIMBA 或 Cloudflare 官方产品 · v2.0</div>
 </main>
+<nav class="fixedactions" aria-label="常用操作"><div class="actionwrap"><button type="button" class="primarybtn" id="testBtn">▶ 开始测速</button><button type="button" class="secondarybtn" id="stallBtn">◉ 记录卡顿</button></div></nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-(()=>{'use strict';
-const $=id=>document.getElementById(id), STORAGE='simba-network-watch-v1', prefsKey='simba-network-watch-prefs-v1', API='https://speed.cloudflare.com/__down';
-const MaxRecords=800;let records=[],prefs={},running=false,controller=null,timer=null,nextRunAt=0,lastMeasurement=null,chartRange='24',pendingVideo=null;
-const fmt=(x,d=1)=>Number.isFinite(x)?Number(x).toFixed(d):'—';
-const median=a=>{const v=[...a].sort((x,y)=>x-y);return v.length?(v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2:0};
-function load(){try{const old=JSON.parse(localStorage.getItem(STORAGE)||'[]');records=Array.isArray(old)?old.filter(r=>r&&r.t&&['test','stall'].includes(r.kind)).slice(-MaxRecords):[]}catch(e){records=[]}try{prefs=JSON.parse(localStorage.getItem(prefsKey)||'{}')}catch(e){prefs={}}$('location').value=String(prefs.location||'').slice(0,50);$('vpn').checked=!!prefs.vpn;$('mode').value=prefs.mode==='full'?'full':'light';$('interval').value='0';pick(prefs.network==='4G'?'4G':'5G',false);updateModeHint();lastMeasurement=[...records].reverse().find(r=>r.kind==='test'&&Number.isFinite(r.speed))||null;renderAll()}
-function store(){try{localStorage.setItem(STORAGE,JSON.stringify(records.slice(-MaxRecords)))}catch(e){setMsg('无法保存本地历史记录：浏览器可能处于隐私模式。','error')}}
-function savePrefs(){prefs={network:getNetwork(),mode:$('mode').value,location:$('location').value.trim(),vpn:$('vpn').checked};try{localStorage.setItem(prefsKey,JSON.stringify(prefs))}catch(e){}}
-function getNetwork(){return $('pick4g').classList.contains('active')?'4G':'5G'}
-function pick(net,save=true){$('pick5g').classList.toggle('active',net==='5G');$('pick4g').classList.toggle('active',net==='4G');if(save)savePrefs()}
-function setMsg(msg,kind=''){$('statusmsg').textContent=msg;$('statusmsg').className='statusbar '+kind}
-function setState(msg,kind=''){$('state').textContent=msg;$('statusdot').className='dot '+kind}
-function progress(p){$('progress').style.display='block';$('progressbar').style.width=Math.max(0,Math.min(100,p))+'%'}
-function busy(on){running=on;$('testbtn').disabled=on;$('stallbtn').disabled=on;$('stopbtn').disabled=!on;if(!on){$('progress').style.display='none';controller=null}}
-function dateStr(iso){return new Date(iso).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}
-function timeStr(d){return new Date(d).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false})}
-function addRecord(r){records.push(r);records=records.slice(-MaxRecords);store();renderAll()}
-function updateModeHint(){$('modehint').textContent=$('mode').value==='full'?'标准：约 11 MB / 次':'轻量：约 2.5 MB / 次'}
-function url(bytes){return API+'?bytes='+bytes+'&cache='+Date.now()+'.'+Math.random().toString(36).slice(2)}
-async function getBytes(bytes,signal){const start=performance.now();const res=await fetch(url(bytes),{signal,cache:'no-store',mode:'cors',credentials:'omit'});if(!res.ok)throw Error('测速服务器返回 '+res.status);const buffer=await res.arrayBuffer();const duration=(performance.now()-start)/1000;if(!buffer.byteLength)throw Error('测速服务器返回空数据');return {bytes:buffer.byteLength,seconds:duration,ms:duration*1000}}
-function withTimeout(signal,ms){const c=new AbortController();let timeout=setTimeout(()=>c.abort(new Error('连接超时')),ms);const abort=()=>c.abort();if(signal.aborted)c.abort();else signal.addEventListener('abort',abort,{once:true});return {signal:c.signal,done(){clearTimeout(timeout);signal.removeEventListener('abort',abort)}}}
-async function oneFetch(bytes,root,timeout){const sub=withTimeout(root,timeout);try{return await getBytes(bytes,sub.signal)}finally{sub.done()}}
-async function runTest(fromAuto=false){if(running||document.hidden)return;if(!navigator.onLine){setMsg('设备显示为离线，无法测速。请检查蜂窝数据连接。','error');return}
- const type=getNetwork(),mode=$('mode').value,location=$('location').value.trim(),vpn=$('vpn').checked;savePrefs();controller=new AbortController();const root=controller.signal;busy(true);setState('正在测速','busy');setMsg('正在测量 HTTP 往返耗时…','working');progress(10);let bytesMoved=0;
- try{
-  const latencies=[];for(let i=0;i<5;i++){const r=await oneFetch(512,root,9000);bytesMoved+=r.bytes;latencies.push(r.ms);progress(11+i*8)}
-  const latency=median(latencies);const fluctuations=latencies.slice(1).map((v,i)=>Math.abs(v-latencies[i]));const jitter=median(fluctuations);
-  setMsg('测量下载速度中，请保持当前页面在前台…','working');progress(53);
-  const warmup=await oneFetch(mode==='full'?1000000:500000,root,20000);bytesMoved+=warmup.bytes;progress(65);
-  const chunk=mode==='full'?5000000:1000000;const start=performance.now();
-  const results=await Promise.all([oneFetch(chunk,root,25000),oneFetch(chunk,root,25000)]);const elapsed=(performance.now()-start)/1000;
-  const total=results.reduce((s,r)=>s+r.bytes,0);bytesMoved+=total;progress(100);
-  const speed=total*8/elapsed/1e6; if(!Number.isFinite(speed)||speed<=0)throw Error('测速数据异常');
-  const r={kind:'test',t:new Date().toISOString(),network:type,mode,location,vpn,speed,latency,jitter,bytes:bytesMoved,auto:fromAuto,video:pendingVideo?pendingVideo.app:''};pendingVideo=null;lastMeasurement=r;addRecord(r);
-  setState('测试完成','good');setMsg('测速完成 · '+fmt(speed)+' Mbps · 耗时 '+fmt(elapsed,2)+' 秒 · 数据仅保存在本机','ok');
- }catch(e){if(root.aborted){setState('已停止');setMsg('用户已停止本次测速；不保存不完整的测量。')}else{setState('测试失败');setMsg('测速失败：'+(e?.message||'连接异常')+'。请检查 Wi-Fi/VPN、网络访问，或换浏览器重试。','error')}
-  pendingVideo=null;
- }finally{busy(false);scheduleNext()}
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const STORAGE='simba-network-watch-v1', PREFS='simba-network-watch-prefs-v1', API='https://speed.cloudflare.com/__down', MAX=800;
+let rows=[],prefs={},last=null,running=false,controller=null,autoTimer=null,nextAt=0,range='24',showAll=false,toastTimer=null,currentBytes=0;
+const fmt=(n,p=1)=>Number.isFinite(n)?Number(n).toFixed(p):'—';
+const median=x=>{const a=x.slice().sort((u,v)=>u-v),n=a.length;return n?(a[(n-1)>>1]+a[n>>1])/2:0};
+function network(){return $('pick4g').classList.contains('active')?'4G':'5G'}
+function setNetwork(n,save=true){for(const type of ['5G','4G']){const b=$(type==='5G'?'pick5g':'pick4g'),active=n===type;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))}if(save)savePrefs()}
+function read(){try{const v=JSON.parse(localStorage.getItem(STORAGE)||'[]');rows=Array.isArray(v)?v.filter(x=>x&&x.t&&(x.kind==='test'||x.kind==='stall')).slice(-MAX):[]}catch(e){rows=[]}try{prefs=JSON.parse(localStorage.getItem(PREFS)||'{}')||{}}catch(e){prefs={}}$('location').value=String(prefs.location||'').slice(0,50);$('vpn').checked=!!prefs.vpn;$('mode').value=prefs.mode==='full'?'full':'light';setNetwork(prefs.network==='4G'?'4G':'5G',false);$('interval').value='0';updateMode();last=rows.slice().reverse().find(r=>r.kind==='test'&&Number.isFinite(r.speed))||null;render()}
+function save(){try{localStorage.setItem(STORAGE,JSON.stringify(rows.slice(-MAX)))}catch(e){status('无法保存数据，请检查 Safari 隐私模式或储存空间。','error')}}
+function savePrefs(){prefs={network:network(),mode:$('mode').value,location:$('location').value.trim(),vpn:$('vpn').checked,video:$('videoApp').value};try{localStorage.setItem(PREFS,JSON.stringify(prefs))}catch(e){}}
+function status(message,tone=''){$('statusMsg').textContent=message;$('statusMsg').className='statusmsg '+tone}
+function state(message,tone=''){$('state').textContent=message;$('statusDot').className='led '+tone}
+function toast(s){const el=$('toast');el.textContent=s;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2900)}
+function progress(v){$('progress').style.display='block';$('progressBar').style.width=Math.max(0,Math.min(v,100))+'%'}
+function busy(v){running=v;$('testBtn').textContent=v?'■ 停止测速':'▶ 开始测速';$('stallBtn').disabled=false;if(!v){controller=null;$('progress').style.display='none'}}
+function when(s){const d=new Date(s);return d.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}
+function add(r){rows.push(r);rows=rows.slice(-MAX);save();render()}
+function updateMode(){const full=$('mode').value==='full';$('modeHint').textContent=full?'标准：约 11 MB / 次':'轻量：约 2.5 MB / 次';if(!running)status((full?'标准模式约 11 MB':'轻量模式约 2.5 MB')+' / 次；请关闭 Wi-Fi 使用 SIMBA 手机数据。')}
+function makeUrl(n){return API+'?bytes='+n+'&r='+Date.now()+'-'+Math.random().toString(36).slice(2)}
+function limitedSignal(root,ms){const sub=new AbortController();const t=setTimeout(()=>sub.abort(),ms);const abort=()=>sub.abort();if(root.aborted)sub.abort();else root.addEventListener('abort',abort,{once:true});return {signal:sub.signal,clean:()=>{clearTimeout(t);root.removeEventListener('abort',abort)}}}
+async function one(n,root,timeout){const x=limitedSignal(root,timeout);try{const a=performance.now();const res=await fetch(makeUrl(n),{signal:x.signal,cache:'no-store',credentials:'omit',mode:'cors'});if(!res.ok)throw Error('测速服务返回 HTTP '+res.status);const buffer=await res.arrayBuffer();if(!buffer.byteLength)throw Error('测速服务器无数据');currentBytes+=buffer.byteLength;return {bytes:buffer.byteLength,ms:performance.now()-a}}finally{x.clean()}}
+async function test(auto=false){if(running||document.hidden)return;if(navigator.onLine===false){status('设备显示网络未连接，请检查 SIMBA 蜂窝数据。','error');return}savePrefs();controller=new AbortController();const root=controller.signal;const mode=$('mode').value;const n=network(),loc=$('location').value.trim(),vpn=$('vpn').checked;currentBytes=0;busy(true);state('测速中','busy');status('正在检测 HTTP 响应时间…');progress(8);
+try{const times=[];for(let i=0;i<5;i++){const r=await one(512,root,9000);times.push(r.ms);progress(12+i*8)}
+const latency=median(times),jitter=median(times.slice(1).map((t,i)=>Math.abs(t-times[i])));
+status('正在下载测试数据，请保持浏览器在前台…');progress(55);
+await one(mode==='full'?1000000:500000,root,20000);progress(67);
+const chunk=mode==='full'?5000000:1000000,begin=performance.now();
+const results=await Promise.all([one(chunk,root,25000),one(chunk,root,25000)]);
+const seconds=(performance.now()-begin)/1000,bytes=results.reduce((a,b)=>a+b.bytes,0);
+const speed=bytes*8/seconds/1e6;if(!Number.isFinite(speed)||speed<=0)throw Error('速度结果异常');
+progress(100);const r={kind:'test',t:new Date().toISOString(),network:n,mode,location:loc,vpn,speed,latency,jitter,bytes:currentBytes,auto};
+last=r;add(r);state('测速完成','good');status('测速成功。'+fmt(speed)+' Mbps · 本次消耗约 '+fmt(currentBytes/1e6,2)+' MB。','ok');
+}catch(e){if(root.aborted){state('已停止');status('已停止测速，不完整的测试结果不计入历史。')}else{state('测速失败','bad');status('测速失败：'+(e&&e.message?e.message:'连接异常')+'。请检查网络或稍后重试。','error')}}
+finally{busy(false);schedule()}
 }
-function videoEvent(run){const app=$('videoapp').value;const r={kind:'stall',t:new Date().toISOString(),network:getNetwork(),app,location:$('location').value.trim(),vpn:$('vpn').checked};addRecord(r);if(run){if(running){setMsg('卡顿已标记；当前测速尚未结束。','working');return}pendingVideo={app};runTest()}else{setMsg('已记录卡顿时间点。建议马上手动运行测速。','ok')}}
-function stop(){if(controller)controller.abort();if(!running)setState('已停止')}
-function scheduleNext(){if(timer){clearInterval(timer);timer=null}const interval=Number($('interval').value);if(!interval){nextRunAt=0;return}nextRunAt=Date.now()+interval*60000;timer=setInterval(()=>{if(document.hidden||running)return;if(Date.now()>=nextRunAt){nextRunAt=Date.now()+interval*60000;runTest(true)}},1000)}
-function updateCards(){const r=lastMeasurement;$('download').textContent=r?fmt(r.speed):'—';$('latency').textContent=r?fmt(r.latency,0):'—';$('jitter').textContent=r?fmt(r.jitter,0):'—';$('downloadhint').textContent=r?dateStr(r.t)+' · '+r.network:'等待首次测速';const since=Date.now()-24*3600e3;const bytes=records.filter(x=>x.kind==='test'&&new Date(x.t).getTime()>=since).reduce((s,x)=>s+(x.bytes||0),0);$('volume').textContent=fmt(bytes/1e6,1);$('recordCount').textContent=records.length+' 条'}
-function draw(){const s=$('chart');s.textContent='';const ns='http://www.w3.org/2000/svg';const make=(tag,attr,txt)=>{const e=document.createElementNS(ns,tag);Object.entries(attr||{}).forEach(([k,v])=>e.setAttribute(k,String(v)));if(txt!==undefined)e.textContent=txt;s.appendChild(e);return e};const w=670,h=245,l=44,top=10,right=10,bottom=27,ph=h-top-bottom,pw=w-l-right;
-const timeCut=chartRange==='24'?Date.now()-86400000:0;const data=records.filter(r=>new Date(r.t).getTime()>=timeCut);const tests=data.filter(r=>r.kind==='test'&&Number.isFinite(r.speed));const stalls=data.filter(r=>r.kind==='stall');const maxSpeed=Math.max(10,Math.ceil(Math.max(...tests.map(x=>x.speed),10)/10)*10);const mint='#49ecc7',sky='#70aaff';
-for(let i=0;i<5;i++){const v=maxSpeed*i/4,y=top+ph-(v/maxSpeed)*ph;make('line',{x1:l,x2:w-right,y1:y,y2:y,stroke:'#2b3c54','stroke-width':1,'stroke-dasharray':i===0?'0':'3 6'});make('text',{x:l-9,y:y+4,'text-anchor':'end',fill:'#7690ae','font-size':10},fmt(v,0))}
-const allMs=data.map(r=>new Date(r.t).getTime()), minTime=chartRange==='24'?Date.now()-86400000:(allMs.length?Math.min(...allMs):Date.now()-3600000),maxTime=Date.now(),duration=Math.max(1,maxTime-minTime);const x=t=>l+(t-minTime)/duration*pw,y=v=>top+ph-Math.min(1,v/maxSpeed)*ph;
-for(let i=0;i<4;i++){const ms=minTime+duration*i/3;make('text',{x:x(ms),y:h-8,'text-anchor':i===0?'start':i===3?'end':'middle',fill:'#7189a5','font-size':10},chartRange==='24'?timeStr(ms):new Date(ms).toLocaleDateString('zh-CN',{month:'2-digit',day:'2-digit'}))}
-if(maxSpeed>=5){const yy=y(5);make('line',{x1:l,x2:w-right,y1:yy,y2:yy,stroke:'#d8b96b','stroke-width':1,'stroke-dasharray':'6 5','stroke-opacity':.85})}
-for(const type of ['5G','4G']){const arr=tests.filter(r=>r.network===type).sort((a,b)=>new Date(a.t)-new Date(b.t));const color=type==='5G'?mint:sky;if(arr.length>=2){make('polyline',{points:arr.map(r=>x(new Date(r.t).getTime())+','+y(r.speed)).join(' '),fill:'none',stroke:color,'stroke-width':2.5,'stroke-linejoin':'round','stroke-linecap':'round'})}for(const r of arr){const c=make('circle',{cx:x(new Date(r.t).getTime()),cy:y(r.speed),r:4,fill:color,stroke:'#101b2d','stroke-width':2});const title=document.createElementNS(ns,'title');title.textContent=dateStr(r.t)+' · '+fmt(r.speed)+' Mbps';c.appendChild(title)}}
-for(const r of stalls){const xx=x(new Date(r.t).getTime());make('line',{x1:xx,y1:top,x2:xx,y2:top+ph,stroke:'#ff9d80','stroke-dasharray':'3 5','stroke-opacity':.65});const c=make('circle',{cx:xx,cy:top+5,r:4.4,fill:'#ff9d80'});const title=document.createElementNS(ns,'title');title.textContent=dateStr(r.t)+' '+r.app+' 卡顿';c.appendChild(title)}
-if(!tests.length){make('text',{x:w/2,y:105,'text-anchor':'middle',fill:'#8ca0b9','font-size':14},'尚无速度数据');make('text',{x:w/2,y:130,'text-anchor':'middle',fill:'#6e86a1','font-size':11},'先运行一次测速，开始绘制曲线')}
+function stop(){if(controller)controller.abort()}
+function markStall(){const app=$('videoApp').value;savePrefs();add({kind:'stall',t:new Date().toISOString(),network:network(),app,location:$('location').value.trim(),vpn:$('vpn').checked});toast('已记录 '+app+' 卡顿 · 可再点击开始测速');status('卡顿时间已记录；点击「开始测速」可比较此刻的连接速度。','ok')}
+function schedule(){if(autoTimer){clearInterval(autoTimer);autoTimer=null}const m=Number($('interval').value);if(!m)return;nextAt=Date.now()+m*60000;autoTimer=setInterval(()=>{if(document.hidden||running)return;if(Date.now()>=nextAt){nextAt=Date.now()+m*60000;test(true)}},1000)}
+function render(){const r=last;$('download').textContent=r?fmt(r.speed):'—';$('latency').textContent=r?fmt(r.latency,0):'—';$('jitter').textContent=r?fmt(r.jitter,0):'—';$('testTime').textContent=r?when(r.t):'尚未测速';
+const now=Date.now(),sum=rows.filter(x=>x.kind==='test'&&now-new Date(x.t).getTime()<86400000).reduce((s,x)=>s+(x.bytes||0),0);$('volume').textContent=fmt(sum/1e6,1);$('count').textContent=rows.length+' 条记录，仅保存在此浏览器';$('speedNote').textContent=r?(r.network+' · '+(r.mode==='full'?'标准':'轻量')+'测速 · '+(r.location||'未标注地点')):'点击下方「开始测速」了解当前网络表现';
+assess();chart();history()}
+function assess(){let label='尚无数据',title='先测一次',msg='建议在同一地点分别测 5G 和 4G，并标记视频卡顿时间点，比较结果才有意义。';
+if(last){const v=last.speed;if(v<3){label='速度偏低';title='当前连接较慢';msg='本次下载速度只有 '+fmt(v)+' Mbps，可能造成明显视频缓冲。建议在同一地点切换 4G 再测一次。'}else if(v<10){label='可能卡顿';title='速度波动值得关注';msg='本次下载约 '+fmt(v)+' Mbps。播放高清视频可能不稳定，可多测几次并对比其他时段。'}else{label='速度尚可';title='测速与视频体验需分别看';msg='本次下载约 '+fmt(v)+' Mbps。如果视频仍频繁卡顿，请留意短时网络波动、VPN 与视频平台线路。'}
+const recent=rows.filter(r=>r.kind==='test').slice(-20),g=recent.filter(x=>x.network==='5G'),l=recent.filter(x=>x.network==='4G');
+if(g.length>=2&&l.length>=2){const a=median(g.map(x=>x.speed)),b=median(l.map(x=>x.speed));if(b>a*1.5)msg+=' 已记录的 4G 速度中位数明显高于 5G；应在相近地点和时间重复验证。'}
+if(rows.some(x=>x.kind==='stall'))msg+=' 已保存卡顿标记；单靠此测速不能证明运营商对特定视频进行限速。'}
+$('grade').textContent=label;$('insight').replaceChildren();const b=document.createElement('strong');b.textContent=title;$('insight').append(b,document.createTextNode(msg))}
+function chart(){const svg=$('chart'),ns='http://www.w3.org/2000/svg';svg.replaceChildren();
+const add=(t,props,txt)=>{const el=document.createElementNS(ns,t);Object.entries(props).forEach(([k,v])=>el.setAttribute(k,String(v)));if(txt!==undefined)el.textContent=txt;svg.appendChild(el);return el};
+const w=500,h=220,L=39,R=12,T=13,B=31,PW=w-L-R,PH=h-T-B,cut=range==='24'?Date.now()-86400000:0;
+const a=rows.filter(r=>new Date(r.t).getTime()>=cut),tests=a.filter(r=>r.kind==='test'&&Number.isFinite(r.speed));const max=Math.max(10,Math.ceil(Math.max(10,...tests.map(x=>x.speed))/10)*10);const t0=range==='24'?cut:(a.length?Math.min(...a.map(x=>new Date(x.t).getTime())):Date.now()-3600000),t1=Math.max(Date.now(),t0+60000),dx=t1-t0;const X=t=>L+(t-t0)/dx*PW,Y=v=>T+PH-Math.min(1,v/max)*PH;
+for(let i=0;i<4;i++){const value=max*i/3,y=Y(value);add('line',{x1:L,x2:w-R,y1:y,y2:y,stroke:'#e0e9e8','stroke-dasharray':i?'3 5':'none'});add('text',{x:L-7,y:y+4,'text-anchor':'end',fill:'#90a1a8','font-size':10},fmt(value,0))}
+for(let i=0;i<3;i++){const t=t0+dx*i/2;add('text',{x:X(t),y:h-8,'text-anchor':i===0?'start':i===2?'end':'middle',fill:'#8c9da4','font-size':10},range==='24'?new Date(t).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}):new Date(t).toLocaleDateString('zh-CN',{month:'2-digit',day:'2-digit'}))}
+for(const type of ['5G','4G']){const group=tests.filter(r=>r.network===type).sort((x,y)=>new Date(x.t)-new Date(y.t)),color=type==='5G'?'#0fa787':'#5286c6';
+if(group.length>1)add('polyline',{points:group.map(r=>X(new Date(r.t).getTime())+','+Y(r.speed)).join(' '),stroke:color,'stroke-width':2.4,fill:'none','stroke-linecap':'round','stroke-linejoin':'round'});
+group.forEach(r=>{const c=add('circle',{cx:X(new Date(r.t).getTime()),cy:Y(r.speed),r:4,fill:color,stroke:'#fff','stroke-width':1.5});const tt=document.createElementNS(ns,'title');tt.textContent=when(r.t)+' · '+fmt(r.speed)+' Mbps';c.append(tt)})}
+a.filter(r=>r.kind==='stall').forEach(r=>{const x=X(new Date(r.t).getTime());add('line',{x1:x,y1:T,x2:x,y2:T+PH,stroke:'#dc7459','stroke-dasharray':'3 5','stroke-opacity':.55});add('circle',{cx:x,cy:T+6,r:4,fill:'#dc7459'})});
+if(!tests.length){add('text',{x:w/2,y:94,'text-anchor':'middle',fill:'#9ba8ac','font-size':14},'尚无测速记录');add('text',{x:w/2,y:114,'text-anchor':'middle',fill:'#aab5b9','font-size':11},'测速后自动绘制趋势')}
 }
-function assess(){const arr=records.filter(r=>r.kind==='test').slice(-15);const st=records.filter(r=>r.kind==='stall').slice(-10);let txt='<strong>诊断建议：</strong> ';if(!arr.length){txt+='先记录多次测速，并在视频发生卡顿时点击「记录卡顿并测速」。如果 5G 一直偏慢、4G 反而更快，更需要排查 5G 小区拥堵，而不是直接认定每天用量触发限速。'}else{const last=arr.at(-1);const fast=arr.filter(x=>x.speed>=20).length,low=arr.filter(x=>x.speed<5).length;const f5=arr.filter(x=>x.network==='5G'),f4=arr.filter(x=>x.network==='4G');if(last.speed<3)txt+='最新下载速度约 '+fmt(last.speed)+' Mbps，明显偏低，较容易出现视频缓冲。先在相同地点切换至 4G 重新测试。';else if(last.speed<10)txt+='最新速度 '+fmt(last.speed)+' Mbps，观看较高清晰度视频可能不稳定；重点观察同一地点不同时段的变化。';else if(last.speed>=20)txt+='最新速度 '+fmt(last.speed)+' Mbps，通用测速并不明显偏低。如果视频仍卡顿，请排查视频服务线路、VPN、短时抖动以及平台特定流量管理。';else txt+='最新速度 '+fmt(last.speed)+' Mbps，可再测不同时间点以及 4G，寻找有无明显变化。';if(low>=3)txt+=' 最近 '+arr.length+' 次测速中有 '+low+' 次低于 5 Mbps，说明慢速问题可能重复出现。';if(f5.length>=2&&f4.length>=2){const m5=median(f5.map(x=>x.speed)),m4=median(f4.map(x=>x.speed));if(m4>m5*1.5)txt+=' 已记录的 4G 中位速度 ('+fmt(m4)+') 明显高于 5G ('+fmt(m5)+') Mbps，优先怀疑 5G 接入质量或容量；注意应在同地点、相近时刻比较。'}if(st.length)txt+=' 已标记 '+st.length+' 次视频卡顿；若测速正常但持续卡顿，单靠此工具无法证明运营商对视频单独限速。'}$('analysis').innerHTML=txt}
-function renderHistory(){const h=$('history');h.textContent='';const recent=[...records].reverse().slice(0,35);if(!recent.length){const e=document.createElement('div');e.className='empty';e.textContent='暂无记录 · 首次测速后显示';h.appendChild(e);return}recent.forEach(r=>{const row=document.createElement('div');row.className='record';const left=document.createElement('div');left.className='timestamp';left.textContent=dateStr(r.t)+' · '+(r.kind==='stall'?'视频卡顿':r.network+' '+(r.auto?'自动':'手动'));const right=document.createElement('div');right.className=r.kind==='stall'?'video':'speed';right.textContent=r.kind==='stall'?'卡顿':fmt(r.speed)+' Mbps';const note=document.createElement('div');note.className='note';note.textContent=r.kind==='stall'?r.app+' · '+(r.location||'未标注地点'):(`延迟 ${fmt(r.latency,0)} ms · 抖动 ${fmt(r.jitter,0)} ms · ${r.mode==='full'?'标准':'轻量'} · ${r.vpn?'VPN开启':'VPN关闭'}${r.location?' · '+r.location:''}`);row.append(left,right,note);h.appendChild(row)})}
-function renderAll(){updateCards();draw();renderHistory();assess()}
-function exportCsv(){if(!records.length){setMsg('没有可以导出的历史记录。');return}const fields=['t','kind','network','speed','latency','jitter','bytes','mode','auto','vpn','location','app','video'];const escape=v=>'"'+String(v??'').replaceAll('"','""')+'"';const csv='\ufeff'+[fields.join(','),...records.map(r=>fields.map(k=>escape(r[k])).join(','))].join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');const u=URL.createObjectURL(blob);a.href=u;a.download='simba-network-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);setMsg('CSV 已生成。若 iPhone 未出现下载提示，可尝试从 Safari 打开网页。','ok')}
-function clearHistory(){if(!records.length)return;if(!confirm('确认清空所有本地测速和卡顿记录？此操作无法撤销。'))return;records=[];lastMeasurement=null;store();renderAll();setMsg('本地历史记录已清空。')}
-$('pick5g').onclick=()=>pick('5G');$('pick4g').onclick=()=>pick('4G');$('mode').onchange=()=>{updateModeHint();savePrefs()};$('location').onchange=savePrefs;$('vpn').onchange=savePrefs;
-$('interval').onchange=()=>{scheduleNext();const n=Number($('interval').value);setMsg(n?`已开启每 ${n} 分钟自动测速（仅前台生效）。当前模式约消耗 ${fmt((($('mode').value==='full'?11:2.5)*60/n),0)} MB / 小时。`:'自动监控已关闭。',n?'working':'')};
-$('testbtn').onclick=()=>runTest(false);$('stopbtn').onclick=stop;$('stallbtn').onclick=()=>videoEvent(true);$('markerbtn').onclick=()=>videoEvent(false);$('exportbtn').onclick=exportCsv;$('clearbtn').onclick=clearHistory;
-$('range24').onclick=()=>{chartRange='24';$('range24').classList.add('active');$('rangeAll').classList.remove('active');draw()};$('rangeAll').onclick=()=>{chartRange='all';$('rangeAll').classList.add('active');$('range24').classList.remove('active');draw()};
-document.addEventListener('visibilitychange',()=>{if(document.hidden){if(running)stop();setState('后台已暂停');}else{if(!running){setState('待命');scheduleNext();setMsg('页面已返回前台。自动监控不会补测后台期间的时间点。')}}});
-window.addEventListener('offline',()=>{if(running)stop();setState('网络断开');setMsg('设备已离线：检测到网络连接中断。','error')});
-load();
+function history(){const list=$('history');list.replaceChildren();const a=rows.slice().reverse(),items=showAll?a:a.slice(0,4);$('moreHistory').style.display=a.length>4&&!showAll?'block':'none';if(!items.length){const e=document.createElement('div');e.className='empty';e.textContent='测速和卡顿事件会显示在这里';list.append(e);return}
+items.forEach(r=>{const e=document.createElement('div');e.className='entry',ic=document.createElement('div'),main=document.createElement('div'),title=document.createElement('strong'),sub=document.createElement('small'),val=document.createElement('div'),stall=r.kind==='stall';ic.className='entryicon'+(stall?' warn':'');ic.textContent=stall?'◉':'↓';main.className='entrymain';title.textContent=stall?((r.app||'视频')+' 卡顿'):(r.network+' '+(r.auto?'自动':'手动')+'测速');sub.textContent=when(r.t)+(r.location?' · '+r.location:'')+(stall?'':' · 延迟 '+fmt(r.latency,0)+' ms');main.append(title,sub);val.className='entryval'+(stall?' warn':'');val.textContent=stall?'卡顿':fmt(r.speed)+' Mbps';e.append(ic,main,val);list.append(e)})}
+function exportCSV(){if(!rows.length){toast('暂无可导出的记录');return}const fields=['t','kind','network','speed','latency','jitter','bytes','mode','auto','vpn','location','app'];const quote=x=>'"'+String(x===undefined||x===null?'':x).replaceAll('"','""')+'"';const data='\ufeff'+[fields.join(','),...rows.map(r=>fields.map(k=>quote(r[k])).join(','))].join('\r\n');const url=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='simba-network-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);toast('已生成 CSV 文件')}
+function clear(){if(!rows.length){toast('暂无记录');return}if(!confirm('确定清空此浏览器中全部测速和卡顿记录？无法撤销。'))return;rows=[];last=null;save();render();toast('记录已清空')}
+$('pick5g').onclick=()=>setNetwork('5G');$('pick4g').onclick=()=>setNetwork('4G');
+$('testBtn').onclick=()=>{if(running)stop();else test()};
+$('stallBtn').onclick=markStall;$('mode').onchange=()=>{updateMode();savePrefs()};$('location').onchange=savePrefs;$('vpn').onchange=savePrefs;$('videoApp').onchange=savePrefs;
+$('interval').onchange=()=>{schedule();const m=Number($('interval').value);status(m?'已启动每 '+m+' 分钟自动测速（仅前台）；当前模式每小时约 '+fmt((($('mode').value==='full'?11:2.5)*60/m),0)+' MB。':'已关闭自动监控。',m?'':'ok');toast(m?'自动监控已开启，仅前台运行':'自动监控已关闭')};
+$('tab24').onclick=()=>{range='24';$('tab24').classList.add('active');$('tabAll').classList.remove('active');chart()};
+$('tabAll').onclick=()=>{range='all';$('tabAll').classList.add('active');$('tab24').classList.remove('active');chart()};
+$('moreHistory').onclick=()=>{showAll=true;history()};
+$('exportBtn').onclick=exportCSV;$('exportBtn2').onclick=exportCSV;$('clearBtn').onclick=clear;
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(running)stop();if(autoTimer){clearInterval(autoTimer);autoTimer=null}state('后台暂停')}else{if(!running){state('准备就绪');schedule();status('已返回前台；自动监控已重新计时，后台期间不会补测。')}}});
+window.addEventListener('offline',()=>{if(running)stop();state('网络断开','bad');status('检测到网络断开。','error')});
+read();if(prefs.video&&Array.from($('videoApp').options).some(o=>o.value===prefs.video))$('videoApp').value=prefs.video;
 })();
 </script>
 </body>
