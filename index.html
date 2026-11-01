@@ -270,14 +270,21 @@ const APPS=[
 {name:'即时通讯',id:'Chat',sites:[['WhatsApp Web','https://web.whatsapp.com/'],['Telegram Web','https://web.telegram.org/']]},
 {name:'办公开发',id:'Work',sites:[['GitHub','https://github.com/'],['Microsoft','https://www.microsoft.com/'],['ChatGPT','https://chatgpt.com/']]},
 {name:'网络购物',id:'Shopping',sites:[['Amazon','https://www.amazon.com/'],['Shopee','https://shopee.sg/']]}];
-let data={sessions:[],stalls:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null;
+let data={sessions:[],stalls:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null,chartView='smooth',runContext=null;
 const format=(n,d=1)=>Number.isFinite(n)?Number(n).toFixed(d):'—';
 const median=a=>{if(!a.length)return NaN;const v=a.slice().sort((a,b)=>a-b);return(v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2};
 const p10=a=>a.length?a.slice().sort((a,b)=>a-b)[Math.floor((a.length-1)*.1)]:NaN;
+const COUNTRY_NAMES={CN:'中国大陆',SG:'新加坡',MY:'马来西亚',JP:'日本',US:'美国',UK:'英国',AU:'澳大利亚',HK:'中国香港',TW:'中国台湾',KR:'韩国',IN:'印度',DE:'德国',FR:'法国',OTHER:'其他地区'};
+const countryName=c=>COUNTRY_NAMES[c]||'未标注';
+const currentCountry=()=>$('originCountry').value||'';
+const currentOperator=()=>$('operator').value==='other'?($('operatorOther').value.trim()||'自定义运营商'):$('operator').value||'未标注运营商';
+const currentContext=()=>({country:currentCountry(),operator:currentOperator(),network:$('network').value,location:$('location').value.trim()});
+const marketClass=(target,origin)=>!origin||origin==='OTHER'?'unknown':origin===target?'local':'cross';
+const marketLabel=(target,origin)=>{const x=marketClass(target,origin);return x==='local'?'同地区市场':x==='cross'?'其他地区市场':'地点未分类'};
 const ts=()=>new Date().toISOString();
 const time=t=>{if(!t)return '暂无';return new Date(t).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})};
 function stateSave(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){toast('保存记录失败，请尝试导出 CSV')}}
-function prefs(){return{duration:$('duration').value,budget:$('budget').value,network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,nodes:$('nodeConfig').value,videoApp:$('videoApp').value}}
+function prefs(){return{duration:$('duration').value,budget:$('budget').value,network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,nodes:$('nodeConfig').value,videoApp:$('videoApp').value,originCountry:currentCountry(),operator:$('operator').value,operatorOther:$('operatorOther').value.trim()}}
 function savePrefs(){try{localStorage.setItem(PREF,JSON.stringify(prefs()))}catch(e){}}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3000)}
 function tab(which){activeTab=which;document.querySelectorAll('[data-page]').forEach(n=>n.classList.toggle('active',n.dataset.page===which));document.querySelectorAll('.view').forEach(n=>n.classList.toggle('active',n.id==='page-'+which));window.scrollTo({top:0,behavior:'instant'})}
@@ -291,7 +298,7 @@ function countSites(rs){const a=getProbed(rs);return{done:a.length,returned:a.fi
 function setComplete(id,ready){$(id).classList.toggle('complete',ready)}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object')data={...data,...x}}catch(e){}
 for(const key of ['sessions','stalls','legacy'])if(!Array.isArray(data[key]))data[key]=[];
-try{const pf=JSON.parse(localStorage.getItem(PREF)||'null');if(pf){for(const id of ['duration','budget','network','location','nodeConfig','videoApp']){const key=id==='nodeConfig'?'nodes':id;if(pf[key]!==undefined&&pf[key]!==null)$(id).value=String(pf[key])}$('upload').checked=!!pf.upload}}catch(e){}
+try{const pf=JSON.parse(localStorage.getItem(PREF)||localStorage.getItem(OLDPREF)||'null');if(pf){for(const id of ['duration','budget','network','location','nodeConfig','videoApp','originCountry','operator','operatorOther']){const key=id==='nodeConfig'?'nodes':id;if(pf[key]!==undefined&&pf[key]!==null)$(id).value=String(pf[key])}$('upload').checked=!!pf.upload}}catch(e){}$('operatorOther').hidden=$('operator').value!=='other';
 try{if(!data._legacyImported){const hist=JSON.parse(localStorage.getItem('simba-network-watch-v1')||'[]');if(Array.isArray(hist)){data.legacy=hist.filter(x=>x.kind==='test');data.stalls.push(...hist.filter(x=>x.kind==='stall').map(x=>({t:x.t,app:x.app||'历史卡顿'})))}data._legacyImported=true;stateSave()}}catch(e){}
 render()}
 function cards(){
@@ -343,14 +350,14 @@ for(const x of r){const row=textNode('div','list-item',''),left=textNode('div','
 }
 function render(){cards();$('headerDot').classList.toggle('live',running);$('headerState').textContent=running?'诊断中':'准备就绪';$('runBar').classList.toggle('visible',running);document.body.classList.toggle('running',running);$('startFull').disabled=running;for(const id of ['startLocal','startGlobal','startApps','startVideo','startNodes','quickLocal'])$(id).disabled=running;setValue('runLabel',stagedText||'诊断中')}
 function stepUpdate(index,val,msg){stepIndex=index;p=Math.min(100,Math.max(0,val));if(msg)stagedText=msg;setValue('progressBar','');$('progressBar').style.width=p+'%';$('progressState').textContent=running?'执行中 · '+format(p,0)+'%':'未开始';$('progressState').className='pill'+(running?'':' muted');setValue('progressStage',stagedText||'等待开始');setValue('workMsg',stagedText||'诊断进行中');for(let i=0;i<4;i++){$('step'+i).className='step'+(stepDone.includes(i)?' done':i===index?' live':'')}setValue('runLabel',stagedText||'诊断中')}
-function start(){if(running)return false;running=true;controller=new AbortController();stepDone=[];p=0;stagedText='准备开始…';stepUpdate(-1,0,stagedText);render();return true}
-function finish(){running=false;controller=null;render();$('progressState').textContent=stagedText.includes('取消')?'已取消':'已结束';$('headerState').textContent='准备就绪'}
+function start(){if(running)return false;running=true;runContext=currentContext();controller=new AbortController();stepDone=[];p=0;stagedText='准备开始…';stepUpdate(-1,0,stagedText);render();return true}
+function finish(){running=false;controller=null;runContext=null;render();$('progressState').textContent=stagedText.includes('取消')?'已取消':'已结束';$('headerState').textContent='准备就绪'}
 function stop(){if(controller)controller.abort()}
 function bounded(root,ms){const c=new AbortController(),timeout=setTimeout(()=>c.abort(),ms),fn=()=>c.abort();if(root.aborted)c.abort();else root.addEventListener('abort',fn,{once:true});return{signal:c.signal,close(){clearTimeout(timeout);root.removeEventListener('abort',fn)}}}
 async function sleep(ms,root){if(ms<=0||root.aborted)return;await new Promise(resolve=>{const t=setTimeout(end,ms);function end(){root.removeEventListener('abort',cancel);resolve()}function cancel(){clearTimeout(t);end()}root.addEventListener('abort',cancel,{once:true})})}
 async function down(bytes,root){const b=bounded(root,16000),start=performance.now();try{const res=await fetch(DOWN+'?bytes='+bytes+'&rnd='+Date.now()+Math.random(),{method:'GET',mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!res.ok)throw Error('HTTP '+res.status);const buffer=await res.arrayBuffer();if(buffer.byteLength<64)throw Error('空数据');const sec=(performance.now()-start)/1000;return{bytes:buffer.byteLength,seconds:sec,mbps:buffer.byteLength*8/(sec*1e6)}}finally{b.close()}}
 async function up(root){const b=bounded(root,15000),size=500000,start=performance.now();try{const res=await fetch(UP,{method:'POST',body:new Uint8Array(size),mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!res.ok)throw Error('HTTP '+res.status);return size*8/(1e6*(performance.now()-start)/1000)}finally{b.close()}}
-async function localStage(root,r0,rlen){const startAt=performance.now(),dur=Number($('duration').value)*1000,limit=Number($('budget').value)*1e6,network=$('network').value,location=$('location').value.trim();
+async function localStage(root,r0,rlen){const startAt=performance.now(),dur=Number($('duration').value)*1000,limit=Number($('budget').value)*1e6,ctx=runContext||currentContext(),network=ctx.network,location=ctx.location;
 let moved=0,lastMbps=NaN,reason='完成时间窗口',points=[],latencies=[],fails=[],uploadSpeed=null;
 const targetSamples=Math.max(7,Math.round(dur/4)),period=dur/targetSamples,maxChunk=Math.min(6000000,Math.floor(limit/targetSamples));
 for(let k=0;k<4;k++){if(root.aborted)break;try{const ping=await down(256,root);moved+=ping.bytes;latencies.push(ping.seconds*1000)}catch(e){if(root.aborted)break;fails.push(String(e.message||e))}}
@@ -365,12 +372,12 @@ if(root.aborted)break;await sleep(Math.min(Math.max(0,period-(performance.now()-
 const elapsed=(performance.now()-startAt)/1000;if(root.aborted)reason='已取消';
 if(!root.aborted&&$('upload').checked){try{const nums=[];for(let i=0;i<2;i++){nums.push(await up(root))}uploadSpeed=median(nums)}catch(e){fails.push('上传未完成：'+String(e.message||e))}}
 const v=points.map(x=>x.mbps),j=latencies.slice(1).map((x,i)=>Math.abs(x-latencies[i]));
-const obj={t:ts(),network,location,elapsed,reason,bytes:moved,points,latencies,failures:fails,speed:median(v),p10:p10(v),latency:median(latencies),jitter:median(j),uploadSpeed};
+const obj={t:ts(),network,location,originCountry:ctx.country,operator:ctx.operator,elapsed,reason,bytes:moved,points,latencies,failures:fails,speed:median(v),p10:p10(v),latency:median(latencies),jitter:median(j),uploadSpeed,endpointType:'Cloudflare region not verified'};
 if(points.length)data.local=obj;stateSave();render();return obj}
 async function siteProbe(url,root){const b=bounded(root,4800),start=performance.now();try{const res=await fetch(url,{method:'HEAD',mode:'no-cors',redirect:'follow',cache:'no-store',credentials:'omit',signal:b.signal});return{result:res.type==='opaque'?'opaque':'other',ms:performance.now()-start}}catch(e){return{result:root.aborted?'aborted':b.signal.aborted?'timeout':'restricted',ms:performance.now()-start}}finally{b.close()}}
-async function siteStage(groups,root,kind,lo,span){const existing=[],total=groups.reduce((a,g)=>a+g.sites.length,0)*2;let at=0;
+async function siteStage(groups,root,kind,lo,span){const existing=[],ctx=runContext||currentContext(),total=groups.reduce((a,g)=>a+g.sites.length,0)*2;let at=0;if(kind==='region'){data.region=[];data.regionOriginCountry=ctx.country}else{data.apps=[];data.appsOriginCountry=ctx.country}
 for(const group of groups){for(const [name,url] of group.sites){if(root.aborted)break;const samples=[];for(let k=0;k<2;k++){if(root.aborted)break;const sample=await siteProbe(url,root);samples.push(sample);at++;stepUpdate(kind==='region'?1:2,lo+span*at/total,(kind==='region'?'跨境探测':'应用检查')+' · '+group.name+' / '+name+' · '+at+'/'+total);await sleep(220,root)}
-existing.push({name,url,group:group.name,t:ts(),count:samples.length,samples,duration:median(samples.map(s=>s.ms))});
+existing.push({name,url,group:group.name,t:ts(),originCountry:ctx.country,operator:ctx.operator,marketCode:group.id,marketCategory:kind==='region'?marketClass(group.id,ctx.country):'app',count:samples.length,samples,duration:median(samples.map(s=>s.ms))});
 if(kind==='region')data.region=existing.slice();else data.apps=existing.slice();
 stateSave();render()}
 if(root.aborted)break}return existing}
@@ -378,10 +385,10 @@ async function videoStage(root,lo,len){const startAt=performance.now(),samples=[
 while(!root.aborted&&performance.now()-startAt<20000){if(20000-(performance.now()-startAt)<300)break;
 try{const v=await down(800000,root);samples.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,seconds:v.seconds});bytes+=v.bytes;if(v.mbps<5)low++;if(v.seconds>2)slow++}catch(e){if(root.aborted)break;samples.push({error:String(e.message||e)});slow++}
 stepUpdate(3,lo+len*Math.min(1,(performance.now()-startAt)/20000),'视频分片模拟 · '+samples.length+' 段 · 低速 '+low+' 段');await sleep(550,root)}
-const obj={t:ts(),samples,bytes,low,slow,median:median(samples.filter(x=>Number.isFinite(x.mbps)).map(x=>x.mbps)),reason:root.aborted?'已取消':'完成'};data.video=obj;stateSave();render();return obj}
+const obj={t:ts(),originCountry:(runContext||currentContext()).country,operator:(runContext||currentContext()).operator,samples,bytes,low,slow,median:median(samples.filter(x=>Number.isFinite(x.mbps)).map(x=>x.mbps)),reason:root.aborted?'已取消':'完成'};data.video=obj;stateSave();render();return obj}
 function configuredNodes(){const list=[];for(const line of $('nodeConfig').value.split('\n')){const i=line.indexOf('|');if(i<1)continue;const id=line.slice(0,i).trim().toUpperCase();if(!['SG','MY','CN','JP','US','UK','AU'].includes(id))continue;try{const u=new URL(line.slice(i+1).trim());if(u.protocol==='https:'&&!u.username&&!u.password)list.push({id,url:u.toString()})}catch(e){}if(list.length>=8)break}return list}
 async function nodeStage(root){const list=configuredNodes();if(!list.length){toast('请先填写有效的海外 HTTPS 节点');return}const out=[];for(let i=0;i<list.length;i++){if(root.aborted)break;const s=[];for(let k=0;k<3;k++){if(root.aborted)break;const b=bounded(root,16000),start=performance.now();try{const url=new URL(list[i].url);url.searchParams.set('bytes','1000000');url.searchParams.set('nocache',String(Date.now()+Math.random()));const resp=await fetch(url.toString(),{mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!resp.ok)throw Error('HTTP '+resp.status);const arr=await resp.arrayBuffer();if(arr.byteLength<500000)throw Error('数据少于预期');s.push({mbps:arr.byteLength*8/((performance.now()-start)/1000)/1e6,bytes:arr.byteLength})}catch(e){s.push({error:String(e.message||e)})}finally{b.close()}}
-out.push({...list[i],samples:s,mbps:median(s.filter(x=>Number.isFinite(x.mbps)).map(x=>x.mbps))});stepUpdate(1,100*(i+1)/list.length,'海外受控节点 '+(i+1)+'/'+list.length);data.remote=out.slice();stateSave();render()}}
+out.push({...list[i],originCountry:(runContext||currentContext()).country,operator:(runContext||currentContext()).operator,marketCategory:marketClass(list[i].id,(runContext||currentContext()).country),samples:s,mbps:median(s.filter(x=>Number.isFinite(x.mbps)).map(x=>x.mbps))});stepUpdate(1,100*(i+1)/list.length,'海外受控节点 '+(i+1)+'/'+list.length);data.remote=out.slice();stateSave();render()}}
 async function run(kind){if(!start())return;const root=controller.signal,started=ts();if(kind!=='full')tab(kind==='local'?'local':kind==='region'||kind==='nodes'?'global':'apps');else tab('home');
 try{
 if(kind==='full'||kind==='local'){stepUpdate(0,2,'本地链路 · 开始持续采样');await localStage(root,3,kind==='full'?32:94);if(!root.aborted)stepDone.push(0);render()}
@@ -389,11 +396,11 @@ if(!root.aborted&&(kind==='full'||kind==='region')){stepUpdate(1,kind==='full'?3
 if(!root.aborted&&(kind==='full'||kind==='apps')){stepUpdate(2,kind==='full'?64:2,'应用服务 · 6 类');await siteStage(APPS,root,'apps',kind==='full'?64:2,kind==='full'?24:96);if(!root.aborted)stepDone.push(2)}
 if(!root.aborted&&(kind==='full'||kind==='video')){stepUpdate(3,kind==='full'?89:2,'视频分片 · 20 秒模拟');await videoStage(root,kind==='full'?89:2,kind==='full'?10:96);if(!root.aborted)stepDone.push(3)}
 if(!root.aborted&&kind==='nodes'){stepUpdate(1,5,'受控海外节点测试');await nodeStage(root);if(!root.aborted)stepDone.push(1)}
-const status=root.aborted?'已取消':'完成';data.sessions.push({kind,t:started,status,speed:data.local?.speed});data.sessions=data.sessions.slice(-100);stateSave();
+const status=root.aborted?'已取消':'完成';data.sessions.push({kind,t:started,status,originCountry:(runContext||currentContext()).country,operator:(runContext||currentContext()).operator,network:(runContext||currentContext()).network,speed:data.local?.speed});data.sessions=data.sessions.slice(-100);stateSave();
 stepUpdate(-1,root.aborted?p:100,root.aborted?'已取消，已完成的阶段已保存':'诊断完成 · 点击上方卡片查看各项结果');if(!root.aborted)toast('网络诊断已完成');render();
 }catch(e){console.error(e);data.sessions.push({kind,t:started,status:'部分失败'});stateSave();stepUpdate(-1,p,'遇到异常：'+String(e.message||e));toast('发生错误，部分数据已保存')}
 finally{finish();render()}}
-function mark(){const obj={t:ts(),app:$('videoApp').value,network:$('network').value,location:$('location').value.trim()};data.stalls.push(obj);data.stalls=data.stalls.slice(-500);stateSave();render();toast('已记录 '+obj.app+' 卡顿')}
+function mark(){const ctx=currentContext(),obj={t:ts(),app:$('videoApp').value,network:ctx.network,location:ctx.location,originCountry:ctx.country,operator:ctx.operator};data.stalls.push(obj);data.stalls=data.stalls.slice(-500);stateSave();render();toast('已记录 '+obj.app+' 卡顿')}
 function csv(){const entries=[['type','time','group','target','network','Mbps','HTTP_ms','detail']],put=(r)=>entries.push(r.map(x=>x===null||x===undefined?'':String(x)));
 for(const x of getRows(data.sessions))put(['session',x.t,x.kind,'','','','',x.status]);
 for(const x of getRows(data.local?.points))put(['local_sample',data.local.t,'SG','Cloudflare',data.local.network,x.mbps,'','t='+x.second+'s bytes='+x.bytes]);
@@ -409,7 +416,7 @@ document.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>tab(x.dataset.go
 $('startFull').onclick=()=>run('full');$('quickLocal').onclick=()=>run('local');$('startLocal').onclick=()=>run('local');$('startGlobal').onclick=()=>run('region');$('startApps').onclick=()=>run('apps');$('startVideo').onclick=()=>run('video');$('startNodes').onclick=()=>run('nodes');
 $('openOptions').onclick=()=>{$('allOptions').open=true;$('allOptions').scrollIntoView({behavior:'smooth',block:'start'})};
 $('stopBtn').onclick=stop;$('quickStall').onclick=mark;$('floatingStall').onclick=mark;$('markStall').onclick=mark;$('exportHome').onclick=csv;
-for(const id of ['duration','budget','network','location','upload','nodeConfig','videoApp'])$(id).addEventListener('change',savePrefs);
+for(const id of ['duration','budget','network','location','upload','nodeConfig','videoApp','originCountry','operator','operatorOther'])$(id).addEventListener('change',()=>{if(id==='operator')$('operatorOther').hidden=$('operator').value!=='other';savePrefs();render()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){stop();toast('已离开前台，测速将停止，已完成数据保留')}});
 window.addEventListener('offline',()=>{if(running)stop();toast('网络连接已断开')});
 load();
