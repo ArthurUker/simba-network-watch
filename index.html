@@ -178,7 +178,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <div class="fieldrow">
 <div class="field"><label for="duration">本地采样时长</label><select id="duration"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60" selected>60 秒（推荐）</option><option value="120">120 秒</option></select></div>
 <div class="field"><label for="budget">本地下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
-<div class="field"><label for="network">实际手机网络（手动）</label><select id="network"><option value="">未标注</option><option value="4G">4G / LTE</option><option value="5G">5G</option></select></div>
+<div class="field"><label for="network">实际手机网络（手动）</label><select id="network"><option value="">未标注</option><option value="4G">4G / LTE</option><option value="5G">5G</option><option value="Wi-Fi">Wi-Fi</option><option value="Ethernet">有线 / Ethernet</option></select></div>
 <div class="field"><label for="location">城市 / 地点备注（选填）</label><input type="text" id="location" maxlength="45" placeholder="例如：北京朝阳 / Singapore"></div>
 </div>
 <label class="checkbox"><input type="checkbox" id="upload">额外尝试上传测试（可能无法跨域访问）</label>
@@ -329,14 +329,22 @@ setValue('videoSummary',v?'最近检测 '+time(v.t)+' · 模拟分片 '+v.sample
 const notes=[];if(l&&Number.isFinite(l.speed)){if(l.speed<5)notes.push('本地速度偏低，可能影响视频缓冲；建议同地比较 LTE 和 5G');else if(l.speed<15)notes.push('本地速度中等，建议关注不同时段的变化');else notes.push('本地下载未明显偏低，若视频仍卡顿应进一步检查平台连接')}if(v&&v.low>0)notes.push('视频分片模拟出现 '+v.low+' 次低速');if(!notes.length)notes.push('诊断完成后显示结果；连接探测不能证明视频 App 被单独限速');setValue('insightBanner',notes.join('。')+'。');overviewChips('regionOverview',REGIONS,data.region,'global',data.regionOriginCountry||'');overviewChips('appOverview',APPS,data.apps,'apps');setValue('stallCount',data.stalls.length+' 次');setValue('stallLast',data.stalls.length?'最近一次 '+time(data.stalls.at(-1).t)+' · '+(data.stalls.at(-1).app||'视频'):'尚未标记卡顿');
 draw('sparkline');draw('localChart');renderGroups('globalGrid','globalDetails',REGIONS,data.region,data.regionOriginCountry||'');renderGroups('appsGrid','appsDetails',APPS,data.apps);renderRemote();renderRecent();
 }
-function draw(id){const svg=$(id);svg.replaceChildren();const pts=data.local&&Array.isArray(data.local.points)?data.local.points.filter(x=>Number.isFinite(x.mbps)):[],ns='http://www.w3.org/2000/svg';
+function draw(id){const svg=$(id);svg.replaceChildren();const pts=data.local&&Array.isArray(data.local.points)?data.local.points.filter(x=>Number.isFinite(x.mbps)&&Number.isFinite(x.second)).slice().sort((a,b)=>a.second-b.second):[],ns='http://www.w3.org/2000/svg';
 const el=(name,props,label)=>{const e=document.createElementNS(ns,name);for(const [k,v] of Object.entries(props))e.setAttribute(k,String(v));if(label!==undefined)e.textContent=label;svg.append(e);return e};
 if(!pts.length){el('text',{x:175,y:80,'text-anchor':'middle','font-size':12,fill:'#9caeaa'},'完成本地测试后显示趋势');return}
 const W=350,H=165,L=35,R=9,T=9,B=24,top=Math.max(10,Math.ceil(Math.max(...pts.map(x=>x.mbps))*1.15/10)*10),seconds=Math.max(1,pts.at(-1).second);
 const x=n=>L+Math.min(1,n/seconds)*(W-L-R),y=n=>T+(H-T-B)*(1-Math.min(1,n/top));
 for(let i=0;i<4;i++){const yy=y(top*i/3);el('line',{x1:L,y1:yy,x2:W-R,y2:yy,stroke:'#e4edeb','stroke-dasharray':'3 6'});el('text',{x:L-7,y:yy+4,'text-anchor':'end',fill:'#94a5a0','font-size':9},format(top*i/3,0))}
-const line=pts.map(pt=>x(pt.second)+','+y(pt.mbps)).join(' ');if(pts.length>1)el('polyline',{points:line,fill:'none',stroke:'#129879','stroke-width':2.7,'stroke-linejoin':'round','stroke-linecap':'round'});
-for(const pt of pts)el('circle',{cx:x(pt.second),cy:y(pt.mbps),r:3.2,fill:'#128d76',stroke:'white','stroke-width':1.2});
+// Display-only five-sample rolling median; all stored points and exports remain raw.
+const adjusted=pts.map((pt,i)=>{const window=pts.slice(Math.max(0,i-2),Math.min(pts.length,i+3));return {second:pt.second,mbps:median(window.map(v=>v.mbps))}});
+const series=chartView==='smooth'&&pts.length>=5?adjusted:pts;
+if(pts.length>=2){if(chartView==='smooth'&&pts.length>=5){
+ const coords=series.map(pt=>[x(pt.second),y(pt.mbps)]);let path='M '+coords[0][0]+' '+coords[0][1];
+ for(let i=1;i<coords.length;i++){const [x0,y0]=coords[i-1],[x1,y1]=coords[i],dx=(x1-x0)/2;path+=' C '+(x0+dx)+' '+y0+' '+(x1-dx)+' '+y1+' '+x1+' '+y1}
+ el('path',{d:path,fill:'none',stroke:'#108b71','stroke-width':3.5,'stroke-linejoin':'round','stroke-linecap':'round'})
+ }else{el('polyline',{points:series.map(pt=>x(pt.second)+','+y(pt.mbps)).join(' '),fill:'none',stroke:'#108b71','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'})}}
+for(const pt of pts){const c=el('circle',{cx:x(pt.second),cy:y(pt.mbps),r:chartView==='smooth'?2.5:3.0,fill:'#36a991','fill-opacity':chartView==='smooth'?.38:.92});const tooltip=document.createElementNS(ns,'title');tooltip.textContent=format(pt.second,1)+' 秒 · 原始 '+format(pt.mbps,2)+' Mbps';c.append(tooltip)}
+
 for(let i=0;i<3;i++)el('text',{x:x(seconds*i/2),y:H-6,'text-anchor':i===0?'start':i===2?'end':'middle',fill:'#91a59d','font-size':9},format(seconds*i/2,0)+'s');
 }
 function overviewChips(id,groups,results,view,recorded=''){const holder=$(id);holder.replaceChildren();for(const g of groups){const n=groupStats(g,getProbed(results)),origin=recorded||(!n.attempted?currentCountry():''),cls=view==='global'?marketClass(g.id,origin):'unknown';const b=document.createElement('button');b.type='button';b.className='flow-chip'+(n.attempted?'':' empty')+(view==='global'?' '+(cls==='local'?'domestic':cls==='cross'?'cross':'unclassified'):'');b.append(document.createTextNode(g.name+' '));const val=document.createElement('b');val.textContent=n.attempted?n.returned+'/'+n.attempted:'—';b.append(val);if(view==='global')b.append(document.createTextNode(' · '+(cls==='local'?'同区':cls==='cross'?'跨区':'未分类')));b.onclick=()=>tab(view);holder.append(b)}}
@@ -414,6 +422,7 @@ for(const x of getRows(data.stalls))put(['stall',x.t,'',x.app,x.network,'','',x.
 for(const x of getRows(data.legacy))put(['legacy_test',x.t,'SG','Cloudflare',x.network,x.speed,x.latency,'short']);
 const quote=s=>'"'+s.replaceAll('"','""')+'"',out='\ufeff'+entries.map(r=>r.map(quote).join(',')).join('\r\n');
 const url=URL.createObjectURL(new Blob([out],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='simba-report-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);toast('CSV 报告已生成')}
+$('chartMode').onclick=()=>{chartView=chartView==='smooth'?'raw':'smooth';$('chartMode').textContent=chartView==='smooth'?'查看原始曲线':'查看平滑趋势';setValue('curveLegend',chartView==='smooth'?'5 点移动中位趋势':'原始下载采样折线');draw('sparkline');draw('localChart')};
 document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>tab(x.dataset.page));
 document.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>tab(x.dataset.go));
 $('startFull').onclick=()=>run('full');$('quickLocal').onclick=()=>run('local');$('startLocal').onclick=()=>run('local');$('startGlobal').onclick=()=>run('region');$('startApps').onclick=()=>run('apps');$('startVideo').onclick=()=>run('video');$('startNodes').onclick=()=>run('nodes');
