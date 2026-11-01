@@ -111,7 +111,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 @media(max-width:400px){.origin-bar{grid-template-columns:1fr 1fr;padding:9px;gap:6px}.origin-field select,.origin-field input{padding:9px 5px;font-size:11px}.origin-field label{font-size:10px}}
 
 .live-status{margin-top:15px;padding:15px!important}.live-status h2{font-size:15px}
-.status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.status-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.status-actions .btn{padding:7px 9px;min-height:34px}.status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
 .status-tile{border:1px solid #e4eeea;background:#f8fbf9;border-radius:12px;padding:10px 11px;min-height:91px;min-width:0;text-align:left;display:flex;flex-direction:column}
 .status-tile.primary{background:#e5f7ee;border-color:#bedfd1}
 .status-tile small{color:#687f75;font-size:10px;font-weight:650}
@@ -143,7 +143,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span></div>
 </header>
 <section class="container-card live-status" id="liveStatusCard">
-  <div class="row"><div><h2>当前网络状态</h2><p class="sub">自动识别公网连接 · 测速时更新实际请求速率</p></div><button class="btn btn-muted small" id="refreshStatus">刷新状态</button></div>
+  <div class="row"><div><h2>当前网络状态</h2><p class="sub">自动识别公网连接 · 测速时更新实际请求速率</p></div><div class="status-actions"><button class="btn btn-ghost small" id="startStatusTest">开始测速</button><button class="btn btn-muted small" id="refreshStatus">刷新状态</button></div></div>
   <div class="status-grid">
     <div class="status-tile primary"><small>当前下载采样</small><strong id="liveSpeed">— <em>Mbps</em></strong><span id="liveSpeedCaption">未在测速 · 不包含其他 App</span></div>
     <div class="status-tile"><small>HTTP 请求耗时</small><strong id="httpStatus">— <em>ms</em></strong><span id="httpJitter">等待检测</span></div>
@@ -316,7 +316,7 @@ const APPS=[
 {name:'即时通讯',id:'Chat',sites:[['WhatsApp Web','https://web.whatsapp.com/'],['Telegram Web','https://web.telegram.org/']]},
 {name:'办公开发',id:'Work',sites:[['GitHub','https://github.com/'],['Microsoft','https://www.microsoft.com/'],['ChatGPT','https://chatgpt.com/']]},
 {name:'网络购物',id:'Shopping',sites:[['Amazon','https://www.amazon.com/'],['Shopee','https://shopee.sg/']]}];
-let data={sessions:[],stalls:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null,chartView='smooth',runContext=null,egressInfo=null;
+let data={sessions:[],stalls:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null,chartView='smooth',runContext=null,egressInfo=null,statusInfo={rtts:[],checkedAt:null,errors:0},rateInfo=null;
 const format=(n,d=1)=>Number.isFinite(n)?Number(n).toFixed(d):'—';
 const median=a=>{if(!a.length)return NaN;const v=a.slice().sort((a,b)=>a-b);return(v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2};
 const p10=a=>a.length?a.slice().sort((a,b)=>a-b)[Math.floor((a.length-1)*.1)]:NaN;
@@ -333,10 +333,60 @@ async function refreshEgress(quiet=false){
  if(!response.ok)throw Error('HTTP '+response.status);
  const body=await response.json();if(!body||typeof body.country!=='string')throw Error('缺少出口地信息');
  const country=/^[A-Z]{2}$/.test(body.country)?body.country:'';
- egressInfo={country,asn:Number.isInteger(body.asn)?body.asn:null,organization:String(body.organization||'').slice(0,90),checkedAt:ts(),source:'cloudflare-client-ip-geolocation'};
+ egressInfo={country,asn:Number.isInteger(body.asn)?body.asn:null,organization:String(body.organization||'').slice(0,90),colo:String(body.colo||'').slice(0,3),protocol:String(body.protocol||'').slice(0,20),edgeRtt:Number.isFinite(body.edgeRtt)?body.edgeRtt:null,checkedAt:ts(),source:'cloudflare-client-ip-geolocation'};
  }catch(err){egressInfo=null;if(!quiet)toast('出口地检测暂不可用');}
  finally{clearTimeout(timer);btn.disabled=false;render()}
  return egressInfo
+}
+function browserNetworkInfo(){const c=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+ if(!c)return {type:'浏览器不支持',quality:'iPhone Safari 不提供可靠的 LTE / 5G 识别'};
+ const type={wifi:'Wi-Fi（浏览器）',cellular:'蜂窝（浏览器）',ethernet:'有线（浏览器）',none:'未连接',unknown:'类型不明'}[c.type]||'未提供物理连接类型';
+ const effective=typeof c.effectiveType==='string'?c.effectiveType:'';
+ return {type,quality:effective?('性能等级 '+effective+'（不代表真实无线制式）'):'未提供可用的网络性能等级'}
+}
+function renderStatus(){
+ const conn=browserNetworkInfo(),ip=egressInfo;
+ setValue('detectedOrganization',ip?.organization||'未知 / 等待检测');
+ setValue('detectedAsn',ip?.asn?'ASN '+ip.asn+' · 不代表 SIM 卡归属':'不代表 SIM 卡运营商');
+ setValue('detectedCountry',ip?.country?countryName(ip.country):'无法判断');
+ setValue('detectedEdge',ip?.colo?('Cloudflare '+ip.colo+(ip.protocol?' · '+ip.protocol:'')):'根据公网 IP 估计，非 GPS');
+ setValue('browserType',conn.type);setValue('browserQuality',conn.quality);
+ const good=statusInfo.rtts.filter(Number.isFinite);
+ setValue('httpStatus',good.length?format(median(good),0)+' ms':'—');
+ const variance=good.length>=2?median(good.slice(1).map((v,i)=>Math.abs(v-good[i]))):NaN;
+ setValue('httpJitter',good.length?('HTTP 波动 '+format(variance,0)+' ms · '+(statusInfo.errors?'失败 '+statusInfo.errors+' 次':'到本站')):'点击刷新检测 3 次 HTTP 请求');
+ const rate=rateInfo||((data.local?.points?.length)?{mbps:data.local.points.at(-1).mbps,active:false,checkedAt:data.local.t}:null);
+ setValue('liveSpeed',rate&&Number.isFinite(rate.mbps)?format(rate.mbps)+' Mbps':'—');
+ setValue('liveSpeedCaption',rate?(rate.active?'正在下载 · 当前请求采样速率':'上次测试样本 · 非后台实时流量'):'未测速 · 不读取其他 App 流量');
+ setValue('onlineState',navigator.onLine===false?'浏览器报告：离线':'浏览器状态：在线（不保证互联网可达）');
+ setValue('statusChecked',statusInfo.checkedAt?'HTTP 检测 '+time(statusInfo.checkedAt):ip?.checkedAt?'IP 检测 '+time(ip.checkedAt):'尚未检测');
+ $('startStatusTest').disabled=running
+}
+async function probeHttp(signal){
+ const values=[];let errors=0;
+ for(let i=0;i<3;i++){
+  if(signal?.aborted)break;
+  const localCtl=new AbortController(),timer=setTimeout(()=>localCtl.abort(),5000),abort=()=>localCtl.abort();
+  if(signal)signal.addEventListener('abort',abort,{once:true});
+  const t=performance.now();
+  try{const res=await fetch('/api/ping?i='+i+'&t='+Date.now(),{method:'GET',cache:'no-store',credentials:'omit',signal:localCtl.signal});
+   if(!res.ok)throw Error('HTTP '+res.status);
+   values.push(performance.now()-t);
+  }catch(e){errors++}finally{clearTimeout(timer);if(signal)signal.removeEventListener('abort',abort)}
+ }
+ statusInfo={rtts:values,errors,checkedAt:ts()};renderStatus();return statusInfo
+}
+async function refreshStatus(){
+ const btn=$('refreshStatus');if(btn.disabled)return;btn.disabled=true;btn.textContent='检测中…';
+ try{await Promise.all([refreshEgress(true),probeHttp()])}
+ finally{btn.disabled=false;btn.textContent='刷新状态';renderStatus()}
+}
+function updateRate(mbps,active){
+ if(!Number.isFinite(mbps)||mbps<0)return;
+ rateInfo={mbps,active,checkedAt:ts()};
+ // Keep telemetry updates local to the status panel. Full dashboard updates only on completed samples.
+ setValue('liveSpeed',format(mbps)+' Mbps');
+ setValue('liveSpeedCaption',active?'正在下载 · 当前请求采样速率':'上次测试样本 · 非后台实时流量')
 }
 function roamingHint(ctx){if(ctx.roamingMode==='roaming'){
  if(!ctx.country)return '请先标注手机实际所在地。';
@@ -437,9 +487,9 @@ block.append(sum,inner);list.append(block)}
 function renderRemote(){const root=$('nodeDetails');root.replaceChildren();const r=getRows(data.remote);if(!r.length){root.textContent='没有受控海外节点的测速结果。';return}
 for(const x of r){const row=textNode('div','list-item',''),left=textNode('div','left','');left.append(textNode('b','',x.id+' · '+(x.marketCategory==='local'?'同地区':x.marketCategory==='cross'?'跨地区':'地区未分类')+' · 用户提供的 HTTPS 节点'),textNode('small','',x.url));const right=textNode('div','right',Number.isFinite(x.mbps)?format(x.mbps)+' Mbps':'测试受限');row.append(left,right);root.append(row)}
 }
-function render(){cards();$('headerDot').classList.toggle('live',running);$('headerState').textContent=running?'诊断中':'准备就绪';$('runBar').classList.toggle('visible',running);document.body.classList.toggle('running',running);$('startFull').disabled=running;for(const id of ['startLocal','startGlobal','startApps','startVideo','startNodes','quickLocal'])$(id).disabled=running;setValue('runLabel',stagedText||'诊断中');for(const id of ['originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).disabled=running}
+function render(){cards();renderStatus();$('headerDot').classList.toggle('live',running);$('headerState').textContent=running?'诊断中':'准备就绪';$('runBar').classList.toggle('visible',running);document.body.classList.toggle('running',running);$('startFull').disabled=running;for(const id of ['startLocal','startGlobal','startApps','startVideo','startNodes','quickLocal'])$(id).disabled=running;setValue('runLabel',stagedText||'诊断中');for(const id of ['originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).disabled=running}
 function stepUpdate(index,val,msg){stepIndex=index;p=Math.min(100,Math.max(0,val));if(msg)stagedText=msg;setValue('progressBar','');$('progressBar').style.width=p+'%';$('progressState').textContent=running?'执行中 · '+format(p,0)+'%':'未开始';$('progressState').className='pill'+(running?'':' muted');setValue('progressStage',stagedText||'等待开始');setValue('workMsg',stagedText||'诊断进行中');for(let i=0;i<4;i++){$('step'+i).className='step'+(stepDone.includes(i)?' done':i===index?' live':'')}setValue('runLabel',stagedText||'诊断中')}
-function start(){if(running)return false;running=true;runContext=currentContext();controller=new AbortController();stepDone=[];p=0;stagedText='准备开始…';stepUpdate(-1,0,stagedText);render();return true}
+function start(){if(running)return false;running=true;rateInfo=null;runContext=currentContext();controller=new AbortController();stepDone=[];p=0;stagedText='准备开始…';stepUpdate(-1,0,stagedText);render();return true}
 function finish(){running=false;controller=null;runContext=null;render();$('progressState').textContent=stagedText.includes('取消')?'已取消':'已结束';$('headerState').textContent='准备就绪'}
 function stop(){if(controller)controller.abort()}
 function bounded(root,ms){const c=new AbortController(),timeout=setTimeout(()=>c.abort(),ms),fn=()=>c.abort();if(root.aborted)c.abort();else root.addEventListener('abort',fn,{once:true});return{signal:c.signal,close(){clearTimeout(timeout);root.removeEventListener('abort',fn)}}}
@@ -456,7 +506,7 @@ if(elapsed-lastProbe>7000){try{const ping=await down(256,root);latencies.push(pi
 if(root.aborted)break;const aim=Number.isFinite(lastMbps)?Math.floor(lastMbps*1e6/8*1.1):1500000;
 const chunk=Math.min(Math.floor(limit-moved),Math.max(600000,Math.min(maxChunk,aim)));
 if(chunk<600000){reason='已达到下载流量预算';break}
-try{const v=await down(chunk,root);moved+=v.bytes;lastMbps=v.mbps;points.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,bytes:v.bytes});if(points.length%2===0){const progress=Math.min(1,(performance.now()-startAt)/dur);stepUpdate(0,r0+rlen*progress,'基准持续采样 · '+points.length+' 组 · 中位 '+format(median(points.map(x=>x.mbps)))+' Mbps · '+format(moved/1e6)+' MB')}}catch(e){if(!root.aborted)fails.push(String(e.message||e))}
+try{const v=await down(chunk,root,(mbps)=>updateRate(mbps,true));moved+=v.bytes;lastMbps=v.mbps;updateRate(v.mbps,false);points.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,bytes:v.bytes});if(points.length%2===0){const progress=Math.min(1,(performance.now()-startAt)/dur);stepUpdate(0,r0+rlen*progress,'基准持续采样 · '+points.length+' 组 · 中位 '+format(median(points.map(x=>x.mbps)))+' Mbps · '+format(moved/1e6)+' MB')}}catch(e){if(!root.aborted)fails.push(String(e.message||e))}
 if(root.aborted)break;await sleep(Math.min(Math.max(0,period-(performance.now()-started)),Math.max(0,dur-(performance.now()-startAt))),root)}
 const elapsed=(performance.now()-startAt)/1000;if(root.aborted)reason='已取消';
 if(!root.aborted&&$('upload').checked){try{const nums=[];for(let i=0;i<2;i++){nums.push(await up(root))}uploadSpeed=median(nums)}catch(e){fails.push('上传未完成：'+String(e.message||e))}}
@@ -472,7 +522,7 @@ stateSave();render()}
 if(root.aborted)break}return existing}
 async function videoStage(root,lo,len){const startAt=performance.now(),samples=[];let bytes=0,low=0,slow=0;
 while(!root.aborted&&performance.now()-startAt<20000){if(20000-(performance.now()-startAt)<300)break;
-try{const v=await down(800000,root);samples.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,seconds:v.seconds});bytes+=v.bytes;if(v.mbps<5)low++;if(v.seconds>2)slow++}catch(e){if(root.aborted)break;samples.push({error:String(e.message||e)});slow++}
+try{const v=await down(800000,root,(mbps)=>updateRate(mbps,true));updateRate(v.mbps,false);samples.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,seconds:v.seconds});bytes+=v.bytes;if(v.mbps<5)low++;if(v.seconds>2)slow++}catch(e){if(root.aborted)break;samples.push({error:String(e.message||e)});slow++}
 stepUpdate(3,lo+len*Math.min(1,(performance.now()-startAt)/20000),'视频分片模拟 · '+samples.length+' 段 · 低速 '+low+' 段');await sleep(550,root)}
 const obj={t:ts(),originCountry:(runContext||currentContext()).country,operator:(runContext||currentContext()).operator,roamingMode:(runContext||currentContext()).roamingMode,simHomeCountry:(runContext||currentContext()).simHomeCountry,visitedOperator:(runContext||currentContext()).visitedOperator,egressCountry:(runContext||currentContext()).egressCountry,egressAsn:(runContext||currentContext()).egressAsn,samples,bytes,low,slow,median:median(samples.filter(x=>Number.isFinite(x.mbps)).map(x=>x.mbps)),reason:root.aborted?'已取消':'完成'};data.video=obj;stateSave();render();return obj}
 function configuredNodes(){const list=[];for(const line of $('nodeConfig').value.split('\n')){const i=line.indexOf('|');if(i<1)continue;const id=line.slice(0,i).trim().toUpperCase();if(!['SG','MY','CN','JP','US','UK','AU'].includes(id))continue;try{const u=new URL(line.slice(i+1).trim());if(u.protocol==='https:'&&!u.username&&!u.password)list.push({id,url:u.toString()})}catch(e){}if(list.length>=8)break}return list}
@@ -509,7 +559,7 @@ const uri=URL.createObjectURL(new Blob([content],{type:'text/csv;charset=utf-8'}
 const link=document.createElement('a');link.href=uri;link.download='network-watch-roaming-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(uri),15000);toast('包含漫游接入和出口线索的原始 CSV 已生成')
 }
 $('chartMode').onclick=()=>{chartView=chartView==='smooth'?'raw':'smooth';$('chartMode').textContent=chartView==='smooth'?'查看原始曲线':'查看平滑趋势';setValue('curveLegend',chartView==='smooth'?'5 点移动中位趋势':'原始下载采样折线');draw('sparkline');draw('localChart')};
-document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>tab(x.dataset.page));
+$('refreshStatus').onclick=refreshStatus;$('startStatusTest').onclick=()=>run('local');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>tab(x.dataset.page));
 document.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>tab(x.dataset.go));
 $('startFull').onclick=()=>run('full');$('quickLocal').onclick=()=>run('local');$('startLocal').onclick=()=>run('local');$('startGlobal').onclick=()=>run('region');$('startApps').onclick=()=>run('apps');$('startVideo').onclick=()=>run('video');$('startNodes').onclick=()=>run('nodes');
 $('openOptions').onclick=()=>{$('allOptions').open=true;$('allOptions').scrollIntoView({behavior:'smooth',block:'start'})};
@@ -517,7 +567,7 @@ $('stopBtn').onclick=stop;$('quickStall').onclick=mark;$('floatingStall').onclic
 for(const id of ['duration','budget','network','location','upload','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).addEventListener('change',()=>{if(id==='operator')$('operatorOther').hidden=$('operator').value!=='other';savePrefs();render()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){stop();toast('已离开前台，测速将停止，已完成数据保留')}});
 $('detectEgress').onclick=()=>refreshEgress(false);window.addEventListener('offline',()=>{if(running)stop();toast('网络连接已断开')});
-load();refreshEgress(true);
+load();refreshStatus();
 })();
 </script>
 </body>
