@@ -494,7 +494,31 @@ function finish(){running=false;controller=null;runContext=null;render();$('prog
 function stop(){if(controller)controller.abort()}
 function bounded(root,ms){const c=new AbortController(),timeout=setTimeout(()=>c.abort(),ms),fn=()=>c.abort();if(root.aborted)c.abort();else root.addEventListener('abort',fn,{once:true});return{signal:c.signal,close(){clearTimeout(timeout);root.removeEventListener('abort',fn)}}}
 async function sleep(ms,root){if(ms<=0||root.aborted)return;await new Promise(resolve=>{const t=setTimeout(end,ms);function end(){root.removeEventListener('abort',cancel);resolve()}function cancel(){clearTimeout(t);end()}root.addEventListener('abort',cancel,{once:true})})}
-async function down(bytes,root){const b=bounded(root,16000),start=performance.now();try{const res=await fetch(DOWN+'?bytes='+bytes+'&rnd='+Date.now()+Math.random(),{method:'GET',mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!res.ok)throw Error('HTTP '+res.status);const buffer=await res.arrayBuffer();if(buffer.byteLength<64)throw Error('空数据');const sec=(performance.now()-start)/1000;return{bytes:buffer.byteLength,seconds:sec,mbps:buffer.byteLength*8/(sec*1e6)}}finally{b.close()}}
+async function down(bytes,root,onProgress){
+ const b=bounded(root,16000),start=performance.now();let actual=0,lastReport=0;
+ try{
+  const res=await fetch(DOWN+'?bytes='+bytes+'&rnd='+Date.now()+Math.random(),{method:'GET',mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});
+  if(!res.ok)throw Error('HTTP '+res.status);
+  if(res.body&&typeof res.body.getReader==='function'){
+   const reader=res.body.getReader();
+   try{
+    while(true){
+     const part=await reader.read();
+     if(part.done)break;
+     actual+=part.value?.byteLength||0;
+     const elapsed=performance.now()-start;
+     if(onProgress&&elapsed-lastReport>=250&&actual>0){lastReport=elapsed;onProgress(actual*8/(Math.max(elapsed,1)*1000))}
+    }
+   }finally{reader.releaseLock()}
+  }else{
+   const raw=await res.arrayBuffer();actual=raw.byteLength;
+  }
+  if(actual<64)throw Error('空数据');
+  const sec=Math.max((performance.now()-start)/1000,.001),speed=actual*8/(sec*1e6);
+  if(onProgress)onProgress(speed);
+  return{bytes:actual,seconds:sec,mbps:speed}
+ }finally{b.close()}
+}
 async function up(root){const b=bounded(root,15000),size=500000,start=performance.now();try{const res=await fetch(UP,{method:'POST',body:new Uint8Array(size),mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!res.ok)throw Error('HTTP '+res.status);return size*8/(1e6*(performance.now()-start)/1000)}finally{b.close()}}
 async function localStage(root,r0,rlen){const startAt=performance.now(),dur=Number($('duration').value)*1000,limit=Number($('budget').value)*1e6,ctx=runContext||currentContext(),network=ctx.network,location=ctx.location;
 let moved=0,lastMbps=NaN,reason='完成时间窗口',points=[],latencies=[],fails=[],uploadSpeed=null;
