@@ -78,7 +78,7 @@ h3{margin:0;font-size:13px}.sub{color:var(--secondary);font-size:11px;margin:4px
 .list-item .right{font-size:12px;font-weight:800;color:#176e62;white-space:nowrap;text-align:right}
 .pill{font-size:10px;font-weight:720;padding:4px 8px;border-radius:100px;background:#eaf4f0;color:#417466;white-space:nowrap}
 .pill.warn{background:var(--amber-light);color:var(--amber)}.pill.muted{background:#f2f5f4;color:#84928e}
-.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.flow-summary{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.flow-chip{border:1px solid #e4ece8;background:#f7faf8;border-radius:20px;padding:6px 10px;color:#42685d;font-size:11px;font-weight:650}.flow-chip b{font-size:10px;color:#087e68;margin-left:4px}.flow-chip.empty{color:#94a9a1;background:#f8f9f8}.insight{font-size:12px;background:#eaf6ef;border-radius:12px;padding:12px 13px;color:#3e6b58;line-height:1.6}.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
 .mini-grid .cell{background:#f7f9f8;border-radius:12px;padding:10px;min-width:0}
 .cell small{display:block;color:#78908a;font-size:10px}
 .cell strong{display:block;font-weight:820;letter-spacing:-.035em;font-size:22px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -128,7 +128,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 </nav>
 <section class="view active" id="page-home">
 <div class="hero">
-<div class="hero-top"><span class="eyebrow">NETWORK HEALTH CHECK</span><span class="last" id="lastTime">尚未完成诊断</span></div>
+<div class="hero-top"><span class="eyebrow">NETWORK HEALTH CHECK</span><span class="last"><span id="networkBadge">未标注网络</span> · <span id="lastTime">尚未完成诊断</span></span></div>
 <div class="hero-headline" id="headline">让网络表现一目了然</div>
 <p class="hero-desc" id="headlineSub">从新加坡本地到海外网站、视频和社交服务，一次诊断，分类查看。</p>
 <div class="action"><button class="btn btn-white" id="startFull">▶ 开始全面诊断</button><button class="btn btn-outline" id="openOptions">设置</button></div>
@@ -139,6 +139,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <button class="metric" data-go="apps"><span class="arrow">↗</span><span class="k"><i id="dotApps"></i>常用服务</span><div class="value" id="kApps">—</div><span class="fine" id="kAppsSub">待探测 · 6 类</span></button>
 <button class="metric" data-go="apps"><span class="arrow">↗</span><span class="k"><i id="dotVideo"></i>视频分片</span><div class="value" id="kVideo">—</div><span class="fine" id="kVideoSub">待测试 · 20 秒模拟</span></button>
 </div>
+<div class="insight" id="insightBanner" style="margin-top:12px">尚无诊断结果。建议关闭 Wi-Fi 后开始检测。</div>
 <div class="container-card" id="progressCard">
 <div class="module-title"><h2>诊断进度</h2><span class="pill muted" id="progressState">未开始</span></div>
 <p class="sub" id="progressStage">点击「开始全面诊断」即可按阶段检测。</p>
@@ -152,6 +153,7 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <div class="work-msg" id="workMsg">不会自动消耗流量；开始测试后可随时停止。</div>
 <div class="progress-actions"><button class="btn btn-ghost small" id="exportHome" type="button">导出结果</button></div>
 </div>
+<div class="container-card"><div class="row"><h2>地区与服务速览</h2><span style="font-size:10px;color:#879a92">请求返回 ≠ 网站可用</span></div><p class="sub">已测试目标的浏览器请求返回情况；点击标签查看详情</p><h3 style="margin-top:13px">7 个地区</h3><div class="flow-summary" id="regionOverview"></div><h3 style="margin-top:13px">6 类服务</h3><div class="flow-summary" id="appOverview"></div></div>
 <div class="cols" style="margin-top:12px">
 <div class="container-card"><div class="row"><h2>下载速度趋势</h2><button class="btn btn-muted small" type="button" data-go="local">查看明细 ↗</button></div><p class="sub">来自最近一次本地持续采样，不是瞬时峰值</p><div class="visual"><svg id="sparkline" viewBox="0 0 350 165" role="img" aria-label="下载采样趋势"></svg></div><div class="legend"><span><i class="dot"></i>下载 Mbps</span><span>低值越多，体验越不稳定</span></div></div>
 <div class="container-card"><div class="row"><h2>最近检测</h2><span class="pill muted" id="recordCount">0 次</span></div><div id="recentRecords" class="empty">还没有检测记录</div></div>
@@ -299,14 +301,14 @@ const ss=getRows(data.sessions),last=ss.at(-1);setValue('lastTime',last?'上次 
 if(running){setValue('headline','正在检查网络…');setValue('headlineSub','四个阶段完成后，结果会逐项更新在下方卡片。')}
 else if(last){setValue('headline','你的网络报告已就绪');setValue('headlineSub','点选下方四张卡片查看详细结果；也可以重新检测。')}
 else{setValue('headline','让网络表现一目了然');setValue('headlineSub','一次检查本地、跨境、应用服务和视频分片表现。')}
-setValue('recordCount',ss.length+' 次');setValue('localMedian',l&&Number.isFinite(l.speed)?format(l.speed):'—');
+setValue('recordCount',ss.length+' 次');setValue('networkBadge',$('network').value?$('network').value+'（手动）':'网络未标注');setHTML('localMedian',l&&Number.isFinite(l.speed)?format(l.speed):'—','Mbps');
 setHTML('localP10',l?format(l.p10):'—','Mbps');setHTML('localLatency',l?format(l.latency,0):'—','ms');
 setHTML('localJitter',l?format(l.jitter,0):'—','ms');setValue('localUpload',l&&Number.isFinite(l.uploadSpeed)?format(l.uploadSpeed)+' Mbps':l?'未测/不可用':'—');setHTML('localBytes',l?format(l.bytes/1e6,1):'—','MB');
 setValue('localSummary',l?time(l.t)+' · '+(l.network||'网络未标注')+' · '+format(l.elapsed,0)+' 秒 · '+(l.reason||'已完成'):'暂无本地连续测速记录。');
 setValue('localFaults',l&&l.failures&&l.failures.length?l.failures.length+' 次请求异常：'+l.failures.slice(0,2).join('；'):'');
 setValue('videoMedian',v?format(v.median)+' Mbps':'—');setValue('videoLow',v?v.low+'/'+v.samples.length:'—');setValue('videoSlow',v?v.slow+'/'+v.samples.length:'—');
 setValue('videoSummary',v?'最近检测 '+time(v.t)+' · 模拟分片 '+v.samples.length+' 组，消耗 '+format(v.bytes/1e6)+' MB，不能当作视频 App 实测':'尚未运行视频分片模拟。');
-setValue('stallCount',data.stalls.length+' 次');setValue('stallLast',data.stalls.length?'最近一次 '+time(data.stalls.at(-1).t)+' · '+(data.stalls.at(-1).app||'视频'):'尚未标记卡顿');
+const notes=[];if(l&&Number.isFinite(l.speed)){if(l.speed<5)notes.push('本地速度偏低，可能影响视频缓冲；建议同地比较 LTE 和 5G');else if(l.speed<15)notes.push('本地速度中等，建议关注不同时段的变化');else notes.push('本地下载未明显偏低，若视频仍卡顿应进一步检查平台连接')}if(v&&v.low>0)notes.push('视频分片模拟出现 '+v.low+' 次低速');if(!notes.length)notes.push('诊断完成后显示结果；连接探测不能证明视频 App 被单独限速');setValue('insightBanner',notes.join('。')+'。');overviewChips('regionOverview',REGIONS,data.region,'global');overviewChips('appOverview',APPS,data.apps,'apps');setValue('stallCount',data.stalls.length+' 次');setValue('stallLast',data.stalls.length?'最近一次 '+time(data.stalls.at(-1).t)+' · '+(data.stalls.at(-1).app||'视频'):'尚未标记卡顿');
 draw('sparkline');draw('localChart');renderGroups('globalGrid','globalDetails',REGIONS,data.region);renderGroups('appsGrid','appsDetails',APPS,data.apps);renderRemote();renderRecent();
 }
 function draw(id){const svg=$(id);svg.replaceChildren();const pts=data.local&&Array.isArray(data.local.points)?data.local.points.filter(x=>Number.isFinite(x.mbps)):[],ns='http://www.w3.org/2000/svg';
@@ -315,10 +317,11 @@ if(!pts.length){el('text',{x:175,y:80,'text-anchor':'middle','font-size':12,fill
 const W=350,H=165,L=35,R=9,T=9,B=24,top=Math.max(10,Math.ceil(Math.max(...pts.map(x=>x.mbps))*1.15/10)*10),seconds=Math.max(1,pts.at(-1).second);
 const x=n=>L+Math.min(1,n/seconds)*(W-L-R),y=n=>T+(H-T-B)*(1-Math.min(1,n/top));
 for(let i=0;i<4;i++){const yy=y(top*i/3);el('line',{x1:L,y1:yy,x2:W-R,y2:yy,stroke:'#e4edeb','stroke-dasharray':'3 6'});el('text',{x:L-7,y:yy+4,'text-anchor':'end',fill:'#94a5a0','font-size':9},format(top*i/3,0))}
-const line=pts.map(pt=>x(pt.second)+','+y(pt.mbps)).join(' ');if(pts.length>1)el('polyline',{points:line,fill:'none',stroke:'#129879','strokeWidth':2.7,'stroke-linejoin':'round','stroke-linecap':'round'});
+const line=pts.map(pt=>x(pt.second)+','+y(pt.mbps)).join(' ');if(pts.length>1)el('polyline',{points:line,fill:'none',stroke:'#129879','stroke-width':2.7,'stroke-linejoin':'round','stroke-linecap':'round'});
 for(const pt of pts)el('circle',{cx:x(pt.second),cy:y(pt.mbps),r:3.2,fill:'#128d76',stroke:'white','stroke-width':1.2});
 for(let i=0;i<3;i++)el('text',{x:x(seconds*i/2),y:H-6,'text-anchor':i===0?'start':i===2?'end':'middle',fill:'#91a59d','font-size':9},format(seconds*i/2,0)+'s');
 }
+function overviewChips(id,groups,results,view){const holder=$(id);holder.replaceChildren();for(const g of groups){const n=groupStats(g,getProbed(results));const b=document.createElement('button');b.type='button';b.className='flow-chip'+(n.attempted?'':' empty');b.append(document.createTextNode(g.name+' '));const val=document.createElement('b');val.textContent=n.attempted?n.returned+'/'+n.attempted:'—';b.append(val);b.onclick=()=>tab(view);holder.append(b)}}
 function renderRecent(){const root=$('recentRecords');root.replaceChildren();const ss=getRows(data.sessions).slice(-4).reverse();if(!ss.length){root.className='empty';root.textContent='还没有检测记录';return}root.className='';
 for(const r of ss){const div=textNode('div','list-item',''),left=textNode('div','left',''),right=textNode('div','right',r.status==='完成'?'已完成':r.status||'部分完成');left.append(textNode('b','',r.kind==='full'?'综合网络诊断':r.kind==='local'?'本地持续测速':r.kind==='regions'?'跨境站点探测':r.kind==='apps'?'应用服务探测':r.kind==='video'?'视频分片模拟':'海外节点测速'),textNode('small','',time(r.t)));div.append(left,right);root.append(div)}}
 function renderGroups(gridId,listId,groups,result){const items=getProbed(result),grid=$(gridId),list=$(listId);grid.replaceChildren();list.replaceChildren();
