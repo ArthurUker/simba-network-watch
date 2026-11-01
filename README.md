@@ -1,56 +1,38 @@
 # SIMBA Network Watch
 
-A lightweight, single-page network speed and video buffering monitor for SIMBA Telecom 5G/4G users in Singapore.
+A mobile-first diagnostic tool for exploring **SIMBA Telecom 5G/4G performance in Singapore**.
 
-**Live preview (Cloudflare Workers):** https://simba-network-watch.renkangguo.workers.dev/
+**Live application:** https://simba-network-watch.renkangguo.workers.dev/
 
-## Features (v2.1)
+**Version:** 3.0
 
-- Mobile-first, compact one-tap speed test and bottom action bar for iPhone
-- Fixed Safari `Can't find variable: ic` exception in history rendering
-- A completed download test stays successful even if result-list rendering fails
-- One-tap video buffering marker without automatically consuming data
-- Simple performance summary and a compact 24-hour / all-time trend
-- Advanced settings collapsed by default; existing v1 local records retained
-- Download throughput and HTTP round-trip latency sampling against Cloudflare's speed test endpoint
-- Manually select 5G / 4G (browsers cannot reliably determine the radio network)
-- Optional 5-, 15-, and 30-minute tests while the browser tab remains active
-- Mark video buffering events, view a simple historical chart and export CSV
-- Locally stored records in the browser's `localStorage`
-- Mobile-friendly single-file static site; no server or framework dependency
+## What it actually measures
 
-## Quick start
+1. **Singapore/local link:** repeated HTTP downloads to Cloudflare's speed test endpoint for **30 / 45 / 60 / 120 seconds**, configurable download budget, sample median / P10, HTTP round-trip time, jitter approximation, and optional upload endpoint.
+2. **Cross-region website probes:** seven website-market groups — Singapore, Malaysia, mainland China, Japan, United States, United Kingdom, and Australia. Two sites per region, two browser HEAD requests each.
+3. **Common usage categories:** normal websites, streaming-video homepages, social networking, messaging, office/development, and shopping.
+4. **Video segment simulation:** approximately 20 seconds of repeated Cloudflare data transfers, counting slow segments. This is **not** a measurement of actual playback inside YouTube, Netflix or TikTok.
+5. **Optional true regional throughput probes:** enter controlled HTTPS endpoints in the form `JP|https://your-host.example/down`. The endpoint must return roughly the `bytes` query parameter's size and allow CORS. Users must independently verify where servers actually run.
+6. CSV export; local record storage; manual buffering markers; support reading v1 historic measurements.
 
-Open the live site in Safari on an iPhone, disable Wi-Fi first to ensure traffic is measured on the SIMBA cellular connection, then mark the current 5G/4G connection and tap **开始测速**. Select video platform in Settings before using **记录卡顿**. Network type is manually tagged, not detected or switched by the webpage.
+## Important limitations
 
-## GitHub Pages
+**Do not read website probes as regional bandwidth results.** Browser `no-cors` opaque responses cannot expose HTTP status, and even an HTTP error page may look like a completed request. Sites that reject browser HEAD requests may appear unsuccessful even when regular navigation works.
 
-1. Create a **public** GitHub repository named `simba-network-watch`.
-2. Keep `index.html` and `README.md` at the repository root on `main` (both are already present).
-3. Open **Settings → Pages → Build and deployment → Deploy from a branch**.
-4. Choose `main` and `/(root)`; save. Once publication finishes, visit `https://<GITHUB_USERNAME>.github.io/simba-network-watch/`.
+A domain's market affiliation does **not** prove the test's network path or endpoint location. CDN traffic may be served from within Singapore. For per-country bandwidth, configure a trusted physically regional test endpoint. The application does **not** automatically identify 4G/5G radio, inspect native apps, measure ICMP loss, measure routing, or prove video-specific SIMBA throttling.
 
-All changes to `index.html` in the selected branch will update the GitHub Pages site.
+Safari may interrupt tests on screen lock or when the page is backgrounded. Disable Wi-Fi to test SIMBA cellular data. Tests consume mobile traffic: the local test's default budget is 60 MB (actual usage may have protocol overhead, and interrupted tests can consume data). A configured remote endpoint test consumes additional data.
 
-## Cloudflare
+Test records are kept in browser localStorage, not a server database. The Cloudflare speed test host and visited target domains will see normal connection metadata such as IP address. No SIMBA account login is required.
 
-The Cloudflare Workers site linked above runs the redesigned v2.1 interface and was deployed independently of GitHub. Pushes to this repository **will not automatically update that Cloudflare Workers deployment** until a GitHub Actions / Wrangler deployment pipeline is explicitly configured.
+## Deployment
 
-The site can alternatively be hosted on Cloudflare Pages by creating a Pages project connected to this repo and setting build command to none, build output directory to `/` (or a directory holding `index.html`, depending on the dashboard configuration).
+Static, single-file `index.html`. The existing Cloudflare Workers service is currently deployed manually and is **not automatically linked** to GitHub.
 
-## Network-test caveats
-
-- Test traffic consumes cellular data. Light mode is approximately 2.5 MB per successful test; standard mode approximately 11 MB, plus possible overhead or traffic from failed tests.
-- Measurements are to Cloudflare, not to YouTube, TikTok, Netflix, or other video services. They cannot definitively establish video-specific throttling or SIMBA policy limits.
-- HTTP request timings are not the same as ICMP ping or packet loss tests.
-- Safari on iOS does not guarantee scheduled testing in the background or when the phone is locked.
-- Tests and notes are stored on the device, not in a shared account. Clearing browser storage deletes history.
-- This project is independent from and not endorsed by SIMBA Telecom or Cloudflare.
-
-## Security and privacy
-
-No API tokens or personal credentials are required. Download requests go to Cloudflare's public speed test service, which receives normal network metadata such as the connecting IP address. Site hosting may also generate server access logs.
+GitHub Pages can be enabled from repository **Settings → Pages → Deploy from a branch → main → /(root)**.
 
 ## License
 
-No open-source license has been selected. Publishing source code in a public repository does not automatically grant reuse or redistribution rights.
+No open-source license has been selected. The public source is viewable, but no license to redistribute has been granted.
+
+Independent project; not endorsed by SIMBA, Cloudflare, or the websites tested.
