@@ -1,10 +1,23 @@
 # Network Watch (formerly SIMBA Network Watch)
 
-A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.2**
+A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.3**
 
 **Live site:** https://simba-network-watch.renkangguo.workers.dev/
 
 **Development traceability:** [Version history](./CHANGELOG.md) · [GitHub-first development and deployment process](./DEVELOPMENT.md) · [All commits](https://github.com/ArthurUker/simba-network-watch/commits/main/)
+
+## v4.3 — Automatic observable connection status and live test telemetry
+
+- A compact **network status** dashboard appears above the diagnostic tabs. Manual location, SIM owner and roaming configuration remain available behind a collapsible section, so old forms no longer dominate the initial mobile view.
+- Automatically queries the same-origin Cloudflare Worker for **IP-geolocated country, incoming ASN and ASN owning organization, Cloudflare edge colo and HTTP protocol**, and optional edge transport RTT. These identify the **visible public IP path**, not the actual SIM operator, visited carrier or physical location.
+- Performs three lightweight same-origin `GET /api/ping` requests to show median HTTP request duration, variation and errors. This is **not ICMP Ping** and is not radio latency alone.
+- Where `navigator.connection` is supported, shows the browser-reported connection type and **effective performance class** (such as `4g`). That `4g` label **does not prove LTE and can also appear on Wi-Fi/5G**. iOS Safari currently does not implement this API.
+- **Live Mbps while this site's download test is actively transferring:** uses a streaming `ReadableStream` reader with a buffered fallback. Shows current request's measured transfer-rate estimate, and after completion labels the value **last test sample**, not device-wide background speed.
+- Incremental sample-driven trend during a running test; original samples remain untouched. Refreshes ASN/geolocation and HTTP timing on manual refresh, supported browser connection changes, and return to the foreground.
+- Signal bars, RSRP, RSRQ, SINR, SIM ownership, and exact LTE/5G RAT cannot be read by normal iPhone webpages. It deliberately displays **unsupported**, not invented results. The entire device's traffic from other apps is not observable.
+- Preserves `simba-network-watch-v3` history, v4.2 roaming origin categories, and v4.2 preferences. The Cloudflare Worker source for `/api/network-info` and `/api/ping` is versioned in [worker-template.mjs](./worker-template.mjs).
+
+**Data usage:** The initial status refresh uses only a few small HTTP requests. An actual speed test transfers data and remains subject to the selected transfer budget. This is foreground-only; Safari can suspend pages in the background.
 
 ## v4.2 — International roaming and egress diagnostics
 
