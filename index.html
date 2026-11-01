@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f8f7">
 <meta name="description" content="Network Watch：多运营商、按测速地点分类的网站连接与基准网速诊断。">
-<title>Network Watch — 多运营商网络诊断</title>
+<title>Network Watch v4.4 — 网络诊断仪表盘</title>
 <style>
 :root{--bg:#f6f8f7;--card:#fff;--ink:#193330;--secondary:#617771;--line:#e2eae7;--mint:#118473;--mint-dark:#09685b;--mint-light:#e3f4ed;--blue:#3873b6;--blue-light:#e9f1fc;--amber:#aa742e;--amber-light:#fcf3e4;--red:#b64f48;--red-light:#fbedeb;--shadow:0 6px 22px rgba(21,53,44,.04);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box}
@@ -134,15 +134,116 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 @media(min-width:730px){.container{padding:30px 24px 50px}.cols{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;align-items:start}.cols>.container-card{margin-top:0}.hero{padding:25px}.summary{grid-template-columns:repeat(4,1fr)}.metric{min-height:124px!important}.grid-detail{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid-detail>.container-card{margin-top:0}.nav button{flex:initial;min-width:130px}.roundmark{bottom:25px}.view{min-height:200px}}
 @media(max-width:374px){.container{padding:12px 11px 90px}.nav button{padding-left:7px;padding-right:7px;font-size:11px}.hero{padding:16px}.metric .value{font-size:22px}.container-card{padding:13px}.identity strong{font-size:14px}.mini-grid .cell strong{font-size:19px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
+/* v4.4: a concise dashboard and consistent detail cards */
+.container{max-width:980px;padding-bottom:95px}
+.container-card,.feature-tile,.dashboard-head,.manual-context,.page-intro{border:1px solid var(--line);border-radius:16px;box-shadow:none}
+.container-card{background:#fff;padding:16px;margin-top:12px}
+.page-intro{background:transparent;border:0;margin:4px 0 14px;box-shadow:none}
+.page-intro h2{font-size:21px;font-weight:780}
+.page-intro p{margin-top:3px}
+.compact-nav{display:none;align-items:center;justify-content:space-between;margin:15px 0;padding:4px 0 8px}
+.compact-nav button{border:1px solid #d7e9df;background:#fff;color:#167565;border-radius:10px;font-size:12px;font-weight:780;padding:9px 12px;min-height:39px}
+.compact-nav strong{font-size:12px;color:#728680}
+body.on-detail .compact-nav{display:flex}
+.dashboard-head{padding:17px;background:#fff;margin-top:18px}
+.dashboard-head-top{display:flex;align-items:center;justify-content:space-between;gap:9px}
+.dashboard-identity{display:flex;gap:10px;align-items:center}
+.dashboard-led{width:9px;height:9px;border-radius:50%;background:#9aada7;box-shadow:0 0 0 4px #eff4f1}
+.dashboard-led.running{background:#16a583;box-shadow:0 0 0 4px #dbf6e9}
+.dashboard-identity small{font-size:10px;color:#7e958c;font-weight:680;display:block}
+.dashboard-identity h1{font-size:19px;line-height:1.3;margin:2px 0;letter-spacing:-.035em}
+.compact-link{color:#087762;background:#e9f5f0;border:0;border-radius:10px;min-height:36px;padding:7px 10px;font-size:12px;font-weight:780}
+.overview-caption{font-size:11px;color:#7e9089;margin:8px 0 0;line-height:1.5}
+.overview-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin-top:14px;border-top:1px solid #e9eeeb;border-bottom:1px solid #e9eeeb}
+.overview-metrics>div{min-width:0;padding:12px 6px}
+.overview-metrics>div:nth-child(odd){border-right:1px solid #e9eeeb}
+.overview-metrics>div:nth-child(-n+2){border-bottom:1px solid #e9eeeb}
+.overview-metrics small,.overview-metrics span{display:block;font-size:10px;color:#83978e}
+.overview-metrics strong{display:block;font-size:21px;line-height:1.45;font-variant-numeric:tabular-nums;font-weight:840;overflow-wrap:anywhere;letter-spacing:-.04em}
+.overview-metrics>div:last-child strong{font-size:14px;line-height:1.5}
+.overview-bottom{display:flex;gap:8px;justify-content:space-between;align-items:center;font-size:10px;color:#8a9c94;padding-top:11px}
+.overview-bottom span:first-child{max-width:70%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.dashboard-section-heading{margin:22px 2px 11px}
+.dashboard-section-heading h2{font-size:16px}
+.feature-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.feature-tile{background:#fff;padding:15px 12px;min-height:139px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;position:relative;color:var(--ink)}
+.feature-icon{display:grid;place-items:center;width:34px;height:34px;background:#e8f4ef;color:#087965;border-radius:11px;font-size:20px;font-weight:800;line-height:1}
+.feature-info{display:flex;flex-direction:column;gap:1px;min-width:0;margin-top:9px;width:100%}
+.feature-info strong{font-size:14px;font-weight:780}
+.feature-info small{font-size:10px;color:#80958d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feature-info em{font-style:normal;font-size:11px;font-weight:780;color:#0b7a63;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feature-chevron{position:absolute;top:11px;right:12px;color:#8caaa0;font-size:20px}
+.hidden-data{display:none!important}
+.home-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-top:16px}
+.home-actions .btn{min-height:48px;border-radius:12px}
+.primary-main{background:#087f6a;color:#fff;font-size:15px}
+.home-progress{margin-top:14px;display:none}
+.home-progress.visible{display:block}
+.home-progress .container-card{margin-top:0}
+.home-insight{margin:12px 1px 0;font-size:11px;line-height:1.6;color:#718c80}
+.roam-overview{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.roam-overview>div{border:1px solid #e6efeb;border-radius:11px;background:#f8fbf9;padding:12px;min-width:0}
+.roam-overview small{display:block;color:#879b91;font-size:10px}
+.roam-overview strong{display:block;font-size:13px;overflow-wrap:anywhere;margin-top:5px}
+#page-roam .manual-context{background:#fff;margin-top:12px}
+#page-status .live-status{margin-top:0}
+#page-history .cols{display:block!important;margin-top:0!important}
+#page-history .cols>.container-card{margin-bottom:12px}
+#page-global .container-card,#page-apps .container-card,#page-local .container-card{margin-top:12px}
+#page-apps .container-card h2,#page-global .container-card h2,#page-local .container-card h2{font-size:16px}
+.roundmark{display:none!important}
+@media(min-width:730px){.feature-menu{grid-template-columns:repeat(3,minmax(0,1fr))}.overview-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.overview-metrics>div{border-right:1px solid #e9eeeb!important;border-bottom:0!important}.overview-metrics>div:last-child{border-right:0!important}.overview-metrics>div:nth-child(odd){border-bottom:0}.dashboard-head{padding:22px}.feature-tile{min-height:144px}}
+@media(max-width:390px){.feature-menu{gap:8px}.feature-tile{padding:11px;min-height:133px}.feature-info strong{font-size:13px}.feature-info small{font-size:9.5px}.overview-metrics strong{font-size:19px}}
 </style>
 </head>
 <body>
 <main class="container">
 <header>
-<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.3</span></small></div></div>
+<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.4</span></small></div></div>
 <div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span></div>
 </header>
-<section class="container-card live-status" id="liveStatusCard">
+<nav class="compact-nav" aria-label="页面导航"><button type="button" data-page="home">‹ 返回首页</button><strong id="sectionHeading">功能详情</strong></nav><section class="view active" id="page-home">
+  <div class="dashboard-head" aria-label="总体网络状态">
+    <div class="dashboard-head-top">
+      <div class="dashboard-identity"><span class="dashboard-led" id="overviewLed"></span><div><small>网络总状态</small><h1 id="headline">等待网络检测</h1></div></div>
+      <button class="compact-link" type="button" data-go="status" aria-label="查看完整网络状态">详情 <span aria-hidden="true">›</span></button>
+    </div>
+    <p class="overview-caption" id="headlineSub">公网信息自动检查，测速结果需要运行测试。</p>
+    <div class="overview-metrics">
+      <div><small>最近下载</small><strong id="previewSpeed">—</strong><span>Mbps · 基准采样</span></div>
+      <div><small>HTTP 耗时</small><strong id="previewHttp">—</strong><span>ms · 到本站</span></div>
+      <div><small>公网出口</small><strong id="previewCountry">—</strong><span>IP 地理估计</span></div>
+      <div><small>公网网络组织</small><strong id="previewCarrier">—</strong><span>ASN · 非 SIM 运营商</span></div>
+    </div>
+    <div class="overview-bottom"><span id="networkBadge">网络与 SIM 信息未标注</span><span id="lastTime">尚未完成诊断</span></div>
+  </div>
+  <div class="dashboard-section-heading"><div><h2>功能菜单</h2><p class="sub">点击进入各功能区，首页不堆叠详细数据</p></div></div>
+  <div class="feature-menu" aria-label="功能菜单">
+    <button type="button" class="feature-tile" data-go="local"><span class="feature-icon">↘</span><span class="feature-info"><strong>网速测试</strong><small>下载、延迟与曲线</small><em id="kLocal">—</em><span id="kLocalSub" class="hidden-data">待测速</span><i id="dotLocal" class="hidden-data"></i></span><span class="feature-chevron">›</span></button>
+    <button type="button" class="feature-tile" data-go="global"><span class="feature-icon">◎</span><span class="feature-info"><strong>跨境连接</strong><small>7 地区网站探测</small><em id="kGlobal">—</em><span id="kGlobalSub" class="hidden-data">待探测</span><i id="dotGlobal" class="hidden-data"></i></span><span class="feature-chevron">›</span></button>
+    <button type="button" class="feature-tile" data-go="apps"><span class="feature-icon">▦</span><span class="feature-info"><strong>应用体验</strong><small>视频、社交与办公</small><em id="kApps">—</em><span id="kAppsSub" class="hidden-data">待探测</span><i id="dotApps" class="hidden-data"></i><span id="kVideo" class="hidden-data"></span><span id="kVideoSub" class="hidden-data"></span><i id="dotVideo" class="hidden-data"></i></span><span class="feature-chevron">›</span></button>
+    <button type="button" class="feature-tile" data-go="roam"><span class="feature-icon">⇄</span><span class="feature-info"><strong>漫游分析</strong><small>SIM、接入网和出口</small><em id="roamMenuValue">设置与对照</em></span><span class="feature-chevron">›</span></button>
+    <button type="button" class="feature-tile" data-go="history"><span class="feature-icon">◷</span><span class="feature-info"><strong>历史记录</strong><small>对比之前的测试</small><em id="historyMenuValue">0 次记录</em></span><span class="feature-chevron">›</span></button>
+    <button type="button" class="feature-tile" id="menuExport"><span class="feature-icon">⇩</span><span class="feature-info"><strong>导出报告</strong><small>CSV · 保存原始数据</small><em>生成报告</em></span><span class="feature-chevron">›</span></button>
+  </div>
+  <div class="home-actions"><button class="btn primary-main" id="startFull" type="button">▶ 开始全面诊断</button><button class="btn btn-muted" id="openOptions" type="button">测速设置</button></div>
+  <div class="home-progress" id="homeProgressWrap"><div class="container-card" id="progressCard">
+<div class="module-title"><h2>诊断进度</h2><span class="pill muted" id="progressState">未开始</span></div>
+<p class="sub" id="progressStage">点击「开始全面诊断」即可按阶段检测。</p>
+<div class="progress-track"><i id="progressBar"></i></div>
+<div class="steps" id="stepRow">
+<div class="step" id="step0"><span class="symbol">1</span>基准链路</div>
+<div class="step" id="step1"><span class="symbol">2</span>海外站点</div>
+<div class="step" id="step2"><span class="symbol">3</span>应用服务</div>
+<div class="step" id="step3"><span class="symbol">4</span>视频模拟</div>
+</div>
+<div class="work-msg" id="workMsg">不会自动消耗流量；开始测试后可随时停止。</div>
+<div class="progress-actions"><button class="btn btn-ghost small" id="exportHome" type="button">导出结果</button></div>
+</div>
+</div>
+  <div class="home-insight" id="insightBanner">联网状态不等于网络质量；完整诊断可查看不同场景表现。</div>
+</section>
+<section class="view" id="page-status"><div class="page-intro"><h2>网络状态详情</h2><p class="sub">显示可观测的连接信息，不能读取蜂窝信号强度。</p></div><section class="container-card live-status" id="liveStatusCard">
   <div class="row"><div><h2>当前网络状态</h2><p class="sub">自动识别公网连接 · 测速时更新实际请求速率</p></div><div class="status-actions"><button class="btn btn-ghost small" id="startStatusTest">开始测速</button><button class="btn btn-muted small" id="refreshStatus">刷新状态</button></div></div>
   <div class="status-grid">
     <div class="status-tile primary"><small>当前下载采样</small><strong id="liveSpeed">— <em>Mbps</em></strong><span id="liveSpeedCaption">未在测速 · 不包含其他 App</span></div>
@@ -155,7 +256,12 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
   <div class="network-status-foot"><span id="onlineState">检测浏览器网络状态…</span><span id="statusChecked">尚未刷新</span></div>
   <p class="status-explainer">公网网络组织来自 Cloudflare ASN。漫游、VPN、代理可能使它不同于 SIM 卡或当地运营商。HTTP 请求耗时和可选 Edge RTT 都不是 ICMP Ping；测速过程中显示当前请求的实际传输速率，停止测试后不再代表实时网速。</p>
 </section>
-<details class="manual-context" id="manualContext">
+</section><section class="view" id="page-roam">
+ <div class="page-intro"><h2>漫游与网络环境</h2><p class="sub">区分手机所在地、SIM 归属、漫游接入网和公网出口，避免混淆。</p></div>
+ <div class="container-card"><div class="row"><h2>当前环境</h2><span class="pill muted">手动标注＋IP 观测</span></div>
+ <div class="roam-overview"><div><small>手机所在地</small><strong id="roamPhysical">未标注</strong></div><div><small>SIM 归属运营商</small><strong id="roamSim">未标注</strong></div><div><small>当地接入网络</small><strong id="roamVisited">未标注</strong></div><div><small>公网 IP 地区</small><strong id="roamExit">等待检测</strong></div></div>
+ <p class="note">公网 IP 地区不是实际路由证明；国际漫游可能经归属地回传或当地出口。</p></div>
+ <details class="manual-context" id="manualContext">
   <summary><span>位置、SIM 卡与漫游设置 <small id="manualSummary">手动确认 · 点击展开</small></span></summary>
   <div class="manual-context-body">
 <section class="origin-bar" aria-label="测速环境设置">
@@ -174,64 +280,17 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <p id="egressDetail" class="origin-hint">公网出口按本站 Cloudflare 看到的客户端 IP 地理信息估计，可能受漫游、VPN、代理影响；不是路径追踪。</p>
 <div class="roaming-assessment" id="roamingAssessment">本地/跨境网站按手机物理所在地划分；漫游时另看公网出口，不能混为一谈。</div>
 <p class="origin-hint" id="originHint">选择实际测速地点；本地/跨境按目标网站市场分类，不代表真实数据路径。</p></div></details>
-<nav class="nav" aria-label="功能导航">
-<button type="button" class="active" data-page="home">总览</button>
-<button type="button" data-page="local">本地测速</button>
-<button type="button" data-page="global">跨境连接</button>
-<button type="button" data-page="apps">应用体验</button>
-</nav>
-<section class="view active" id="page-home">
-<div class="hero">
-<div class="hero-top"><span class="eyebrow">NETWORK HEALTH CHECK</span><span class="last"><span id="networkBadge">未标注网络</span> · <span id="lastTime">尚未完成诊断</span></span></div>
-<div class="hero-headline" id="headline">让网络表现一目了然</div>
-<p class="hero-desc" id="headlineSub">从当前测速地区到其他国家的网站、视频和社交服务，一次诊断，分类查看。</p>
-<div class="action"><button class="btn btn-white" id="startFull">▶ 开始全面诊断</button><button class="btn btn-outline" id="openOptions">设置</button></div>
-</div>
-<div class="grid2 summary" aria-label="四项诊断结果">
-<button class="metric" data-go="local"><span class="arrow">↗</span><span class="k"><i id="dotLocal"></i>基准下载</span><div class="value" id="kLocal">—</div><span class="fine" id="kLocalSub">待测速 · Cloudflare 基准节点</span></button>
-<button class="metric" data-go="global"><span class="arrow">↗</span><span class="k"><i id="dotGlobal"></i>各地区站点</span><div class="value" id="kGlobal">—</div><span class="fine" id="kGlobalSub">待探测 · 7 地区</span></button>
-<button class="metric" data-go="apps"><span class="arrow">↗</span><span class="k"><i id="dotApps"></i>常用服务</span><div class="value" id="kApps">—</div><span class="fine" id="kAppsSub">待探测 · 6 类</span></button>
-<button class="metric" data-go="apps"><span class="arrow">↗</span><span class="k"><i id="dotVideo"></i>视频分片</span><div class="value" id="kVideo">—</div><span class="fine" id="kVideoSub">待测试 · 20 秒模拟</span></button>
-</div>
-<div class="insight" id="insightBanner" style="margin-top:12px">尚无诊断结果。建议关闭 Wi-Fi 后开始检测。</div>
-<div class="container-card" id="progressCard">
-<div class="module-title"><h2>诊断进度</h2><span class="pill muted" id="progressState">未开始</span></div>
-<p class="sub" id="progressStage">点击「开始全面诊断」即可按阶段检测。</p>
-<div class="progress-track"><i id="progressBar"></i></div>
-<div class="steps" id="stepRow">
-<div class="step" id="step0"><span class="symbol">1</span>基准链路</div>
-<div class="step" id="step1"><span class="symbol">2</span>海外站点</div>
-<div class="step" id="step2"><span class="symbol">3</span>应用服务</div>
-<div class="step" id="step3"><span class="symbol">4</span>视频模拟</div>
-</div>
-<div class="work-msg" id="workMsg">不会自动消耗流量；开始测试后可随时停止。</div>
-<div class="progress-actions"><button class="btn btn-ghost small" id="exportHome" type="button">导出结果</button></div>
-</div>
-<div class="container-card"><div class="row"><h2>地区与服务速览</h2><span style="font-size:10px;color:#879a92">请求返回 ≠ 网站可用</span></div><p class="sub">已测试目标的浏览器请求返回情况；点击标签查看详情</p><h3 style="margin-top:13px" id="regionsHeading">7 个地区（请先选择测速地点）</h3><div class="flow-summary" id="regionOverview"></div><h3 style="margin-top:13px">6 类服务</h3><div class="flow-summary" id="appOverview"></div></div>
-<div class="cols" style="margin-top:12px">
+
+ <button type="button" class="btn btn-ghost full" id="roamRefresh">重新检测公网出口</button>
+ </section><section class="view" id="page-history">
+ <div class="page-intro"><h2>历史记录</h2><p class="sub">保留本浏览器的诊断历史，结果不会因改变运营商或漫游设置而重写。</p></div>
+ <div class="cols" style="margin-top:12px">
 <div class="container-card"><div class="row"><h2>下载速度趋势</h2><button class="btn btn-muted small" type="button" id="chartMode">查看原始曲线</button></div><p class="sub">来自最近一次 Cloudflare 基准持续采样，不是瞬时峰值</p><div class="visual"><svg id="sparkline" viewBox="0 0 350 165" role="img" aria-label="下载采样趋势"></svg></div><div class="legend"><span><i class="dot"></i><span id="curveLegend">5 点移动中位趋势</span></span><span>浅色圆点＝原始采样；平滑不改变测速数据</span></div></div>
 <div class="container-card"><div class="row"><h2>最近检测</h2><span class="pill muted" id="recordCount">0 次</span></div><div id="recentRecords" class="empty">还没有检测记录</div></div>
 </div>
-<div class="container-card">
-<div class="row"><h2>一键体验</h2><span class="pill">常用快捷操作</span></div>
-<div class="grid2" style="margin-top:11px">
-<button class="btn btn-ghost" id="quickLocal" type="button">↘ 测基准网速</button>
-<button class="btn btn-muted" id="quickStall" type="button">◎ 标记视频卡顿</button>
-</div>
-<p class="note">使用蜂窝网络时请关闭 Wi-Fi；先选实际国家/地区和运营商。网页版不能自动识别 LTE/5G、运营商，也不能监控原生视频 App。</p>
-</div>
-<details id="allOptions"><summary>高级设置与流量预算 <span class="sub">（默认已设置好）</span></summary><div class="detail-inner">
-<div class="fieldrow">
-<div class="field"><label for="duration">基准采样时长</label><select id="duration"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60" selected>60 秒（推荐）</option><option value="120">120 秒</option></select></div>
-<div class="field"><label for="budget">基准下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
-<div class="field"><label for="network">实际手机网络（手动）</label><select id="network"><option value="">未标注</option><option value="4G">4G / LTE</option><option value="5G">5G</option><option value="Wi-Fi">Wi-Fi</option><option value="Ethernet">有线 / Ethernet</option></select></div>
-<div class="field"><label for="location">城市 / 地点备注（选填）</label><input type="text" id="location" maxlength="45" placeholder="例如：北京朝阳 / Singapore"></div>
-</div>
-<label class="checkbox"><input type="checkbox" id="upload">额外尝试上传测试（可能无法跨域访问）</label>
-<p class="note">基准测速默认约 60 秒、预算 80 MB；跨境网站、应用探测、分片模拟会产生额外流量。浏览器在后台或锁屏后不能保证连续测试。</p>
-</div></details>
-</section>
-<section class="view" id="page-local">
+
+ <div class="container-card"><div class="row"><h2>数据导出</h2><button class="btn btn-ghost small" id="historyExport" type="button">导出 CSV</button></div><p class="sub">包含历史的下载采样、应用探测及漫游上下文。</p></div>
+ </section><section class="view" id="page-local">
 <div class="container-card">
 <div class="row"><div><h2>基准下载与延迟</h2><p class="sub">测量本设备到 Cloudflare 节点的吞吐，实际节点可能在境外</p></div><button class="btn small" id="startLocal">开始测速</button></div>
 <div class="mini-grid">
@@ -251,8 +310,19 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <p class="note">测速目标为 Cloudflare HTTP 节点，不保证节点位于测速所在国家；并非运营商基站、视频平台或 ICMP Ping。下载采样之间会短暂停顿，以分散覆盖整个时间窗口；流量预算可能导致提前结束下载采样。</p>
 <div id="localFaults" class="note"></div><button class="btn btn-muted small" data-go="home" style="margin-top:12px">返回总览</button>
 </div>
+<details id="allOptions"><summary>高级设置与流量预算 <span class="sub">（默认已设置好）</span></summary><div class="detail-inner">
+<div class="fieldrow">
+<div class="field"><label for="duration">基准采样时长</label><select id="duration"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60" selected>60 秒（推荐）</option><option value="120">120 秒</option></select></div>
+<div class="field"><label for="budget">基准下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
+<div class="field"><label for="network">实际手机网络（手动）</label><select id="network"><option value="">未标注</option><option value="4G">4G / LTE</option><option value="5G">5G</option><option value="Wi-Fi">Wi-Fi</option><option value="Ethernet">有线 / Ethernet</option></select></div>
+<div class="field"><label for="location">城市 / 地点备注（选填）</label><input type="text" id="location" maxlength="45" placeholder="例如：北京朝阳 / Singapore"></div>
+</div>
+<label class="checkbox"><input type="checkbox" id="upload">额外尝试上传测试（可能无法跨域访问）</label>
+<p class="note">基准测速默认约 60 秒、预算 80 MB；跨境网站、应用探测、分片模拟会产生额外流量。浏览器在后台或锁屏后不能保证连续测试。</p>
+</div></details>
 </section>
 <section class="view" id="page-global">
+<div class="container-card"><div class="row"><h2>地区与服务速览</h2><span style="font-size:10px;color:#879a92">请求返回 ≠ 网站可用</span></div><p class="sub">已测试目标的浏览器请求返回情况；点击标签查看详情</p><h3 style="margin-top:13px" id="regionsHeading">7 个地区（请先选择测速地点）</h3><div class="flow-summary" id="regionOverview"></div><h3 style="margin-top:13px">6 类服务</h3><div class="flow-summary" id="appOverview"></div></div>
 <div class="container-card">
 <div class="row"><div><h2>同地区 / 跨地区网站连接</h2><p class="sub" id="regionSub">请先选择测速国家或地区 · 14 站点 · 每站重复 2 次</p></div><button class="btn small" id="startGlobal">开始探测</button></div>
 <div class="banner warn">以测速地对照网站所属市场进行分组；CDN 可能在任何地区响应。浏览器受限请求不能验证 HTTP 200，也不能测出目标国的真实 Mbps。这里显示的是请求返回情况，不是跨境线路的成功率。</div>
@@ -288,6 +358,14 @@ details summary:after{content:"+";font-size:17px;color:#839c93}details[open] sum
 <div class="field" style="flex:1"><label for="videoApp">视频平台</label><select id="videoApp"><option>YouTube</option><option>Netflix</option><option>TikTok / 抖音</option><option>Bilibili</option><option>Instagram</option><option>其他平台</option></select></div>
 <button class="btn btn-muted" id="markStall">◎ 记录</button></div>
 <div class="note" id="stallLast"></div>
+</div>
+<div class="container-card">
+<div class="row"><h2>一键体验</h2><span class="pill">常用快捷操作</span></div>
+<div class="grid2" style="margin-top:11px">
+<button class="btn btn-ghost" id="quickLocal" type="button">↘ 测基准网速</button>
+<button class="btn btn-muted" id="quickStall" type="button">◎ 标记视频卡顿</button>
+</div>
+<p class="note">使用蜂窝网络时请关闭 Wi-Fi；先选实际国家/地区和运营商。网页版不能自动识别 LTE/5G、运营商，也不能监控原生视频 App。</p>
 </div>
 </section>
 <div class="footer">非任何运营商、Cloudflare 或第三方平台的官方产品。诊断历史仅存于当前浏览器。测速与网站请求可能向目标服务器暴露常规网络元数据。<br><a href="https://github.com/ArthurUker/simba-network-watch" target="_blank" rel="noopener noreferrer">GitHub 源码</a> · <a href="https://speed.cloudflare.com/" target="_blank" rel="noopener noreferrer">Cloudflare 对照测速</a></div>
