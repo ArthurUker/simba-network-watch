@@ -5,6 +5,15 @@ This file is a human-readable index of the Git commit history. **GitHub commits 
 Project: https://github.com/ArthurUker/simba-network-watch  
 Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
+## v4.6 — Adaptive Web App / iPhone Home Screen (2026-11-02)
+
+- [018bbb7](https://github.com/ArthurUker/simba-network-watch/commit/018bbb780fbf4f8343ef21c6534c9d7d6f0b87c9) — Actual deployed `index.html`: iPhone dynamic-viewport adaptive launchpad using `100dvh`, safe-area insets, proportional 2×3 menu resizing and short-screen fallback; a compact “add to Home Screen” guide; Web App meta and service worker registration.
+- [9997206](https://github.com/ArthurUker/simba-network-watch/commit/9997206eb2b2bb996b70fd70391f91b0b7a6b943) — Version-controlled `pwa-sw.js` with network-first navigation and offline shell fallback, bypassing API and test payload caching.
+- [cfc8593](https://github.com/ArthurUker/simba-network-watch/commit/cfc85935ed3f8d7baa4303202ed65e57020c6718) — Version-controlled Worker routing for PWA manifest, same-origin service worker and icon assets (SVG and 192×192 PNG) while retaining HTTP diagnostics endpoints.
+- **Deployment:** Cloudflare Worker `simba-network-watch`, deployment `9eb7fc46-151d-4113-9cce-00d1f6a97dd0` created 2026-11-02 00:43:33 UTC (08:43:33 Singapore time); version `bebdc68b-e72f-4f8b-af5d-69368426b240` receives 100% traffic. The Worker was assembled from the above GitHub source files, committed before deployment.
+- **Tests:** JS syntax/DOM-ID checks, mocked iPhone-style navigation through six feature destinations and a complete test run, install modal, SW registration, manifest, SVG/PNG icon endpoint, no-store API and ping route checks. These passed in controlled tests.
+- **Limitations:** iPhone Safari real-device visual testing and publicly fetched URL verification have not been completed; external URL fetch was inaccessible to the validation tool. On short browser viewports, some scrolling remains preferable to clipping controls. Offline caching covers the application shell only; network diagnostics themselves require internet access.
+
 ## v4.5 — iPhone compact single-screen launcher (2026-11-02)
 
 - [4550a6b](https://github.com/ArthurUker/simba-network-watch/commit/4550a6b9c11fbc92ab8e57735a2b9c77964557f9) — Exact deployed application source: home-only iPhone compact layout with four horizontally arranged overview metrics, two-column × three-row fixed-height menu tiles, reduced header spacing, and primary action. Hide long home notes, full progress card and footer on phones; retain detailed functionality and scrolling in secondary pages.
