@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f8f7">
 <meta name="description" content="Network Watch：多运营商、按测速地点分类的网站连接与基准网速诊断。">
-<title>Network Watch v4.4 — 网络诊断仪表盘</title>
+<title>Network Watch v4.5 — iPhone 一屏菜单</title>
 <style>
 :root{--bg:#f6f8f7;--card:#fff;--ink:#193330;--secondary:#617771;--line:#e2eae7;--mint:#118473;--mint-dark:#09685b;--mint-light:#e3f4ed;--blue:#3873b6;--blue-light:#e9f1fc;--amber:#aa742e;--amber-light:#fcf3e4;--red:#b64f48;--red-light:#fbedeb;--shadow:0 6px 22px rgba(21,53,44,.04);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box}
@@ -194,12 +194,70 @@ body.on-detail .compact-nav{display:flex}
 .roundmark{display:none!important}
 @media(min-width:730px){.feature-menu{grid-template-columns:repeat(3,minmax(0,1fr))}.overview-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.overview-metrics>div{border-right:1px solid #e9eeeb!important;border-bottom:0!important}.overview-metrics>div:last-child{border-right:0!important}.overview-metrics>div:nth-child(odd){border-bottom:0}.dashboard-head{padding:22px}.feature-tile{min-height:127px}}
 @media(max-width:390px){.feature-menu{gap:8px}.feature-tile{padding:11px;min-height:119px}.feature-info strong{font-size:13px}.feature-info small{font-size:9.5px}.overview-metrics strong{font-size:19px}}
+
+/* v4.5 iPhone single-screen launchpad; only the home screen is compacted.
+   Preserve scrolling and readable font sizes inside detailed sections. */
+@media (max-width:729px){
+  body.on-home .container{padding:8px 12px calc(12px + env(safe-area-inset-bottom));}
+  body.on-home header{min-height:42px;gap:8px}
+  body.on-home .identity{gap:9px}
+  body.on-home .logo{width:35px;height:35px;min-width:35px;border-radius:11px;font-size:21px}
+  body.on-home .identity strong{font-size:16px;line-height:1.2}
+  body.on-home .identity small{font-size:10px;line-height:1.35}
+  body.on-home .tag{padding:5px 8px;font-size:10px}
+  body.on-home .dashboard-head{margin-top:7px;border-radius:14px;padding:10px 12px}
+  body.on-home .dashboard-head-top{min-height:30px}
+  body.on-home .dashboard-led{height:7px;width:7px}
+  body.on-home .dashboard-identity h1{font-size:15px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body.on-home .dashboard-identity small{display:none}
+  body.on-home .compact-link{padding:4px 7px;min-height:29px;font-size:11px}
+  body.on-home .overview-caption{display:none}
+  body.on-home .overview-metrics{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:8px;gap:0}
+  body.on-home .overview-metrics>div,
+  body.on-home .overview-metrics>div:nth-child(-n+2),
+  body.on-home .overview-metrics>div:nth-child(odd){padding:8px 4px 6px;border-bottom:0}
+  body.on-home .overview-metrics>div:not(:last-child){border-right:1px solid #e9eeeb}
+  body.on-home .overview-metrics small{font-size:9px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  body.on-home .overview-metrics strong,
+  body.on-home .overview-metrics>div:last-child strong{font-size:clamp(11px,3vw,15px);line-height:1.3;margin-top:2px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+  body.on-home .overview-metrics span{display:none}
+  body.on-home .overview-bottom{padding-top:6px;font-size:9px}
+  body.on-home .dashboard-section-heading{margin:12px 2px 8px}
+  body.on-home .dashboard-section-heading h2{font-size:14px}
+  body.on-home .dashboard-section-heading .sub{display:none}
+  body.on-home .feature-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  body.on-home .feature-tile{min-height:74px;height:74px;padding:10px 9px;border-radius:13px;display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;align-items:center;justify-items:stretch}
+  body.on-home .feature-icon{width:29px;height:29px;border-radius:9px;font-size:17px;grid-column:1;grid-row:1}
+  body.on-home .feature-info{grid-column:2;grid-row:1;margin:0;gap:3px}
+  body.on-home .feature-info strong{font-size:13px;line-height:1.25}
+  body.on-home .feature-info small{font-size:10px;line-height:1.25;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body.on-home .feature-info em,
+  body.on-home .feature-chevron{display:none}
+  body.on-home .home-actions{margin-top:10px;gap:8px;grid-template-columns:minmax(0,1fr) auto}
+  body.on-home .home-actions .btn{min-height:42px;padding:9px 11px;font-size:13px;border-radius:11px}
+  body.on-home .home-insight,body.on-home .home-progress,body.on-home .footer{display:none!important}
+  body.on-home .roundmark{display:none!important}
+}
+@media (max-width:360px){
+  body.on-home .container{padding-left:9px;padding-right:9px}
+  body.on-home .feature-menu{gap:6px}
+  body.on-home .feature-tile{height:68px;min-height:68px;padding:8px 7px;grid-template-columns:27px minmax(0,1fr);gap:6px}
+  body.on-home .feature-icon{width:26px;height:26px}
+  body.on-home .feature-info strong{font-size:12px}
+  body.on-home .feature-info small{font-size:9px}
+}
+@media (max-width:729px) and (max-height:700px){
+  body.on-home .feature-tile{min-height:66px;height:66px}
+  body.on-home .dashboard-head{padding-top:8px;padding-bottom:8px}
+  body.on-home .dashboard-section-heading{margin-top:8px;margin-bottom:5px}
+  body.on-home .home-actions{margin-top:8px}
+}
 </style>
 </head>
 <body>
 <main class="container">
 <header>
-<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.4</span></small></div></div>
+<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.5</span></small></div></div>
 <div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span></div>
 </header>
 <nav class="compact-nav" aria-label="页面导航"><button type="button" data-page="home">‹ 返回首页</button><strong id="sectionHeading">功能详情</strong></nav><section class="view active" id="page-home">
@@ -210,8 +268,8 @@ body.on-detail .compact-nav{display:flex}
     </div>
     <p class="overview-caption" id="headlineSub">公网信息自动检查，测速结果需要运行测试。</p>
     <div class="overview-metrics">
-      <div><small>最近下载</small><strong id="previewSpeed">—</strong><span>Mbps · 基准采样</span></div>
-      <div><small>HTTP 耗时</small><strong id="previewHttp">—</strong><span>ms · 到本站</span></div>
+      <div><small>下载 · Mbps</small><strong id="previewSpeed">—</strong><span>Mbps · 基准采样</span></div>
+      <div><small>HTTP · ms</small><strong id="previewHttp">—</strong><span>ms · 到本站</span></div>
       <div><small>公网出口</small><strong id="previewCountry">—</strong><span>IP 地理估计</span></div>
       <div><small>公网网络组织</small><strong id="previewCarrier">—</strong><span>ASN · 非 SIM 运营商</span></div>
     </div>
@@ -497,7 +555,7 @@ function tab(which){
  if(!labels[which])which='home';
  activeTab=which;document.querySelectorAll('[data-page]').forEach(n=>n.classList.toggle('active',n.dataset.page===which));
  document.querySelectorAll('.view').forEach(n=>n.classList.toggle('active',n.id==='page-'+which));
- document.body.classList.toggle('on-detail',which!=='home');
+ document.body.classList.toggle('on-detail',which!=='home');document.body.classList.toggle('on-home',which==='home');
  setValue('sectionHeading',labels[which]);
  if(which==='home'&&running)$('homeProgressWrap').classList.add('visible');
  window.scrollTo({top:0,behavior:'instant'});
@@ -583,9 +641,9 @@ function renderRemote(){const root=$('nodeDetails');root.replaceChildren();const
 for(const x of r){const row=textNode('div','list-item',''),left=textNode('div','left','');left.append(textNode('b','',x.id+' · '+(x.marketCategory==='local'?'同地区':x.marketCategory==='cross'?'跨地区':'地区未分类')+' · 用户提供的 HTTPS 节点'),textNode('small','',x.url));const right=textNode('div','right',Number.isFinite(x.mbps)?format(x.mbps)+' Mbps':'测试受限');row.append(left,right);root.append(row)}
 }
 function render(){cards();renderStatus();$('homeProgressWrap').classList.toggle('visible',running||stepDone.length>0);$('headerDot').classList.toggle('live',running);$('headerState').textContent=running?'诊断中':'准备就绪';$('runBar').classList.toggle('visible',running);document.body.classList.toggle('running',running);$('startFull').disabled=running;for(const id of ['startLocal','startGlobal','startApps','startVideo','startNodes','quickLocal'])$(id).disabled=running;setValue('runLabel',stagedText||'诊断中');for(const id of ['originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).disabled=running}
-function stepUpdate(index,val,msg){$('homeProgressWrap').classList.add('visible');stepIndex=index;p=Math.min(100,Math.max(0,val));if(msg)stagedText=msg;setValue('progressBar','');$('progressBar').style.width=p+'%';$('progressState').textContent=running?'执行中 · '+format(p,0)+'%':'未开始';$('progressState').className='pill'+(running?'':' muted');setValue('progressStage',stagedText||'等待开始');setValue('workMsg',stagedText||'诊断进行中');for(let i=0;i<4;i++){$('step'+i).className='step'+(stepDone.includes(i)?' done':i===index?' live':'')}setValue('runLabel',stagedText||'诊断中')}
+function stepUpdate(index,val,msg){$('homeProgressWrap').classList.add('visible');stepIndex=index;p=Math.min(100,Math.max(0,val));if(running)$('startFull').textContent='诊断中 · '+format(p,0)+'%';if(msg)stagedText=msg;setValue('progressBar','');$('progressBar').style.width=p+'%';$('progressState').textContent=running?'执行中 · '+format(p,0)+'%':'未开始';$('progressState').className='pill'+(running?'':' muted');setValue('progressStage',stagedText||'等待开始');setValue('workMsg',stagedText||'诊断进行中');for(let i=0;i<4;i++){$('step'+i).className='step'+(stepDone.includes(i)?' done':i===index?' live':'')}setValue('runLabel',stagedText||'诊断中')}
 function start(){if(running)return false;running=true;rateInfo=null;runContext=currentContext();$('homeProgressWrap').classList.add('visible');controller=new AbortController();stepDone=[];p=0;stagedText='准备开始…';stepUpdate(-1,0,stagedText);render();return true}
-function finish(){running=false;controller=null;runContext=null;liveSamplePoints=null;render();$('progressState').textContent=stagedText.includes('取消')?'已取消':'已结束';$('headerState').textContent='准备就绪'}
+function finish(){running=false;controller=null;runContext=null;liveSamplePoints=null;$('startFull').textContent='▶ 开始全面诊断';render();$('progressState').textContent=stagedText.includes('取消')?'已取消':'已结束';$('headerState').textContent='准备就绪'}
 function stop(){if(controller)controller.abort()}
 function bounded(root,ms){const c=new AbortController(),timeout=setTimeout(()=>c.abort(),ms),fn=()=>c.abort();if(root.aborted)c.abort();else root.addEventListener('abort',fn,{once:true});return{signal:c.signal,close(){clearTimeout(timeout);root.removeEventListener('abort',fn)}}}
 async function sleep(ms,root){if(ms<=0||root.aborted)return;await new Promise(resolve=>{const t=setTimeout(end,ms);function end(){root.removeEventListener('abort',cancel);resolve()}function cancel(){clearTimeout(t);end()}root.addEventListener('abort',cancel,{once:true})})}
@@ -686,7 +744,7 @@ $('stopBtn').onclick=stop;$('quickStall').onclick=mark;$('floatingStall').onclic
 for(const id of ['duration','budget','network','location','upload','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).addEventListener('change',()=>{if(id==='operator')$('operatorOther').hidden=$('operator').value!=='other';savePrefs();render()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){stop();toast('已离开前台，测速将停止，已完成数据保留')}else if(!document.hidden&&!running){if(egressAgeMs()>60000)refreshStatus();else renderStatus()}});
 $('detectEgress').onclick=()=>refreshEgress(false);window.addEventListener('offline',()=>{if(running)stop();renderStatus();toast('网络连接已断开')});window.addEventListener('online',()=>{if(!running)refreshStatus()});const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;if(connection&&typeof connection.addEventListener==='function')connection.addEventListener('change',()=>{renderStatus();if(!running)refreshStatus()});
-load();refreshStatus();
+document.body.classList.add('on-home');load();refreshStatus();
 })();
 </script>
 </body>
