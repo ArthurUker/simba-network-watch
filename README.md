@@ -1,10 +1,17 @@
 # Network Watch (formerly SIMBA Network Watch)
 
-A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.4**
+A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.5**
 
 **Live site:** https://simba-network-watch.renkangguo.workers.dev/
 
 **Development traceability:** [Version history](./CHANGELOG.md) · [GitHub-first development and deployment process](./DEVELOPMENT.md) · [All commits](https://github.com/ArthurUker/simba-network-watch/commits/main/)
+
+## v4.5 — One-screen iPhone launcher
+
+- The iPhone home page is further compressed: four metrics in one summary row, six function entries in a 2×3 grid (~74 CSS px per tile on typical phones), one full diagnosis action and a settings shortcut.
+- Mobile home-only rules remove the long summary, history and footer from view. Full detail pages retain rich, scrollable content and network testing settings.
+- The running full diagnosis remains cancellable from the bottom status bar; live progress percentage is also visible on the main action instead of opening a large home progress panel.
+- Tested by simulated interface interactions and deployed to Cloudflare as described in CHANGELOG.md. A physical iPhone Safari visual QA is still outstanding, and some shorter browser viewports may still require scrolling.
 
 ## v4.4 — Unified feature menu and concise mobile dashboard
 
