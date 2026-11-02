@@ -5,6 +5,14 @@ This file is a human-readable index of the Git commit history. **GitHub commits 
 Project: https://github.com/ArthurUker/simba-network-watch  
 Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
+## v4.5 — iPhone compact single-screen launcher (2026-11-02)
+
+- [4550a6b](https://github.com/ArthurUker/simba-network-watch/commit/4550a6b9c11fbc92ab8e57735a2b9c77964557f9) — Exact deployed application source: home-only iPhone compact layout with four horizontally arranged overview metrics, two-column × three-row fixed-height menu tiles, reduced header spacing, and primary action. Hide long home notes, full progress card and footer on phones; retain detailed functionality and scrolling in secondary pages.
+- The full-run action shows a percentage directly on the disabled start button while running and resets on completion. The foreground stop control remains available.
+- Tested syntax and unique DOM element IDs; simulated navigation to all six pages and a complete run with 14 region sites / 17 app sites, preserving local measurements.
+- Published to Cloudflare Worker `simba-network-watch` on 2026-11-02 00:34:50 UTC (08:34:50 Singapore time), deployment `4a59509e-7f09-4fde-8f40-03f8d0f1e460`, version `e9b2a874-4633-4111-a390-c9261fa62712`, 100% traffic confirmed by Cloudflare API. Existing version-controlled Worker template unchanged.
+- Browser-based visual inspection on a real iPhone has **not** been completed. "One screen" is a responsive layout target; actual available viewport varies by iPhone size, Safari toolbars and Dynamic Type settings.
+
 ## v4.4 — Unified compact dashboard and feature navigation (2026-11-02)
 
 - [b0a513a](https://github.com/ArthurUker/simba-network-watch/commit/b0a513a83004d823ddfd9afce53f904ba403500c) — Reorganized the mobile home into a concise network summary and six consistent feature tiles; moved detailed status and manual roaming controls into dedicated pages.
