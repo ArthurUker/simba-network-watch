@@ -1,10 +1,18 @@
 # Network Watch (formerly SIMBA Network Watch)
 
-A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.5**
+A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.6**
 
 **Live site:** https://simba-network-watch.renkangguo.workers.dev/
 
 **Development traceability:** [Version history](./CHANGELOG.md) · [GitHub-first development and deployment process](./DEVELOPMENT.md) · [All commits](https://github.com/ArthurUker/simba-network-watch/commits/main/)
+
+## v4.6 — Adaptive iPhone Web App
+
+- The mobile home now flexes with the available dynamic viewport (`100dvh`) and safe areas: six menu tiles grow to use taller screens instead of leaving a large blank lower area. Short iPhones keep comfortable minimum touch targets and scroll if needed rather than clipping controls.
+- The Web App manifest uses `display: standalone`, an app name, icon, start URL and scope. A 192×192 PNG and SVG icon are served by the Cloudflare Worker; the iPhone page includes Apple-specific Web App metadata.
+- The tiny `+` button in the header opens iPhone installation instructions. **In Safari**, open the page → Share → Add to Home Screen → enable **Open as Web App** → Add. An in-app browser may not expose this flow, so open Safari first.
+- Network-first service worker caches only the last page shell for offline fallback and **does not cache speed tests, origin checks, API calls, or traffic samples**. Actual diagnostics require an active connection.
+- All existing service functions, roaming context, history schema, local/cross-market tests, PWA-independent browser mode and GitHub commit history remain intact. Version/deployment and test boundaries are recorded in CHANGELOG.md.
 
 ## v4.5 — One-screen iPhone launcher
 
