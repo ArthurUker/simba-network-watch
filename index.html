@@ -4,8 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f8f7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Network Watch">
+<meta name="application-name" content="Network Watch">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-180.png">
 <meta name="description" content="Network Watch：多运营商、按测速地点分类的网站连接与基准网速诊断。">
-<title>Network Watch v4.5 — iPhone 一屏菜单</title>
+<title>Network Watch v4.6 — 自适应 Web App</title>
 <style>
 :root{--bg:#f6f8f7;--card:#fff;--ink:#193330;--secondary:#617771;--line:#e2eae7;--mint:#118473;--mint-dark:#09685b;--mint-light:#e3f4ed;--blue:#3873b6;--blue-light:#e9f1fc;--amber:#aa742e;--amber-light:#fcf3e4;--red:#b64f48;--red-light:#fbedeb;--shadow:0 6px 22px rgba(21,53,44,.04);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box}
@@ -252,13 +259,49 @@ body.on-detail .compact-nav{display:flex}
   body.on-home .dashboard-section-heading{margin-top:8px;margin-bottom:5px}
   body.on-home .home-actions{margin-top:8px}
 }
+
+/* v4.6: fluid iPhone home screen, independent of browser/standalone viewport chrome */
+.install-trigger{width:31px;height:31px;min-width:31px;border:1px solid #dcebe5;border-radius:10px;background:#fff;color:#0c7866;font-size:22px;line-height:1;font-weight:450;display:grid;place-items:center;padding:0}
+.install-overlay[hidden]{display:none}
+.install-overlay{position:fixed;inset:0;z-index:100;background:rgba(18,38,32,.45);display:grid;place-items:center;padding:max(20px,env(safe-area-inset-top)) 18px max(20px,env(safe-area-inset-bottom))}
+.install-dialog{background:white;width:100%;max-width:430px;padding:20px;border-radius:20px;box-shadow:0 18px 60px #14372d22}
+.install-dialog h2{font-size:18px}.install-dialog p{font-size:13px;color:#58736a;line-height:1.75;margin:13px 0}
+.install-dialog .btn{display:block;width:100%;margin-top:15px}
+.install-close{border:0;background:#f1f6f3;border-radius:10px;width:32px;height:32px;font-size:22px;color:#32695b}
+@media(display-mode:standalone){.install-trigger{display:none}}
+@media(max-width:729px){
+ body.on-home{min-height:100vh;min-height:100dvh}
+ body.on-home .container{min-height:100vh;min-height:100dvh;height:auto;display:flex;flex-direction:column;box-sizing:border-box;padding-top:max(8px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom))}
+ body.on-home header{flex:0 0 auto}
+ body.on-home #page-home.view.active{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+ body.on-home .feature-menu{flex:1 1 auto;min-height:218px;max-height:480px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(70px,1fr));align-content:stretch}
+ body.on-home .feature-tile{height:auto;min-height:70px;max-height:none;align-self:stretch}
+ body.on-home .home-actions{flex:0 0 auto;margin-top:auto;padding-top:10px}
+ body.on-home .dashboard-head{flex:0 0 auto}
+ body.on-home .dashboard-section-heading{flex:0 0 auto}
+ body.on-home .footer{display:none!important}
+ body.on-home.running .container{padding-bottom:max(72px,calc(60px + env(safe-area-inset-bottom)))}
+}
+@media(max-width:729px) and (max-height:650px){
+ body.on-home #page-home.view.active{min-height:0}
+ body.on-home .feature-menu{flex:0 0 auto;grid-template-rows:repeat(3,minmax(66px,auto));max-height:none;min-height:0}
+ body.on-home .feature-tile{min-height:66px}
+ body.on-home .home-actions{margin-top:8px;padding-top:0}
+}
+@media(max-width:729px) and (min-height:870px){
+ body.on-home .feature-menu{max-height:540px}
+}
+@media(min-width:730px) and (max-width:1199px){
+ body.on-home .container{max-width:800px}
+ body.on-home #page-home{max-width:800px}
+}
 </style>
 </head>
 <body>
 <main class="container">
 <header>
-<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.5</span></small></div></div>
-<div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span></div>
+<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.6</span></small></div></div>
+<div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span><button type="button" class="install-trigger" id="installHelp" aria-label="添加到手机主屏幕" aria-haspopup="dialog" aria-expanded="false">＋</button></div>
 </header>
 <nav class="compact-nav" aria-label="页面导航"><button type="button" data-page="home">‹ 返回首页</button><strong id="sectionHeading">功能详情</strong></nav><section class="view active" id="page-home">
   <div class="dashboard-head" aria-label="总体网络状态">
@@ -427,6 +470,13 @@ body.on-detail .compact-nav{display:flex}
 </div>
 </section>
 <div class="footer">非任何运营商、Cloudflare 或第三方平台的官方产品。诊断历史仅存于当前浏览器。测速与网站请求可能向目标服务器暴露常规网络元数据。<br><a href="https://github.com/ArthurUker/simba-network-watch" target="_blank" rel="noopener noreferrer">GitHub 源码</a> · <a href="https://speed.cloudflare.com/" target="_blank" rel="noopener noreferrer">Cloudflare 对照测速</a></div>
+<div id="installOverlay" class="install-overlay" hidden>
+<div class="install-dialog" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+<div class="row"><h2 id="installTitle">添加到 iPhone 主屏幕</h2><button type="button" id="closeInstall" class="install-close" aria-label="关闭">×</button></div>
+<p>用 Safari 打开当前网址，点击浏览器的<strong>分享</strong>图标，选择<strong>添加到主屏幕</strong>，开启<strong>作为 Web App 打开</strong>，再点击添加。</p>
+<p>添加后可以像独立应用一样从主屏幕启动。测速、跨境和漫游检查仍需要联网；iPhone 锁屏或切到后台时不会持续测速。</p>
+<button type="button" id="installOkay" class="btn full btn-ghost">知道了</button>
+</div></div>
 </main>
 <button class="roundmark" id="floatingStall">◎ 记录卡顿</button>
 <div class="bottom-bar" id="runBar"><div class="bottom-inside"><div class="bottom-label"><b id="runLabel">诊断中</b><small>保持网页前台 · 可停止</small></div><button class="btn btn-ghost small" id="stopBtn">停止诊断</button></div></div>
@@ -744,6 +794,12 @@ $('stopBtn').onclick=stop;$('quickStall').onclick=mark;$('floatingStall').onclic
 for(const id of ['duration','budget','network','location','upload','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).addEventListener('change',()=>{if(id==='operator')$('operatorOther').hidden=$('operator').value!=='other';savePrefs();render()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){stop();toast('已离开前台，测速将停止，已完成数据保留')}else if(!document.hidden&&!running){if(egressAgeMs()>60000)refreshStatus();else renderStatus()}});
 $('detectEgress').onclick=()=>refreshEgress(false);window.addEventListener('offline',()=>{if(running)stop();renderStatus();toast('网络连接已断开')});window.addEventListener('online',()=>{if(!running)refreshStatus()});const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;if(connection&&typeof connection.addEventListener==='function')connection.addEventListener('change',()=>{renderStatus();if(!running)refreshStatus()});
+$('installHelp').onclick=()=>{$('installOverlay').hidden=false;$('installHelp').setAttribute('aria-expanded','true')};
+const closeInstall=()=>{$('installOverlay').hidden=true;$('installHelp').setAttribute('aria-expanded','false')};
+$('closeInstall').onclick=closeInstall;$('installOkay').onclick=closeInstall;
+$('installOverlay').onclick=(ev)=>{if(ev.target===$('installOverlay'))closeInstall()};
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeInstall()});
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{})}
 document.body.classList.add('on-home');load();refreshStatus();
 })();
 </script>
