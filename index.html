@@ -545,7 +545,8 @@ body.on-detail .compact-nav{display:flex}
  <div class="detail-inner">
   <p class="note">目标不是从网速结果中挑选的：固定公示完整名单，所有目标都测，每站 2 轮且轮间打散。测试顺序有可复现种子，避免固定顺序让某些地区总在最后。该样本仍是人工挑选，不能声称统计公正或代表整国互联网。</p>
   <p class="note" id="regionPlanInfo">等待新一次探测记录测试顺序。</p>
-  <div id="regionRoster" class="roster-grid"></div>
+  <p class="note"><a href="https://github.com/ArthurUker/simba-network-watch/blob/main/METHODOLOGY.md" target="_blank" rel="noopener noreferrer">阅读完整选站标准、随机化算法与 Speedtest 技术对照</a></p>
+<div id="regionRoster" class="roster-grid"></div>
  </div>
 </details>
 <div id="globalGrid" class="category-grid"></div>
@@ -561,7 +562,7 @@ body.on-detail .compact-nav{display:flex}
 <div class="container-card">
 <div class="row"><div><h2>日常应用访问</h2><p class="sub">普通网页 / 视频 / 社交 / 通讯 / 办公 / 购物</p></div><button class="btn small" id="startApps">开始探测</button></div>
 <div class="banner">测试对象是各服务官网，不是原生 App 的真实播放、消息或数据服务；浏览器不透明响应不能判断登录/播放成功。</div>
-<details class="method-details"><summary>查看 17 个测试目标与服务抽样规则</summary><div class="detail-inner"><p class="note">按网页、视频、社交、通讯、办公、购物六个类别覆盖不同使用场景；当前品牌名单为公开、人工预设而非随机抽样。所有名单同时公开，两个测量轮次使用不同交错顺序。</p><p class="note" id="appPlanInfo">等待新一轮应用探测。</p><div id="appRoster" class="roster-grid"></div></div></details>
+<details class="method-details"><summary>查看 17 个测试目标与服务抽样规则</summary><div class="detail-inner"><p class="note">按网页、视频、社交、通讯、办公、购物六个类别覆盖不同使用场景；当前品牌名单为公开、人工预设而非随机抽样。所有名单同时公开，两个测量轮次使用不同交错顺序。完整技术路线见 GitHub METHODOLOGY.md。</p><p class="note" id="appPlanInfo">等待新一轮应用探测。</p><div id="appRoster" class="roster-grid"></div></div></details>
 <div id="appsGrid" class="category-grid"></div>
 <div id="appsDetails"></div>
 </div>
