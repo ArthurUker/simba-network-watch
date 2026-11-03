@@ -5,6 +5,21 @@ This file is a human-readable index of the Git commit history. **GitHub commits 
 Project: https://github.com/ArthurUker/simba-network-watch  
 Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
+## v5.0 — Desktop results-first live speed workstation (2026-11-03)
+
+- [278bb46](https://github.com/ArthurUker/simba-network-watch/commit/278bb466bf7dfc4595179ad5315351f92b456e65) — Desktop home performance board: large download and upload metrics, idle/download-loaded latency and inflation, P10/P50, live download curve, progress, manual mode selector, context metadata and compact six-function utility cards.
+- [cca908f](https://github.com/ArthurUker/simba-network-watch/commit/cca908f175a8c6a3f7178c99a0b4a856cc5cee6a) — Wired all desktop interactions and live update hooks: start speed/full scan, stop, single-vs-four-stream mode, upload opt-in, advanced settings, sampling chart, last-result labels, and state transitions.
+- [797068b](https://github.com/ArthurUker/simba-network-watch/commit/797068b4fdb3b0ae94939197103f3af37a7b6d81) — Added constrained, same-origin Worker `POST /api/upload` (up to 1MB/request; 500KB used per test), validates source origin and uploaded byte receipt, returns no-store JSON; updates `x-network-watch-version: 5.0`.
+- [5bc0133](https://github.com/ArthurUker/simba-network-watch/commit/5bc01335b8ec0233061e1fdfa4bff131d016a5d6) — Exact deployed v5.0 `index.html`, switching opt-in upload to the same-origin endpoint and recording `methodVersion=http-baseline-v50` and upload source. v4.9 historical HTTP idle/loaded metrics are retained with their definitions.
+- [a768212](https://github.com/ArthurUker/simba-network-watch/commit/a768212e73905d122cad5294b7b3069540ce85e3) — Rotated PWA shell cache to `network-watch-shell-v50`.
+- README and METHODOLOGY updated to explain the result-first design, upload payload sizing and remaining methodological differences from official Cloudflare Speedtest.
+
+**Deployment:** Cloudflare Worker `simba-network-watch`, deployment ID `faf1a10a-11e8-4abf-a7f0-6e44895120b7`, created **2026-11-03 07:38:38 UTC** (15:38:38 Singapore time). Version `7b06e968-47a9-4bc9-b424-1d6c95e2267e` receives **100% of traffic** and subdomain is enabled according to Cloudflare API. Source built from GitHub `index.html` at commit `5bc0133`, tracked Worker template at `797068b`, and PWA SW at `a768212`.
+
+**Simulated verification:** JavaScript syntax + 199 unique DOM IDs; desktop initial state, manual profile/optional upload controls, 4-stream download, actual same-origin Worker upload receipt, RTT and raw chart rendering completed in a simulated environment; source status correctly transitions back to ready. Worker response routing separately tested for a 500,000-byte accepted upload (200 with byte receipt), oversize (413), foreign browser Origin (403), wrong method (405), root HTML (200, version=5.0) and ping (204). External production URL fetching through the verification browser was unavailable, so **real desktop visual QA and carrier measurements are not claimed**; deployment was verified through the Cloudflare API.
+
+**Limitations:** This is **inspired by** Cloudflare's result-first UX but is not its upstream `@cloudflare/speedtest` engine. P90 here is the 90th percentile of individual measured HTTP transfer sample speeds, not necessarily Cloudflare's calculation. Optional Worker upload involves two 500KB HTTP round trips and may underestimate fast uplinks. Download uses `speed.cloudflare.com/__down`, while latency and uploads use this project's own Cloudflare Worker and can take different network paths. Do not interpret opaque website probes as guaranteed app availability or geographic link capacity.
+
 ## v4.9 — Unified speed dashboard, HTTP idle & loaded latency (2026-11-03)
 
 - [a226051](https://github.com/ArthurUker/simba-network-watch/commit/a226051bdc3a10ba23b063f7c219bae387479bff) — Redesigned speed test detail into a coherent result-first panel: download P50, opt-in upload, idle/load HTTP delay, delay inflation, jitter, P10/P90 and download data usage; responsive iPhone/desktop presentation.
