@@ -598,7 +598,7 @@ const APPS=[
 {name:'即时通讯',id:'Chat',sites:[['WhatsApp Web','https://web.whatsapp.com/'],['Telegram Web','https://web.telegram.org/']]},
 {name:'办公开发',id:'Work',sites:[['GitHub','https://github.com/'],['Microsoft','https://www.microsoft.com/'],['ChatGPT','https://chatgpt.com/']]},
 {name:'网络购物',id:'Shopping',sites:[['Amazon','https://www.amazon.com/'],['Shopee','https://shopee.sg/']]}];
-let data={sessions:[],stalls:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null,chartView='smooth',runContext=null,egressInfo=null,statusInfo={rtts:[],checkedAt:null,errors:0},rateInfo=null,liveSamplePoints=null;
+let data={sessions:[],stalls:[],speedRuns:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null,chartView='smooth',runContext=null,egressInfo=null,statusInfo={rtts:[],checkedAt:null,errors:0},rateInfo=null,liveSamplePoints=null;
 const format=(n,d=1)=>Number.isFinite(n)?Number(n).toFixed(d):'—';
 const median=a=>{if(!a.length)return NaN;const v=a.slice().sort((a,b)=>a-b);return(v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2};
 const p10=a=>a.length?a.slice().sort((a,b)=>a-b)[Math.floor((a.length-1)*.1)]:NaN;
@@ -697,7 +697,7 @@ function prefs(){return{duration:$('duration').value,budget:$('budget').value,ne
 function savePrefs(){try{localStorage.setItem(PREF,JSON.stringify(prefs()))}catch(e){}}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3000)}
 function tab(which){
- const labels={home:'首页',status:'网络状态',local:'网速测试',global:'跨境连接',apps:'应用体验',roam:'漫游分析',history:'历史记录'};
+ const labels={home:'首页',wifi:'Wi-Fi 测速',status:'网络状态',local:'网速测试',global:'跨境连接',apps:'应用体验',roam:'漫游分析',history:'历史记录'};
  if(!labels[which])which='home';
  activeTab=which;document.querySelectorAll('[data-page]').forEach(n=>n.classList.toggle('active',n.dataset.page===which));
  document.querySelectorAll('.view').forEach(n=>n.classList.toggle('active',n.id==='page-'+which));
@@ -715,7 +715,8 @@ function groupStats(group,rows){let attempted=0,returned=0;for(const [name,url] 
 function countSites(rs){const a=getProbed(rs);return{done:a.length,returned:a.filter(x=>x.samples.some(v=>v.result==='opaque')).length}}
 function setComplete(id,ready){$(id).classList.toggle('complete',ready)}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object')data={...data,...x}}catch(e){}
-for(const key of ['sessions','stalls','legacy'])if(!Array.isArray(data[key]))data[key]=[];
+for(const key of ['sessions','stalls','legacy','speedRuns'])if(!Array.isArray(data[key]))data[key]=[];
+if(!data._speedHistoryMigrated&&data.local&&Array.isArray(data.local.points)&&data.local.points.length&&!data.speedRuns.length){data.speedRuns.push(data.local);data._speedHistoryMigrated=true;stateSave()}
 try{const pf=JSON.parse(localStorage.getItem(PREF)||localStorage.getItem(PREVPREF)||localStorage.getItem(OLDPREF)||'null');if(pf){for(const id of ['duration','budget','network','location','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator']){const key=id==='nodeConfig'?'nodes':id;if(pf[key]!==undefined&&pf[key]!==null)$(id).value=String(pf[key])}$('upload').checked=!!pf.upload}}catch(e){}$('operatorOther').hidden=$('operator').value!=='other';
 try{if(!data._legacyImported){const hist=JSON.parse(localStorage.getItem('simba-network-watch-v1')||'[]');if(Array.isArray(hist)){data.legacy=hist.filter(x=>x.kind==='test');data.stalls.push(...hist.filter(x=>x.kind==='stall').map(x=>({t:x.t,app:x.app||'历史卡顿'})))}data._legacyImported=true;stateSave()}}catch(e){}
 render()}
@@ -754,9 +755,10 @@ setValue('localFaults',l&&l.failures&&l.failures.length?l.failures.length+' 次�
 setValue('videoMedian',v?format(v.median)+' Mbps':'—');setValue('videoLow',v?v.low+'/'+v.samples.length:'—');setValue('videoSlow',v?v.slow+'/'+v.samples.length:'—');
 setValue('videoSummary',v?'最近检测 '+time(v.t)+' · 模拟分片 '+v.samples.length+' 组，消耗 '+format(v.bytes/1e6)+' MB，不能当作视频 App 实测':'尚未运行视频分片模拟。');
 const notes=[];if(l&&Number.isFinite(l.speed)){if(l.speed<5)notes.push('基准速度偏低，可能影响视频缓冲；建议同地比较 LTE 和 5G');else if(l.speed<15)notes.push('基准速度中等，建议关注不同时段的变化');else notes.push('基准下载未明显偏低，若视频仍卡顿应进一步检查平台连接')}if(v&&v.low>0)notes.push('视频分片模拟出现 '+v.low+' 次低速');if(!notes.length)notes.push('诊断完成后显示结果；连接探测不能证明视频 App 被单独限速');setValue('insightBanner',notes.join('。')+'。');overviewChips('regionOverview',REGIONS,data.region,'global',data.regionOriginCountry||'',data.regionContext?.egressCountry||'');overviewChips('appOverview',APPS,data.apps,'apps');setValue('stallCount',data.stalls.length+' 次');setValue('stallLast',data.stalls.length?'最近一次 '+time(data.stalls.at(-1).t)+' · '+(data.stalls.at(-1).app||'视频'):'尚未标记卡顿');
-draw('sparkline');draw('localChart');renderGroups('globalGrid','globalDetails',REGIONS,data.region,data.regionOriginCountry||'',data.regionContext?.egressCountry||'');renderGroups('appsGrid','appsDetails',APPS,data.apps);renderRemote();renderRecent();
+renderWifi();draw('sparkline');draw('localChart');draw('wifiChart');renderGroups('globalGrid','globalDetails',REGIONS,data.region,data.regionOriginCountry||'',data.regionContext?.egressCountry||'');renderGroups('appsGrid','appsDetails',APPS,data.apps);renderRemote();renderRecent();
 }
-function draw(id){const svg=$(id);svg.replaceChildren();const points=Array.isArray(liveSamplePoints)?liveSamplePoints:(data.local&&Array.isArray(data.local.points)?data.local.points:[]);const pts=points.filter(x=>Number.isFinite(x.mbps)&&Number.isFinite(x.second)).slice().sort((a,b)=>a.second-b.second),ns='http://www.w3.org/2000/svg';
+function draw(id){const svg=$(id);svg.replaceChildren();const lastWifi=getRows(data.speedRuns).filter(x=>x&&x.network==='Wi-Fi'&&Array.isArray(x.points)).at(-1);
+const points=id==='wifiChart'?(lastWifi?.points||[]):Array.isArray(liveSamplePoints)?liveSamplePoints:(data.local&&Array.isArray(data.local.points)?data.local.points:[]);const pts=points.filter(x=>Number.isFinite(x.mbps)&&Number.isFinite(x.second)).slice().sort((a,b)=>a.second-b.second),ns='http://www.w3.org/2000/svg';
 const el=(name,props,label)=>{const e=document.createElementNS(ns,name);for(const [k,v] of Object.entries(props))e.setAttribute(k,String(v));if(label!==undefined)e.textContent=label;svg.append(e);return e};
 if(!pts.length){el('text',{x:175,y:80,'text-anchor':'middle','font-size':12,fill:'#9caeaa'},'完成本地测试后显示趋势');return}
 const W=350,H=165,L=35,R=9,T=9,B=24,top=Math.max(10,Math.ceil(Math.max(...pts.map(x=>x.mbps))*1.15/10)*10),seconds=Math.max(1,pts.at(-1).second);
@@ -775,8 +777,44 @@ for(const pt of pts){const c=el('circle',{cx:x(pt.second),cy:y(pt.mbps),r:chartV
 for(let i=0;i<3;i++)el('text',{x:x(seconds*i/2),y:H-6,'text-anchor':i===0?'start':i===2?'end':'middle',fill:'#91a59d','font-size':9},format(seconds*i/2,0)+'s');
 }
 function overviewChips(id,groups,results,view,recorded='',egress=''){const holder=$(id);holder.replaceChildren();for(const g of groups){const n=groupStats(g,getProbed(results)),origin=recorded||(!n.attempted?currentCountry():''),cls=view==='global'?marketClass(g.id,origin):'unknown';const b=document.createElement('button');b.type='button';b.className='flow-chip'+(n.attempted?'':' empty')+(view==='global'?' '+(cls==='local'?'domestic':cls==='cross'?'cross':'unclassified'):'');b.append(document.createTextNode(g.name+' '));const val=document.createElement('b');val.textContent=n.attempted?n.returned+'/'+n.attempted:'—';b.append(val);if(view==='global'){const ec=marketClass(g.id,egress);b.append(document.createTextNode(' · 所在地'+(cls==='local'?'同区':cls==='cross'?'跨区':'未知')+(egress?' / 出口'+(ec==='local'?'同区':'跨区'):'')))}b.onclick=()=>tab(view);holder.append(b)}}
+function selectNetwork(type){if(running){toast('请先停止当前测试，再切换网络类型');return}
+ $('network').value=type;savePrefs();render();
+ toast('已标记 '+(type==='Wi-Fi'?'Wi-Fi':type)+'；请确认系统确实已连接该网络')
+}
+function renderWifi(){
+ const records=getRows(data.speedRuns).filter(x=>x&&Number.isFinite(x.speed)&&Array.isArray(x.points));
+ const wifi=records.filter(x=>x.network==='Wi-Fi'),mobile=records.filter(x=>x.network==='4G'||x.network==='5G');
+ const a=wifi.at(-1),b=mobile.at(-1),current=$('network').value;
+ setValue('wifiMedian',a?format(a.speed):'—');setValue('wifiP10',a?format(a.p10):'—');
+ setValue('wifiLatency',a?format(a.latency,0):'—');setValue('wifiCount',String(wifi.length));
+ setValue('compareWifi',a?format(a.speed):'—');setValue('compareMobile',b?format(b.speed):'—');
+ setValue('wifiLastTime',a?'最近 Wi-Fi 测速：'+time(a.t)+' · '+format(a.elapsed,0)+' 秒 · '+format(a.bytes/1e6,1)+' MB · '+(a.reason||'完成'):'尚无 Wi-Fi 测试记录；浏览器无法读取 SSID、Wi-Fi 信号强度或路由器协商速率。');
+ let message='需要至少一次 Wi-Fi 和一次 4G/5G 采样才能做对比。';
+ if(a&&b){const delta=(a.speed-b.speed)/Math.max(b.speed,0.001)*100;
+ message='Wi-Fi 最近一次 '+format(a.speed)+' Mbps（'+time(a.t)+'）；蜂窝最近一次 '+format(b.speed)+' Mbps（'+time(b.t)+'）。差异 '+(delta>=0?'+':'')+format(delta,0)+'%。仅作历史比较，非同一时刻/同一服务器路径的严格对照。'}
+ setValue('wifiComparison',message);
+ const c=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+ const detected=c?.type==='wifi'?'浏览器报告当前为 Wi-Fi；仍请核对实际网络':c?.type==='cellular'?'浏览器报告当前为蜂窝网络，请先连接 Wi-Fi':c?.type==='ethernet'?'浏览器报告当前为有线网络':'浏览器无法确认 Wi-Fi（iPhone Safari 常见），请到系统设置确认';
+ setValue('wifiBrowserHint',detected);
+ setValue('wifiNetworkLabel',current==='Wi-Fi'?'已手动标注 Wi-Fi':'启动时将标注为 Wi-Fi');
+ setValue('networkPickHint','本轮选择：'+(current||'未标注')+'（手动）。切换网络必须在手机/电脑系统设置完成；网页不会切换 Wi-Fi 或蜂窝。');
+ for(const button of document.querySelectorAll('[data-net]')){button.classList.toggle('active',button.dataset.net===current);button.setAttribute('aria-pressed',String(button.dataset.net===current))}
+ const list=$('wifiHistory');list.replaceChildren();
+ if(!records.length){list.append(textNode('p','empty','暂无测速历史'));return}
+ for(const x of records.slice(-8).reverse()){
+  const row=document.createElement('div');row.className='wifi-record';
+  const left=document.createElement('div');left.append(textNode('strong','',(x.network||'未标注')+' · '+time(x.t)),textNode('small','',format(x.elapsed,0)+' 秒 / '+format(x.bytes/1e6,1)+' MB'+(x.location?' · '+x.location:'')));
+  row.append(left,textNode('b','',format(x.speed)+' Mbps'));list.append(row)
+ }
+}
+function startWifiRun(){
+ if(running)return;
+ const reported=navigator.connection?.type||navigator.mozConnection?.type||navigator.webkitConnection?.type;
+ if(reported==='cellular'){toast('浏览器报告为蜂窝连接：请先接入 Wi-Fi，再测速');return}
+ selectNetwork('Wi-Fi');run('wifi')
+}
 function renderRecent(){const root=$('recentRecords');root.replaceChildren();const ss=getRows(data.sessions).slice(-25).reverse();if(!ss.length){root.className='empty';root.textContent='还没有检测记录';return}root.className='';
-for(const r of ss){const div=textNode('div','list-item',''),left=textNode('div','left',''),right=textNode('div','right',r.status==='完成'?'已完成':r.status||'部分完成');left.append(textNode('b','',r.kind==='full'?'综合网络诊断':r.kind==='local'?'基准持续测速':r.kind==='region'?'地区站点探测':r.kind==='apps'?'应用服务探测':r.kind==='video'?'视频分片模拟':'测速节点检查'),textNode('small','',time(r.t)+' · '+countryName(r.originCountry)+' / '+(r.operator||'未标注运营商')+(r.roamingMode==='roaming'?' · 漫游':'')+(Number.isFinite(r.speed)?' · '+format(r.speed)+' Mbps':'')));div.append(left,right);root.append(div)}}
+for(const r of ss){const div=textNode('div','list-item',''),left=textNode('div','left',''),right=textNode('div','right',r.status==='完成'?'已完成':r.status||'部分完成');left.append(textNode('b','',r.kind==='full'?'综合网络诊断':r.kind==='wifi'?'Wi-Fi 持续测速':r.kind==='local'?'基准持续测速':r.kind==='region'?'地区站点探测':r.kind==='apps'?'应用服务探测':r.kind==='video'?'视频分片模拟':'测速节点检查'),textNode('small','',time(r.t)+' · '+countryName(r.originCountry)+' / '+(r.operator||'未标注运营商')+(r.roamingMode==='roaming'?' · 漫游':'')+(Number.isFinite(r.speed)?' · '+format(r.speed)+' Mbps':'')));div.append(left,right);root.append(div)}}
 function renderGroups(gridId,listId,groups,result,recorded='',egress=''){const items=getProbed(result),grid=$(gridId),list=$(listId);grid.replaceChildren();list.replaceChildren();
 for(const g of groups){const stats=groupStats(g,items);const cls=gridId==='globalGrid'?marketClass(g.id,recorded||(!items.length?currentCountry():'')):'unknown';const b=textNode('button','category'+(stats.attempted===g.sites.length?' done':'')+(gridId==='globalGrid'?' '+(cls==='local'?'local-market':cls==='cross'?'cross-market':'unknown-market'):''),'');b.type='button';b.append(textNode('b','',g.name+(gridId==='globalGrid'?' · 位置'+(cls==='local'?'同区':cls==='cross'?'跨区':'未知')+(egress?' / 出口'+(marketClass(g.id,egress)==='local'?'同区':'跨区'):' / 出口未知'):'')),textNode('span','',stats.attempted?('请求返回 '+stats.returned+'/'+stats.attempted+' 站'):'待探测 · '+g.sites.length+' 站'));b.onclick=()=>{const target=$('detail-'+(gridId==='globalGrid'?'G':'A')+'-'+g.id);target.open=!target.open;target.scrollIntoView({block:'nearest',behavior:'smooth'})};grid.append(b);
 const block=document.createElement('details');block.id='detail-'+(gridId==='globalGrid'?'G':'A')+'-'+g.id;const sum=document.createElement('summary');const ec=marketClass(g.id,egress);sum.textContent=g.name+(gridId==='globalGrid'?' · 所在地：'+(cls==='local'?'同地区':cls==='cross'?'跨地区':'未知')+' / 公网出口：'+(egress?(ec==='local'?'同地区':'跨地区'):'未检测'):'')+' · '+(stats.attempted?stats.returned+'/'+stats.attempted+' 站请求返回':'待探测');const inner=textNode('div','detail-inner','');
@@ -786,7 +824,7 @@ block.append(sum,inner);list.append(block)}
 function renderRemote(){const root=$('nodeDetails');root.replaceChildren();const r=getRows(data.remote);if(!r.length){root.textContent='没有受控海外节点的测速结果。';return}
 for(const x of r){const row=textNode('div','list-item',''),left=textNode('div','left','');left.append(textNode('b','',x.id+' · '+(x.marketCategory==='local'?'同地区':x.marketCategory==='cross'?'跨地区':'地区未分类')+' · 用户提供的 HTTPS 节点'),textNode('small','',x.url));const right=textNode('div','right',Number.isFinite(x.mbps)?format(x.mbps)+' Mbps':'测试受限');row.append(left,right);root.append(row)}
 }
-function render(){cards();renderStatus();$('homeProgressWrap').classList.toggle('visible',running||stepDone.length>0);$('headerDot').classList.toggle('live',running);$('headerState').textContent=running?'诊断中':'准备就绪';$('runBar').classList.toggle('visible',running);document.body.classList.toggle('running',running);$('startFull').disabled=running;for(const id of ['startLocal','startGlobal','startApps','startVideo','startNodes','quickLocal'])$(id).disabled=running;setValue('runLabel',stagedText||'诊断中');for(const id of ['originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).disabled=running}
+function render(){cards();renderStatus();$('homeProgressWrap').classList.toggle('visible',running||stepDone.length>0);$('headerDot').classList.toggle('live',running);$('headerState').textContent=running?'诊断中':'准备就绪';$('runBar').classList.toggle('visible',running);document.body.classList.toggle('running',running);$('startFull').disabled=running;for(const id of ['startLocal','startGlobal','startApps','startVideo','startNodes','quickLocal','wifiRun'])$(id).disabled=running;$('network').disabled=running;for(const button of document.querySelectorAll('[data-net]'))button.disabled=running;setValue('runLabel',stagedText||'诊断中');for(const id of ['originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).disabled=running}
 function stepUpdate(index,val,msg){$('homeProgressWrap').classList.add('visible');stepIndex=index;p=Math.min(100,Math.max(0,val));if(running)$('startFull').textContent='诊断中 · '+format(p,0)+'%';if(msg)stagedText=msg;setValue('progressBar','');$('progressBar').style.width=p+'%';$('progressState').textContent=running?'执行中 · '+format(p,0)+'%':'未开始';$('progressState').className='pill'+(running?'':' muted');setValue('progressStage',stagedText||'等待开始');setValue('workMsg',stagedText||'诊断进行中');for(let i=0;i<4;i++){$('step'+i).className='step'+(stepDone.includes(i)?' done':i===index?' live':'')}setValue('runLabel',stagedText||'诊断中')}
 function start(){if(running)return false;running=true;rateInfo=null;runContext=currentContext();$('homeProgressWrap').classList.add('visible');controller=new AbortController();stepDone=[];p=0;stagedText='准备开始…';stepUpdate(-1,0,stagedText);render();return true}
 function finish(){running=false;controller=null;runContext=null;liveSamplePoints=null;$('startFull').textContent='▶ 开始全面诊断';render();$('progressState').textContent=stagedText.includes('取消')?'已取消':'已结束';$('headerState').textContent='准备就绪'}
@@ -835,7 +873,7 @@ const elapsed=(performance.now()-startAt)/1000;if(root.aborted)reason='已取消
 if(!root.aborted&&$('upload').checked){try{const nums=[];for(let i=0;i<2;i++){nums.push(await up(root))}uploadSpeed=median(nums)}catch(e){fails.push('上传未完成：'+String(e.message||e))}}
 const v=points.map(x=>x.mbps),j=latencies.slice(1).map((x,i)=>Math.abs(x-latencies[i]));
 const obj={t:ts(),network,location,originCountry:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt,elapsed,reason,bytes:moved,points,latencies,failures:fails,speed:median(v),p10:p10(v),latency:median(latencies),jitter:median(j),uploadSpeed,endpointType:'Cloudflare region not verified'};
-if(points.length)data.local=obj;stateSave();render();return obj}
+if(points.length){data.local=obj;data.speedRuns=getRows(data.speedRuns);data.speedRuns.push(obj);data.speedRuns=data.speedRuns.slice(-80)}stateSave();render();return obj}
 async function siteProbe(url,root){const b=bounded(root,4800),start=performance.now();try{const res=await fetch(url,{method:'HEAD',mode:'no-cors',redirect:'follow',cache:'no-store',credentials:'omit',signal:b.signal});return{result:res.type==='opaque'?'opaque':'other',ms:performance.now()-start}}catch(e){return{result:root.aborted?'aborted':b.signal.aborted?'timeout':'restricted',ms:performance.now()-start}}finally{b.close()}}
 async function siteStage(groups,root,kind,lo,span){const existing=[],ctx=runContext||currentContext(),total=groups.reduce((a,g)=>a+g.sites.length,0)*2;let at=0;if(kind==='region'){data.region=[];data.regionOriginCountry=ctx.country;data.regionContext={country:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt}}else{data.apps=[];data.appsOriginCountry=ctx.country}
 for(const group of groups){for(const [name,url] of group.sites){if(root.aborted)break;const samples=[];for(let k=0;k<2;k++){if(root.aborted)break;const sample=await siteProbe(url,root);samples.push(sample);at++;stepUpdate(kind==='region'?1:2,lo+span*at/total,(kind==='region'?'跨境探测':'应用检查')+' · '+group.name+' / '+name+' · '+at+'/'+total);await sleep(220,root)}
@@ -851,10 +889,10 @@ const obj={t:ts(),originCountry:(runContext||currentContext()).country,operator:
 function configuredNodes(){const list=[];for(const line of $('nodeConfig').value.split('\n')){const i=line.indexOf('|');if(i<1)continue;const id=line.slice(0,i).trim().toUpperCase();if(!['SG','MY','CN','JP','US','UK','AU'].includes(id))continue;try{const u=new URL(line.slice(i+1).trim());if(u.protocol==='https:'&&!u.username&&!u.password)list.push({id,url:u.toString()})}catch(e){}if(list.length>=8)break}return list}
 async function nodeStage(root){const list=configuredNodes();if(!list.length){toast('请先填写有效的海外 HTTPS 节点');return}const out=[];for(let i=0;i<list.length;i++){if(root.aborted)break;const s=[];for(let k=0;k<3;k++){if(root.aborted)break;const b=bounded(root,16000),start=performance.now();try{const url=new URL(list[i].url);url.searchParams.set('bytes','1000000');url.searchParams.set('nocache',String(Date.now()+Math.random()));const resp=await fetch(url.toString(),{mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!resp.ok)throw Error('HTTP '+resp.status);const arr=await resp.arrayBuffer();if(arr.byteLength<500000)throw Error('数据少于预期');s.push({mbps:arr.byteLength*8/((performance.now()-start)/1000)/1e6,bytes:arr.byteLength})}catch(e){s.push({error:String(e.message||e)})}finally{b.close()}}
 out.push({...list[i],originCountry:(runContext||currentContext()).country,operator:(runContext||currentContext()).operator,roamingMode:(runContext||currentContext()).roamingMode,simHomeCountry:(runContext||currentContext()).simHomeCountry,visitedOperator:(runContext||currentContext()).visitedOperator,egressCountry:(runContext||currentContext()).egressCountry,egressAsn:(runContext||currentContext()).egressAsn,marketCategory:marketClass(list[i].id,(runContext||currentContext()).country),egressMarketCategory:marketClass(list[i].id,(runContext||currentContext()).egressCountry),samples:s,mbps:median(s.filter(x=>Number.isFinite(x.mbps)).map(x=>x.mbps))});stepUpdate(1,100*(i+1)/list.length,'海外受控节点 '+(i+1)+'/'+list.length);data.remote=out.slice();stateSave();render()}}
-async function run(kind){if(!start())return;const root=controller.signal,started=ts();if(kind!=='full')tab(kind==='local'?'local':kind==='region'||kind==='nodes'?'global':'apps');else tab('home');
+async function run(kind){if(!start())return;const root=controller.signal,started=ts();if(kind!=='full')tab(kind==='local'?'local':kind==='wifi'?'wifi':kind==='region'||kind==='nodes'?'global':'apps');else tab('home');
 try{
 await refreshEgress(true);if(root.aborted)return;runContext=currentContext();
-if(kind==='full'||kind==='local'){stepUpdate(0,2,'基准网络 · 开始持续采样');await localStage(root,3,kind==='full'?32:94);if(!root.aborted)stepDone.push(0);render()}
+if(kind==='full'||kind==='local'||kind==='wifi'){stepUpdate(0,2,kind==='wifi'?'Wi-Fi 基准 · 开始持续采样':'基准网络 · 开始持续采样');await localStage(root,3,kind==='full'?32:94);if(!root.aborted)stepDone.push(0);render()}
 if(!root.aborted&&(kind==='full'||kind==='region')){stepUpdate(1,kind==='full'?36:2,'同地区与跨地区网站 · 7 个市场');await siteStage(REGIONS,root,'region',kind==='full'?36:2,kind==='full'?27:96);if(!root.aborted)stepDone.push(1)}
 if(!root.aborted&&(kind==='full'||kind==='apps')){stepUpdate(2,kind==='full'?64:2,'应用服务 · 6 类');await siteStage(APPS,root,'apps',kind==='full'?64:2,kind==='full'?24:96);if(!root.aborted)stepDone.push(2)}
 if(!root.aborted&&(kind==='full'||kind==='video')){stepUpdate(3,kind==='full'?89:2,'视频分片 · 20 秒模拟');await videoStage(root,kind==='full'?89:2,kind==='full'?10:96);if(!root.aborted)stepDone.push(3)}
@@ -870,7 +908,7 @@ const rows=[names];const add=(type,x,siteGroup,market,network,target,mbps,ms,det
 type,x?.t||'',x?.originCountry||'',x?.operator||'',x?.roamingMode||'',x?.simHomeCountry||'',x?.visitedOperator||'',x?.egressCountry||'',x?.egressAsn||'',x?.marketCategory||'',x?.egressMarketCategory||'',market||'',network||'',siteGroup||'',target||'',mbps??'',ms??'',details||''
 ].map(v=>String(v)));
 for(const x of getRows(data.sessions))add('session',x,x.kind,'',x.network,'',null,null,x.status);
-const base=data.local;if(base)for(const p of getRows(base.points))add('baseline_sample',base,'Cloudflare HTTP','',base.network,'Cloudflare (location unverified)',p.mbps,null,'elapsed_seconds='+p.second+'; bytes='+p.bytes);
+const baseRuns=getRows(data.speedRuns).length?getRows(data.speedRuns):data.local?[data.local]:[];for(const base of baseRuns)for(const p of getRows(base.points))add('baseline_sample',base,'Cloudflare HTTP','',base.network,'Cloudflare (location unverified)',p.mbps,null,'elapsed_seconds='+p.second+'; bytes='+p.bytes);
 for(const x of getProbed(data.region).concat(getProbed(data.apps)))for(const p of x.samples)add('website_probe',x,x.group,x.marketCode,'',x.name,null,p.ms,p.result+' '+x.url);
 if(data.video)for(const p of getRows(data.video.samples))add('video_simulation',data.video,'Video simulation','', '', 'Cloudflare synthetic chunks',p.mbps,null,p.error||'not actual app playback');
 for(const x of getRows(data.remote))for(const p of x.samples)add('configured_endpoint',x,'User server',x.id,'',x.url,p.mbps,null,p.error||'server location not independently verified');
@@ -881,9 +919,10 @@ const content='\ufeff'+rows.map(r=>r.map(quote).join(',')).join('\r\n');
 const uri=URL.createObjectURL(new Blob([content],{type:'text/csv;charset=utf-8'}));
 const link=document.createElement('a');link.href=uri;link.download='network-watch-roaming-'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(uri),15000);toast('包含漫游接入和出口线索的原始 CSV 已生成')
 }
-$('chartMode').onclick=()=>{chartView=chartView==='smooth'?'raw':'smooth';$('chartMode').textContent=chartView==='smooth'?'查看原始曲线':'查看平滑趋势';setValue('curveLegend',chartView==='smooth'?'5 点移动中位趋势':'原始下载采样折线');draw('sparkline');draw('localChart')};
+$('chartMode').onclick=()=>{chartView=chartView==='smooth'?'raw':'smooth';$('chartMode').textContent=chartView==='smooth'?'查看原始曲线':'查看平滑趋势';setValue('curveLegend',chartView==='smooth'?'5 点移动中位趋势':'原始下载采样折线');draw('sparkline');draw('localChart');draw('wifiChart')};
 $('refreshStatus').onclick=refreshStatus;$('startStatusTest').onclick=()=>run('local');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>tab(x.dataset.page));
 document.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>tab(x.dataset.go));
+$('wifiRun').onclick=startWifiRun;for(const b of document.querySelectorAll('[data-net]'))b.onclick=()=>selectNetwork(b.dataset.net);
 $('startFull').onclick=()=>run('full');$('quickLocal').onclick=()=>run('local');$('startLocal').onclick=()=>run('local');$('startGlobal').onclick=()=>run('region');$('startApps').onclick=()=>run('apps');$('startVideo').onclick=()=>run('video');$('startNodes').onclick=()=>run('nodes');
 $('openOptions').onclick=()=>{tab('local');$('allOptions').open=true;$('allOptions').scrollIntoView({behavior:'smooth',block:'start'})};
 $('stopBtn').onclick=stop;$('quickStall').onclick=mark;$('floatingStall').onclick=mark;$('markStall').onclick=mark;$('exportHome').onclick=csv;$('historyExport').onclick=csv;$('menuExport').onclick=csv;$('roamRefresh').onclick=()=>refreshEgress(false);
