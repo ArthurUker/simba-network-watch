@@ -12,7 +12,7 @@
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <meta name="description" content="Network Watch：多运营商、按测速地点分类的网站连接与基准网速诊断。">
-<title>Network Watch v4.9 — 专业测速结果</title>
+<title>Network Watch v5.0 — Cloudflare 风格实时测速工作台</title>
 <style>
 :root{--bg:#f6f8f7;--card:#fff;--ink:#193330;--secondary:#617771;--line:#e2eae7;--mint:#118473;--mint-dark:#09685b;--mint-light:#e3f4ed;--blue:#3873b6;--blue-light:#e9f1fc;--amber:#aa742e;--amber-light:#fcf3e4;--red:#b64f48;--red-light:#fbedeb;--shadow:0 6px 22px rgba(21,53,44,.04);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box}
@@ -386,16 +386,89 @@ body.on-detail .compact-nav{display:flex}
 .benchmark-foot{border-top:1px solid #e0ebe5;padding-top:10px;margin-top:11px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#70877b;font-size:10px}
 @media(min-width:760px){.benchmark-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.benchmark-panel{padding:20px}.benchmark-main-number{padding:23px}}
 @media(max-width:390px){.benchmark-primary{gap:7px}.benchmark-main-number{padding:12px 9px}.benchmark-main-number strong{font-size:clamp(22px,6.8vw,30px)}.benchmark-main-number>span{font-size:10px}.benchmark-metrics{gap:6px}.benchmark-metrics>div{padding:9px}.benchmark-metrics strong{font-size:17px}}
+
+/* v5.0: desktop-first data display inspired by measurement hierarchy, not a visual clone */
+.desktop-speedboard{display:none}
+@media(min-width:1080px){
+ #page-home .desktop-speedboard{display:block;border:1px solid #dce9e3;border-radius:21px;background:#fff;box-shadow:0 14px 42px rgba(22,78,60,.055);padding:22px 24px;margin-bottom:16px}
+ .speedboard-heading{display:flex;align-items:start;justify-content:space-between;gap:15px}
+ .speedboard-kicker{display:block;color:#0e806e;font-size:10px;letter-spacing:.13em;font-weight:850}
+ .speedboard-identity h1{margin:3px 0 0;font-size:26px;font-weight:830;letter-spacing:-.038em;line-height:1.26}
+ .speedboard-identity p{margin:3px 0 0;color:#84978d;font-size:11px}
+ .speedboard-topactions{display:flex;align-items:center;gap:8px}
+ .speedboard-teststate{font-size:11px;border-radius:999px;background:#ecf5ef;color:#386658;padding:8px 12px;white-space:nowrap}
+ .speedboard-topactions .btn{min-height:38px;border-radius:10px;font-size:12px;padding:9px 12px;white-space:nowrap}
+ .speedboard-start{background:#0b806e;color:white;border:0}
+ .speedboard-center{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(370px,1.15fr);gap:18px;margin-top:16px}
+ .speedboard-speedpairs{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+ .speedboard-download,.speedboard-upload{min-width:0;padding:16px 14px;border-radius:13px;background:#e7f6ef}
+ .speedboard-upload{background:#ecf3f8}
+ .speedboard-speedpairs>div>span{font-size:12px;font-weight:770;display:block;color:#226c57}
+ .speedboard-upload>span{color:#47748a!important}
+ .speedboard-speedpairs b{font-size:15px}
+ .speedboard-speedpairs strong{font-size:clamp(31px,3.4vw,47px);letter-spacing:-.065em;line-height:1.38;display:block;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#164d3d}
+ .speedboard-upload strong{color:#35566e}
+ .speedboard-speedpairs small{display:block;font-size:10px;color:#769387;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .speedboard-latencies{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+ .speedboard-latencies>div{background:#f8fbf9;border:1px solid #e5eee9;border-radius:12px;padding:10px;min-width:0}
+ .speedboard-latencies span{font-size:10px;color:#7d978c;display:block;line-height:1.45;min-height:28px}
+ .speedboard-latencies strong{display:block;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.38}
+ .speedboard-latencies small{font-size:9px;color:#92a398;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+ .speedboard-quantiles{display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-top:11px;font-size:10px;color:#84978c}
+ .speedboard-quantiles b{color:#235d4e;font-size:12px}
+ .speedboard-chartarea{background:#fafcfb;border:1px solid #e8efeb;border-radius:14px;padding:14px 15px;min-width:0}
+ .speedboard-chartheading{display:flex;justify-content:space-between;align-items:start;gap:10px}
+ .speedboard-chartheading strong,.speedboard-chartheading span{display:block}
+ .speedboard-chartheading strong{font-size:14px}
+ .speedboard-chartheading span{font-size:10px;color:#93a39a;margin-top:3px}
+ .speedboard-live{padding:5px 8px;color:#117f6d!important;background:#eaf7f0;border-radius:8px;font-size:11px!important;font-weight:700;white-space:nowrap}
+ .speedboard-chart{height:177px;margin-top:9px}
+ .speedboard-chart svg{display:block;width:100%;height:100%}
+ .speedboard-profile{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 9px;font-size:10px;color:#7c9289}
+ .speedboard-toggle{display:flex;padding:3px;border-radius:9px;background:#e9f1ec}
+ .speedboard-toggle button{font-size:10px;border:0;background:none;border-radius:7px;padding:7px 10px;color:#7c9185;white-space:nowrap}
+ .speedboard-toggle button.active{background:#fff;color:#086f60;box-shadow:0 1px 3px #16412a12;font-weight:750}
+ .speedboard-chartfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:10px;color:#70887c}
+ .speedboard-chartfoot label{display:flex;gap:5px;align-items:center;cursor:pointer}
+ .speedboard-chartfoot input{accent-color:#078973}
+ .desktop-link{border:0;background:none;color:#047c66;font-size:10px;font-weight:760;padding:4px}
+ .speedboard-bottom{margin-top:13px}
+ .speedboard-progress-track{height:6px;border-radius:99px;background:#edf2ee;overflow:hidden}
+ .speedboard-progress-track i{display:block;height:100%;width:0;background:#0f9a7a;transition:width .25s}
+ .speedboard-progress-info{display:flex;justify-content:space-between;gap:8px;margin-top:6px;font-size:10px;color:#607e72}
+ .speedboard-netinfo{display:flex;flex-wrap:wrap;gap:15px;border-top:1px solid #e8efea;padding-top:10px;margin-top:10px;color:#8a9d93;font-size:10px}
+ .speedboard-netinfo strong{color:#3a6556}
+ .speedboard-netinfo span{max-width:37%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .speedboard-bottom>p{font-size:9px;color:#9aaba2;line-height:1.45;margin:7px 0 0}
+ #page-home .dashboard-head{display:none}
+ #page-home .dashboard-section-heading{margin-top:11px!important;margin-bottom:8px}
+ #page-home .dashboard-section-heading h2{font-size:13px}
+ #page-home .dashboard-section-heading p{display:none}
+ #page-home .feature-menu{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+ #page-home .feature-tile{min-height:73px;max-height:80px;padding:10px 12px;border-radius:13px;display:grid;grid-template-columns:29px minmax(0,1fr);align-items:center;gap:9px}
+ #page-home .feature-icon{grid-column:1;grid-row:1;width:28px;height:28px;font-size:16px;border-radius:8px}
+ #page-home .feature-info{grid-column:2;grid-row:1;margin-top:0}
+ #page-home .feature-info strong{font-size:12px}
+ #page-home .feature-info small{font-size:10px}
+ #page-home .feature-info em,#page-home .feature-chevron{display:none}
+ #page-home .home-actions{display:none}
+ #page-home .home-insight{display:none}
+}
+@media(min-width:1080px) and (max-width:1300px){
+ #page-home .desktop-speedboard{padding:18px}
+ .speedboard-center{grid-template-columns:1fr;gap:12px}
+ .speedboard-chart{height:140px}
+}
 </style>
 </head>
 <body>
 <main class="container">
 <header>
-<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.9</span></small></div></div>
+<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v5.0</span></small></div></div>
 <div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span><button type="button" class="install-trigger" id="installHelp" aria-label="添加到手机主屏幕" aria-haspopup="dialog" aria-expanded="false">＋</button></div>
 </header>
 <aside class="desktop-sidebar" aria-label="桌面功能导航">
-  <div class="sidebar-caption">NETWORK WATCH <span>v4.7</span></div>
+  <div class="sidebar-caption">NETWORK WATCH <span>v5.0</span></div>
   <div class="sidebar-section">工作台</div>
   <button type="button" data-page="home" class="active"><span>▦</span> 网络总览</button>
   <button type="button" data-page="wifi"><span>◉</span> Wi-Fi 测速</button>
@@ -409,6 +482,74 @@ body.on-detail .compact-nav{display:flex}
   <div class="sidebar-foot"><strong>测速提示</strong><p>Wi-Fi、5G、4G 都通过同一 Cloudflare 基准接口测量。对比前请确认已切换实际网络。</p><span>原始采样与测试日期会保留在浏览器。</span></div>
 </aside>
 <nav class="compact-nav" aria-label="页面导航"><button type="button" data-page="home">‹ 返回首页</button><strong id="sectionHeading">功能详情</strong></nav><section class="view active" id="page-home">
+  <section class="desktop-speedboard" aria-label="实时测速工作台">
+    <div class="speedboard-heading">
+      <div class="speedboard-identity">
+        <span class="speedboard-kicker">NETWORK PERFORMANCE / HTTP TEST</span>
+        <h1>网络测速工作台</h1>
+        <p>先查看实际测量，再进入跨境、应用和漫游分析。</p>
+      </div>
+      <div class="speedboard-topactions">
+        <span class="speedboard-teststate" id="desktopTestState">未测试</span>
+        <button class="btn speedboard-start" id="desktopStartSpeed" type="button">▶ 开始网速测试</button>
+        <button class="btn btn-muted" id="desktopStop" type="button" disabled>停止</button>
+      </div>
+    </div>
+    <div class="speedboard-center">
+      <div class="speedboard-numbers">
+        <div class="speedboard-speedpairs">
+          <div class="speedboard-download">
+            <span><b>↓</b> 下载速度</span>
+            <strong id="desktopDownload">—</strong>
+            <small>Mbps · <span id="desktopDownloadLabel">P50 中位数 / 未测量</span></small>
+          </div>
+          <div class="speedboard-upload">
+            <span><b>↑</b> 上传速度</span>
+            <strong id="desktopUpload">—</strong>
+            <small>Mbps · <span id="desktopUploadLabel">未启用或未成功</span></small>
+          </div>
+        </div>
+        <div class="speedboard-latencies">
+          <div><span>空闲 HTTP 延迟</span><strong id="desktopIdle">—</strong><small>ms · 同域 Worker</small></div>
+          <div><span>下载负载 HTTP 延迟</span><strong id="desktopLoaded">—</strong><small>ms · 并发探测</small></div>
+          <div><span>延迟变化</span><strong id="desktopInflation">—</strong><small>ms · 负载减空闲</small></div>
+        </div>
+        <div class="speedboard-quantiles">
+          <span>P10 低速 <b id="desktopP10">—</b> Mbps</span>
+          <span>P90 高速 <b id="desktopP90">—</b> Mbps</span>
+          <span>下载流量 <b id="desktopBytes">—</b> MB</span>
+        </div>
+      </div>
+      <div class="speedboard-chartarea">
+        <div class="speedboard-chartheading">
+          <div><strong>下载采样趋势</strong><span>真实 HTTP 下载采样，平滑曲线不修改原值</span></div>
+          <span class="speedboard-live" id="desktopLiveRate">未开始</span>
+        </div>
+        <div class="speedboard-chart"><svg id="desktopChart" viewBox="0 0 350 165" role="img" aria-label="下载速度实时采样趋势"></svg></div>
+        <div class="speedboard-profile">
+          <span>测试方法</span>
+          <div class="speedboard-toggle" role="group" aria-label="选择网速测试方法">
+            <button type="button" id="desktopSampled" class="active" aria-pressed="true">稳定性 · 单请求</button>
+            <button type="button" id="desktopParallel" aria-pressed="false">吞吐 · 4 并发</button>
+          </div>
+        </div>
+        <div class="speedboard-chartfoot">
+          <label><input type="checkbox" id="desktopIncludeUpload"> 同时尝试上传（额外用量）</label>
+          <button type="button" id="desktopSettings" class="desktop-link">时间与流量预算 ›</button>
+        </div>
+      </div>
+    </div>
+    <div class="speedboard-bottom">
+      <div class="speedboard-progress-track"><i id="desktopProgress"></i></div>
+      <div class="speedboard-progress-info"><span id="desktopPhase">等待测速 · 仅测试时消耗测速流量</span><span id="desktopBudget">—</span></div>
+      <div class="speedboard-netinfo">
+        <span>公网出口 <strong id="desktopCountry">—</strong></span>
+        <span>ASN 网络组织 <strong id="desktopAsn">—</strong></span>
+        <span>当前标记 <strong id="desktopContext">—</strong></span>
+      </div>
+      <p>指标说明：下载数据来自 Cloudflare 测速端点；空闲和负载 HTTP 延迟来自本站 Worker，两者可能走不同路径；不是 ICMP Ping、无线信号值或 Ookla 测试结果。</p>
+    </div>
+  </section>
   <div class="dashboard-head" aria-label="总体网络状态">
     <div class="dashboard-head-top">
       <div class="dashboard-identity"><span class="dashboard-led" id="overviewLed"></span><div><small>网络总状态</small><h1 id="headline">等待网络检测</h1></div></div>
