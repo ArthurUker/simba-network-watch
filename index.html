@@ -459,6 +459,18 @@ body.on-detail .compact-nav{display:flex}
  .speedboard-center{grid-template-columns:1fr;gap:12px}
  .speedboard-chart{height:140px}
 }
+
+/* Visual QA fix: keep the headline readable when desktop sidebar leaves a narrow workspace */
+@media(min-width:1080px){
+ .speedboard-heading{flex-wrap:wrap;align-items:flex-start}
+ .speedboard-identity{flex:1 1 225px;min-width:215px}
+ .speedboard-identity h1{white-space:nowrap;font-size:clamp(21px,2vw,26px)}
+ .speedboard-topactions{flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end}
+}
+@media(min-width:1080px) and (max-width:1350px){
+ .speedboard-identity{flex-basis:100%;width:100%}
+ .speedboard-topactions{width:100%;justify-content:flex-start}
+}
 </style>
 </head>
 <body>
