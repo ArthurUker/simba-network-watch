@@ -698,6 +698,7 @@ function renderMethodAudit(){
 const format=(n,d=1)=>Number.isFinite(n)?Number(n).toFixed(d):'—';
 const median=a=>{if(!a.length)return NaN;const v=a.slice().sort((a,b)=>a-b);return(v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2};
 const p10=a=>a.length?a.slice().sort((a,b)=>a-b)[Math.floor((a.length-1)*.1)]:NaN;
+const quantile=(values,q)=>{const a=values.filter(Number.isFinite).slice().sort((x,y)=>x-y);if(!a.length)return NaN;const pos=(a.length-1)*q,lo=Math.floor(pos),hi=Math.ceil(pos);return a[lo]+(a[hi]-a[lo])*(pos-lo)};
 const COUNTRY_NAMES={CN:'中国大陆',SG:'新加坡',MY:'马来西亚',JP:'日本',US:'美国',UK:'英国',AU:'澳大利亚',HK:'中国香港',TW:'中国台湾',KR:'韩国',IN:'印度',DE:'德国',FR:'法国',OTHER:'其他地区'};
 const countryName=c=>COUNTRY_NAMES[c]||(c&&c!=='XX'?c:'未标注');
 const currentCountry=()=>$('originCountry').value||'';
@@ -763,7 +764,7 @@ function updateRate(mbps,active){
  if(!Number.isFinite(mbps)||mbps<0)return;
  rateInfo={mbps,active,checkedAt:ts()};
  // Keep telemetry updates local to the status panel. Full dashboard updates only on completed samples.
- setValue('liveSpeed',format(mbps)+' Mbps');
+ setValue('liveSpeed',format(mbps)+' Mbps');setValue('benchLiveDownload',(active?'正在接收 ':'最近样本 ')+format(mbps)+' Mbps');
  setValue('liveSpeedCaption',active?'正在下载 · 当前请求采样速率':'上次测试样本 · 非后台实时流量')
 }
 function roamingHint(ctx){if(ctx.roamingMode==='roaming'){
@@ -845,7 +846,16 @@ const nearby=REGIONS.find(g=>g.id===ctx.country);setValue('regionsHeading','7 �
 const scanOrigin=data.regionOriginCountry||'',scanContext=data.regionContext||{};
 setValue('regionSub',scanOrigin?('本轮手机所在地：'+countryName(scanOrigin)+' · '+(scanContext.roamingMode==='roaming'?'漫游':'接入方式未标记为漫游')+' · 公网 IP 地区：'+(scanContext.egressCountry?countryName(scanContext.egressCountry):'未检测')+'。两种市场对照分别显示，均不证明实际路由。'):'暂无带有来源国家的站点结果；请重新测试后分类');setHTML('localMedian',l&&Number.isFinite(l.speed)?format(l.speed):'—','Mbps');
 setHTML('localP10',l?format(l.p10):'—','Mbps');setHTML('localLatency',l?format(l.latency,0):'—','ms');
-setHTML('localJitter',l?format(l.jitter,0):'—','ms');setValue('localUpload',l&&Number.isFinite(l.uploadSpeed)?format(l.uploadSpeed)+' Mbps':l?'未测/不可用':'—');setHTML('localBytes',l?format(l.bytes/1e6,1):'—','MB');
+setHTML('localJitter',l?format(l.jitter,0):'—','ms');
+setValue('localUpload',l&&Number.isFinite(l.uploadSpeed)?format(l.uploadSpeed)+' Mbps':l?'未测 / 不可用':'—');
+setHTML('localBytes',l?format(l.bytes/1e6,1):'—','MB');
+setHTML('benchLoaded',l&&Number.isFinite(l.downloadLoadedLatency)?format(l.downloadLoadedLatency,0):'—','ms');
+setHTML('benchInflation',l&&Number.isFinite(l.latencyInflation)?format(l.latencyInflation,0):'—','ms');
+setHTML('benchP90',l&&Number.isFinite(l.p90)?format(l.p90):'—','Mbps');
+setHTML('benchUploadLoaded',l&&Number.isFinite(l.uploadLoadedLatency)?format(l.uploadLoadedLatency,0):'—','ms');
+setValue('benchStage',running&&stepIndex===0?stagedText:l?'最近测试 · '+time(l.t):'等待首次测速');
+setValue('benchMethod',l?(l.profile==='parallel'?'4 并发':'单请求')+' · '+(l.methodVersion||'历史口径'):'单请求 · Cloudflare HTTP');
+setValue('benchSamples',l?l.points.length+' 组下载 · 空闲 RTT '+(l.methodVersion==='http-baseline-v49'?(l.latencies?.length||0):'未记录同源')+' 次 · 负载 RTT '+(l.downloadLoadedRtts?.length||0)+' 次':'未开始 · 不显示推测数据');
 setValue('speedMethodInfo',l?(l.profile==='parallel'?'最近一次：4 请求并发吞吐模式':'最近一次：单请求分时稳定性模式')+' · Cloudflare HTTP 基准。不同模式的 Mbps 不可直接互相排名。':'选择单请求分时采样或 4 请求并发模式；后者更接近峰值吞吐，但不等于 Ookla 测试。');
 setValue('localSummary',l?time(l.t)+' · '+countryName(l.originCountry)+' / '+(l.operator||'运营商未标注')+(l.roamingMode==='roaming'?'（漫游，接入 '+(l.visitedOperator||'未标注')+'）':'')+' / '+(l.network||'制式未标注')+' · 出口IP地理：'+(l.egressCountry?countryName(l.egressCountry):'未知')+' · '+format(l.elapsed,0)+' 秒 · '+(l.reason||'已完成'):'暂无基准持续测速记录。');
 setValue('localFaults',l&&l.failures&&l.failures.length?l.failures.length+' 次请求异常：'+l.failures.slice(0,2).join('；'):'');
@@ -922,7 +932,7 @@ function renderRemote(){const root=$('nodeDetails');root.replaceChildren();const
 for(const x of r){const row=textNode('div','list-item',''),left=textNode('div','left','');left.append(textNode('b','',x.id+' · '+(x.marketCategory==='local'?'同地区':x.marketCategory==='cross'?'跨地区':'地区未分类')+' · 用户提供的 HTTPS 节点'),textNode('small','',x.url));const right=textNode('div','right',Number.isFinite(x.mbps)?format(x.mbps)+' Mbps':'测试受限');row.append(left,right);root.append(row)}
 }
 function render(){cards();renderStatus();$('homeProgressWrap').classList.toggle('visible',running||stepDone.length>0);$('headerDot').classList.toggle('live',running);$('headerState').textContent=running?'诊断中':'准备就绪';$('runBar').classList.toggle('visible',running);document.body.classList.toggle('running',running);$('startFull').disabled=running;for(const id of ['startLocal','startGlobal','startApps','startVideo','startNodes','quickLocal','wifiRun'])$(id).disabled=running;$('network').disabled=running;for(const button of document.querySelectorAll('[data-net]'))button.disabled=running;setValue('runLabel',stagedText||'诊断中');for(const id of ['originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).disabled=running}
-function stepUpdate(index,val,msg){$('homeProgressWrap').classList.add('visible');stepIndex=index;p=Math.min(100,Math.max(0,val));if(running)$('startFull').textContent='诊断中 · '+format(p,0)+'%';if(msg)stagedText=msg;setValue('progressBar','');$('progressBar').style.width=p+'%';$('progressState').textContent=running?'执行中 · '+format(p,0)+'%':'未开始';$('progressState').className='pill'+(running?'':' muted');setValue('progressStage',stagedText||'等待开始');setValue('workMsg',stagedText||'诊断进行中');for(let i=0;i<4;i++){$('step'+i).className='step'+(stepDone.includes(i)?' done':i===index?' live':'')}setValue('runLabel',stagedText||'诊断中')}
+function stepUpdate(index,val,msg){$('homeProgressWrap').classList.add('visible');stepIndex=index;p=Math.min(100,Math.max(0,val));if(running)$('startFull').textContent='诊断中 · '+format(p,0)+'%';if(msg){stagedText=msg;if(index===0)setValue('benchStage',msg)}setValue('progressBar','');$('progressBar').style.width=p+'%';$('progressState').textContent=running?'执行中 · '+format(p,0)+'%':'未开始';$('progressState').className='pill'+(running?'':' muted');setValue('progressStage',stagedText||'等待开始');setValue('workMsg',stagedText||'诊断进行中');for(let i=0;i<4;i++){$('step'+i).className='step'+(stepDone.includes(i)?' done':i===index?' live':'')}setValue('runLabel',stagedText||'诊断中')}
 function start(){if(running)return false;running=true;rateInfo=null;runContext=currentContext();$('homeProgressWrap').classList.add('visible');controller=new AbortController();stepDone=[];p=0;stagedText='准备开始…';stepUpdate(-1,0,stagedText);render();return true}
 function finish(){running=false;controller=null;runContext=null;liveSamplePoints=null;$('startFull').textContent='▶ 开始全面诊断';render();$('progressState').textContent=stagedText.includes('取消')?'已取消':'已结束';$('headerState').textContent='准备就绪'}
 function stop(){if(controller)controller.abort()}
@@ -966,24 +976,71 @@ async function parallelDown(bytes,root,onProgress){
  if(onProgress)onProgress(rate);
  return {bytes:transferred,seconds,mbps:rate,failedStreams:failed};
 }
+async function baselinePing(root){
+ const b=bounded(root,4500),start=performance.now();
+ try{
+  const response=await fetch('/api/ping?phase=benchmark&t='+Date.now()+'&r='+Math.random(),{method:'GET',cache:'no-store',credentials:'omit',signal:b.signal});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const end=performance.now();return {ms:end-start,start,end}
+ }finally{b.close()}
+}
 async function up(root){const b=bounded(root,15000),size=500000,start=performance.now();try{const res=await fetch(UP,{method:'POST',body:new Uint8Array(size),mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!res.ok)throw Error('HTTP '+res.status);return size*8/(1e6*(performance.now()-start)/1000)}finally{b.close()}}
-async function localStage(root,r0,rlen){const startAt=performance.now(),dur=Number($('duration').value)*1000,limit=Number($('budget').value)*1e6,ctx=runContext||currentContext(),network=ctx.network,location=ctx.location,profile=$('speedProfile').value==='parallel'?'parallel':'sampled';
-let moved=0,lastMbps=NaN,reason='完成时间窗口',points=[],latencies=[],fails=[],uploadSpeed=null;liveSamplePoints=[];
-const targetSamples=Math.max(7,Math.round(dur/4)),period=dur/targetSamples,maxChunk=Math.min(6000000,Math.floor(limit/targetSamples));
-for(let k=0;k<4;k++){if(root.aborted)break;try{const ping=await down(256,root);moved+=ping.bytes;latencies.push(ping.seconds*1000)}catch(e){if(root.aborted)break;fails.push(String(e.message||e))}}
-let lastProbe=-1e6;
-while(!root.aborted&&performance.now()-startAt<dur){const started=performance.now(),elapsed=started-startAt;if(dur-elapsed<300)break;if(limit-moved<600000){reason='已达到下载流量预算';break}
-if(elapsed-lastProbe>7000){try{const ping=await down(256,root);latencies.push(ping.seconds*1000);moved+=ping.bytes}catch(e){if(!root.aborted)fails.push(String(e.message||e))}lastProbe=performance.now()-startAt}
-if(root.aborted)break;const aim=Number.isFinite(lastMbps)?Math.floor(lastMbps*1e6/8*1.1):1500000;
-const chunk=Math.min(Math.floor(limit-moved),Math.max(600000,Math.min(maxChunk,aim)));
-if(chunk<600000){reason='已达到下载流量预算';break}
-try{const v=profile==='parallel'?await parallelDown(chunk,root,(mbps)=>updateRate(mbps,true)):await down(chunk,root,(mbps)=>updateRate(mbps,true));if(v.failedStreams)fails.push('并发分支失败 '+v.failedStreams+' / 4');moved+=v.bytes;lastMbps=v.mbps;updateRate(v.mbps,false);points.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,bytes:v.bytes});liveSamplePoints=points.slice();draw('sparkline');draw('localChart');if(points.length%2===0){const progress=Math.min(1,(performance.now()-startAt)/dur);stepUpdate(0,r0+rlen*progress,'基准持续采样 · '+points.length+' 组 · 中位 '+format(median(points.map(x=>x.mbps)))+' Mbps · '+format(moved/1e6)+' MB')}}catch(e){if(!root.aborted)fails.push(String(e.message||e))}
-if(root.aborted)break;await sleep(Math.min(Math.max(0,period-(performance.now()-started)),Math.max(0,dur-(performance.now()-startAt))),root)}
-const elapsed=(performance.now()-startAt)/1000;if(root.aborted)reason='已取消';
-if(!root.aborted&&$('upload').checked){try{const nums=[];for(let i=0;i<2;i++){nums.push(await up(root))}uploadSpeed=median(nums)}catch(e){fails.push('上传未完成：'+String(e.message||e))}}
-const v=points.map(x=>x.mbps),j=latencies.slice(1).map((x,i)=>Math.abs(x-latencies[i]));
-const obj={t:ts(),network,location,originCountry:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt,elapsed,reason,bytes:moved,points,latencies,failures:fails,speed:median(v),p10:p10(v),latency:median(latencies),jitter:median(j),uploadSpeed,profile,streams:profile==='parallel'?4:1,methodVersion:'http-baseline-v48',endpointType:'Cloudflare region not verified'};
-if(points.length){data.local=obj;data.speedRuns=getRows(data.speedRuns);data.speedRuns.push(obj);data.speedRuns=data.speedRuns.slice(-80)}stateSave();render();return obj}
+async function localStage(root,r0,rlen){
+ const startAt=performance.now(),dur=Number($('duration').value)*1000,limit=Number($('budget').value)*1e6;
+ const ctx=runContext||currentContext(),network=ctx.network,location=ctx.location,profile=$('speedProfile').value==='parallel'?'parallel':'sampled';
+ let moved=0,lastMbps=NaN,reason='完成时间窗口';
+ const points=[],latencies=[],loadedRtts=[],uploadLoadedRtts=[],fails=[];
+ let uploadSpeed=null;liveSamplePoints=[];setValue('benchLiveDownload','准备下载采样');
+ const targetSamples=Math.max(7,Math.round(dur/4)),period=dur/targetSamples,maxChunk=Math.min(6000000,Math.floor(limit/targetSamples));
+ for(let k=0;k<4;k++){
+  if(root.aborted)break;
+  try{latencies.push((await baselinePing(root)).ms)}
+  catch(e){if(root.aborted)break;fails.push('空闲 HTTP 探测：'+String(e.message||e))}
+ }
+ while(!root.aborted&&performance.now()-startAt<dur){
+  const started=performance.now(),elapsed=started-startAt;
+  if(dur-elapsed<300)break;
+  if(limit-moved<600000){reason='已达到下载流量预算';break}
+  const aim=Number.isFinite(lastMbps)?Math.floor(lastMbps*1e6/8*1.1):1500000;
+  const chunk=Math.min(Math.floor(limit-moved),Math.max(600000,Math.min(maxChunk,aim)));
+  if(chunk<600000){reason='已达到下载流量预算';break}
+  const rttTask=baselinePing(root).catch(()=>null),transferStarted=performance.now();
+  try{
+   const v=profile==='parallel'?await parallelDown(chunk,root,mbps=>updateRate(mbps,true)):await down(chunk,root,mbps=>updateRate(mbps,true));
+   const ended=performance.now(),sample=await rttTask;
+   if(sample&&sample.start<ended&&sample.end>transferStarted)loadedRtts.push(sample.ms);
+   if(v.failedStreams)fails.push('并发分支失败 '+v.failedStreams+' / 4');
+   moved+=v.bytes;lastMbps=v.mbps;updateRate(v.mbps,false);
+   points.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,bytes:v.bytes});
+   liveSamplePoints=points.slice();draw('sparkline');draw('localChart');
+   setValue('benchSamples',points.length+' 组下载 · 空闲 '+latencies.length+' 次 · 负载 '+loadedRtts.length+' 次');
+   if(points.length%2===0){
+    const progress=Math.min(1,(performance.now()-startAt)/dur);
+    stepUpdate(0,r0+rlen*progress,'基准持续采样 · '+points.length+' 组 · 中位 '+format(median(points.map(x=>x.mbps)))+' Mbps · '+format(moved/1e6)+' MB')
+   }
+  }catch(e){await rttTask;if(!root.aborted)fails.push(String(e.message||e))}
+  if(root.aborted)break;
+  await sleep(Math.min(Math.max(0,period-(performance.now()-started)),Math.max(0,dur-(performance.now()-startAt))),root)
+ }
+ const elapsed=(performance.now()-startAt)/1000;if(root.aborted)reason='已取消';
+ if(!root.aborted&&$('upload').checked){
+  try{
+   const nums=[];
+   for(let i=0;i<2;i++){
+    const rttTask=baselinePing(root).catch(()=>null),t0=performance.now();
+    const throughput=await up(root),t1=performance.now(),sample=await rttTask;
+    if(sample&&sample.start<t1&&sample.end>t0)uploadLoadedRtts.push(sample.ms);
+    nums.push(throughput)
+   }
+   uploadSpeed=median(nums);
+  }catch(e){fails.push('上传未完成：'+String(e.message||e))}
+ }
+ const v=points.map(x=>x.mbps),j=latencies.slice(1).map((x,i)=>Math.abs(x-latencies[i]));
+ const idle=median(latencies),loaded=median(loadedRtts);
+ const obj={t:ts(),network,location,originCountry:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt,elapsed,reason,bytes:moved,points,latencies,downloadLoadedRtts:loadedRtts,uploadLoadedRtts,failures:fails,speed:median(v),p10:p10(v),p50:quantile(v,.5),p90:quantile(v,.9),latency:idle,idleLatency:idle,downloadLoadedLatency:loaded,uploadLoadedLatency:median(uploadLoadedRtts),latencyInflation:loaded-idle,jitter:median(j),uploadSpeed,profile,streams:profile==='parallel'?4:1,methodVersion:'http-baseline-v49',endpointType:'Cloudflare region not verified'};
+ if(points.length){data.local=obj;data.speedRuns=getRows(data.speedRuns);data.speedRuns.push(obj);data.speedRuns=data.speedRuns.slice(-80)}
+ stateSave();render();return obj
+}
 async function siteProbe(url,root){const b=bounded(root,4800),start=performance.now();try{const res=await fetch(url,{method:'HEAD',mode:'no-cors',redirect:'follow',cache:'no-store',credentials:'omit',signal:b.signal});return{result:res.type==='opaque'?'opaque':'other',ms:performance.now()-start}}catch(e){return{result:root.aborted?'aborted':b.signal.aborted?'timeout':'restricted',ms:performance.now()-start}}finally{b.close()}}
 async function siteStage(groups,root,kind,lo,span){
  const ctx=runContext||currentContext(),seed=(Date.now()>>>0),schedule=probeSchedule(groups,seed),existing=[];
@@ -1046,6 +1103,15 @@ const baseRuns=getRows(data.speedRuns).length?getRows(data.speedRuns):data.local
 for(const x of getProbed(data.region).concat(getProbed(data.apps)))for(const p of x.samples)add('website_probe',x,x.group,x.marketCode,'',x.name,null,p.ms,p.result+' '+x.url);
 if(data.video)for(const p of getRows(data.video.samples))add('video_simulation',data.video,'Video simulation','', '', 'Cloudflare synthetic chunks',p.mbps,null,p.error||'not actual app playback');
 for(const x of getRows(data.remote))for(const p of x.samples)add('configured_endpoint',x,'User server',x.id,'',x.url,p.mbps,null,p.error||'server location not independently verified');
+for(const base of baseRuns){
+ add('baseline_report',base,'Cloudflare HTTP baseline','',base.network,'profile='+String(base.profile||'legacy'),base.speed,base.idleLatency??base.latency,
+ 'P10='+base.p10+'; P50='+base.speed+'; P90='+(base.p90??'not-measured')+'; idleHTTP='+(base.methodVersion==='http-baseline-v49'?base.idleLatency:'legacy-endpoint')+'; downloadLoadedHTTP='+(base.downloadLoadedLatency??'not-measured')+'; uploadLoadedHTTP='+(base.uploadLoadedLatency??'not-measured')+'; uploadMbps='+(base.uploadSpeed??'not-measured')+'; method='+(base.methodVersion||'legacy'));
+ if(base.methodVersion==='http-baseline-v49'){
+  for(const value of getRows(base.latencies))add('http_rtt_idle',base,'Same-origin Worker','',base.network,'/api/ping',null,value,'idle; ms');
+  for(const value of getRows(base.downloadLoadedRtts))add('http_rtt_download_loaded',base,'Same-origin Worker','',base.network,'/api/ping',null,value,'download concurrent; ms');
+  for(const value of getRows(base.uploadLoadedRtts))add('http_rtt_upload_loaded',base,'Same-origin Worker','',base.network,'/api/ping',null,value,'upload concurrent; ms')
+ }
+}
 for(const x of getRows(data.stalls))add('manual_stall',x,'App','',x.network,x.app,null,null,x.location);
 for(const x of getRows(data.legacy))add('legacy_measurement',x,'Legacy', '',x.network,'Cloudflare',x.speed,x.latency,'physical location, SIM, egress not recorded');
 for(const x of getProbed(data.region).concat(getProbed(data.apps)))for(const z of x.samples)add('probe_method_audit',x,x.group,x.marketCode,'',x.name,null,z.ms,'source='+ROSTER_VERSION+' method='+(x.method||'legacy-no-cors-HEAD')+' seed='+(x.planSeed??'unknown')+' round='+(z.round??'legacy')+' order='+(z.order??'unknown')+' outcome='+z.result+' HTTP_status=unverified');
