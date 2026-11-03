@@ -1,6 +1,6 @@
 # Network Watch — Measurement and Target-Selection Methodology
 
-Version: **4.8**, 2026-11-03. The repository code and this document, not the visual status badges, are the authoritative description of how the tool measures.
+Version: **4.9**, 2026-11-03. The repository code and this document, not the visual status badges, are the authoritative description of how the tool measures.
 
 ## 1. Core principle: separate different questions
 
@@ -78,6 +78,20 @@ This validation ladder is **not yet implemented** by the v4.8 site, because thir
 - This is **closer to maximum multi-connection HTTP capacity**, but is *not an Ookla implementation*, does not automatically choose between independent servers, and does not prove a specific end-to-end cross-border route. **Do not compare the two profiles as if they had identical definitions.**
 
 Upload may be attempted explicitly through Cloudflare `/__up`; it can fail because of cross-origin or endpoint restrictions. A missing upload result does not equal zero bandwidth.
+
+## 3A. v4.9 HTTP latency method and percentile dashboard
+
+As of v4.9, the speed-test detail panel shows **download P50, optional upload, idle HTTP latency, download-loaded HTTP latency, download-delay increase, jitter, download P10/P90, optional upload-loaded HTTP latency and downloaded bytes**.
+
+- **Idle timing:** Four sequential no-store GET requests to the same-origin Cloudflare Worker `/api/ping` before downloads. The Worker returns HTTP 204 (no content). Client measures wall-clock elapsed time via `performance.now()`. Failed probes are not replaced by zero.
+- **Under-download timing:** One `/api/ping` GET is launched concurrently with each actual Cloudflare `/__down` transfer. Only a probe whose interval overlaps the download wall-clock interval contributes to the loaded group. The display is the median of successful overlapping samples. The sampled HTTP request may begin/end early in a long transfer, and browser scheduling can affect results.
+- **Under-upload timing:** If upload is manually enabled and its CORS-enabled endpoint is available, a same-origin `/api/ping` request is similarly launched during each upload. Otherwise this value is not measured.
+- **Inflation:** `median(downloadLoadedRtts) − median(idleRtts)`, in milliseconds. Negative values are possible and not clamped.
+- **Idle jitter:** Median absolute difference between consecutive successful idle HTTP RTTs, **not** RFC3550 jitter or ICMP jitter.
+- **Download statistics:** P10 floor-ranked low-speed sample (legacy-compatible), P50 median, P90 linearly interpolated quantile of individual HTTP download sample Mbps. Upload speed, if available, is the median of upload transfer results.
+- **Source distinction:** Idle/loaded delay is to the same-origin Worker, whereas download/upload throughput uses `speed.cloudflare.com`. These services may be served from different network paths and can be affected by HTTP and JavaScript scheduling. The test does not prove native radio queueing, country-to-country speed, or physical server geography.
+- **Persistence:** New results set `methodVersion=http-baseline-v49`, and include full `latencies`, `downloadLoadedRtts` and `uploadLoadedRtts` arrays. Historical v4.8 latency readings come from tiny cross-origin Cloudflare download operations, **not** the Worker idle test. The new UI leaves old idle/loaded metrics unmeasured rather than mislabeling them. CSV includes raw RTTS for new runs.
+- **Comparison:** Current code implements its own lightweight HTTP probes and visual layout; it does **not** bundle, fork, or claim identical results to Cloudflare Speedtest's open-source measurement engine, nor does it collect TCP or WebRTC packet loss.
 
 ## 4. Reference implementations and methodological differences
 
