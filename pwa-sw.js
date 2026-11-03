@@ -1,5 +1,5 @@
-// Network Watch v4.6 app-shell fallback only; never cache network diagnostics or speed transfers.
-const CACHE="network-watch-shell-v46";
+// Network Watch v5.0 app-shell fallback only; never cache network diagnostics or speed transfers.
+const CACHE="network-watch-shell-v50";
 self.addEventListener("install",event=>{
  self.skipWaiting();
  event.waitUntil(caches.open(CACHE).then(cache=>fetch("/",{cache:"reload"}).then(response=>{if(response.ok)return cache.put("/",response)})).catch(()=>{}));
