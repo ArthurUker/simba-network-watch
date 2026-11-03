@@ -845,8 +845,8 @@ setValue('originHint',ctx.country?'当前：'+countryName(ctx.country)+'。同�
 const nearby=REGIONS.find(g=>g.id===ctx.country);setValue('regionsHeading','7 个地区 · '+(nearby?'同地区目标：'+nearby.name:'暂无同地区网站目标'));
 const scanOrigin=data.regionOriginCountry||'',scanContext=data.regionContext||{};
 setValue('regionSub',scanOrigin?('本轮手机所在地：'+countryName(scanOrigin)+' · '+(scanContext.roamingMode==='roaming'?'漫游':'接入方式未标记为漫游')+' · 公网 IP 地区：'+(scanContext.egressCountry?countryName(scanContext.egressCountry):'未检测')+'。两种市场对照分别显示，均不证明实际路由。'):'暂无带有来源国家的站点结果；请重新测试后分类');setHTML('localMedian',l&&Number.isFinite(l.speed)?format(l.speed):'—','Mbps');
-setHTML('localP10',l?format(l.p10):'—','Mbps');setHTML('localLatency',l?format(l.latency,0):'—','ms');
-setHTML('localJitter',l?format(l.jitter,0):'—','ms');
+setHTML('localP10',l?format(l.p10):'—','Mbps');setHTML('localLatency',l&&l.methodVersion==='http-baseline-v49'&&Number.isFinite(l.idleLatency)?format(l.idleLatency,0):'—','ms');
+setHTML('localJitter',l&&l.methodVersion==='http-baseline-v49'&&Number.isFinite(l.jitter)?format(l.jitter,0):'—','ms');
 setValue('localUpload',l&&Number.isFinite(l.uploadSpeed)?format(l.uploadSpeed)+' Mbps':l?'未测 / 不可用':'—');
 setHTML('localBytes',l?format(l.bytes/1e6,1):'—','MB');
 setHTML('benchLoaded',l&&Number.isFinite(l.downloadLoadedLatency)?format(l.downloadLoadedLatency,0):'—','ms');
@@ -856,7 +856,7 @@ setHTML('benchUploadLoaded',l&&Number.isFinite(l.uploadLoadedLatency)?format(l.u
 setValue('benchStage',running&&stepIndex===0?stagedText:l?'最近测试 · '+time(l.t):'等待首次测速');
 setValue('benchMethod',l?(l.profile==='parallel'?'4 并发':'单请求')+' · '+(l.methodVersion||'历史口径'):'单请求 · Cloudflare HTTP');
 setValue('benchSamples',l?l.points.length+' 组下载 · 空闲 RTT '+(l.methodVersion==='http-baseline-v49'?(l.latencies?.length||0):'未记录同源')+' 次 · 负载 RTT '+(l.downloadLoadedRtts?.length||0)+' 次':'未开始 · 不显示推测数据');
-setValue('speedMethodInfo',l?(l.profile==='parallel'?'最近一次：4 请求并发吞吐模式':'最近一次：单请求分时稳定性模式')+' · Cloudflare HTTP 基准。不同模式的 Mbps 不可直接互相排名。':'选择单请求分时采样或 4 请求并发模式；后者更接近峰值吞吐，但不等于 Ookla 测试。');
+setValue('speedMethodInfo',l?(l.profile==='parallel'?'最近一次：4 请求并发吞吐模式':'最近一次：单请求分时稳定性模式')+' · '+(l.methodVersion==='http-baseline-v49'?'空闲/并发延迟统一到本站 Worker /api/ping；下载吞吐使用 Cloudflare 另一接口。':'历史记录延迟口径不同，因此不展示为新版空闲 Worker 延迟。')+' 不同模式 Mbps 不可直接比较。':'选择单请求分时采样或 4 请求并发模式；均不是官方 Ookla 测试。');
 setValue('localSummary',l?time(l.t)+' · '+countryName(l.originCountry)+' / '+(l.operator||'运营商未标注')+(l.roamingMode==='roaming'?'（漫游，接入 '+(l.visitedOperator||'未标注')+'）':'')+' / '+(l.network||'制式未标注')+' · 出口IP地理：'+(l.egressCountry?countryName(l.egressCountry):'未知')+' · '+format(l.elapsed,0)+' 秒 · '+(l.reason||'已完成'):'暂无基准持续测速记录。');
 setValue('localFaults',l&&l.failures&&l.failures.length?l.failures.length+' 次请求异常：'+l.failures.slice(0,2).join('；'):'');
 setValue('videoMedian',v?format(v.median)+' Mbps':'—');setValue('videoLow',v?v.low+'/'+v.samples.length:'—');setValue('videoSlow',v?v.slow+'/'+v.samples.length:'—');
