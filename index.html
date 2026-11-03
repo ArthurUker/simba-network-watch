@@ -12,7 +12,7 @@
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <meta name="description" content="Network Watch：多运营商、按测速地点分类的网站连接与基准网速诊断。">
-<title>Network Watch v4.8 — 测量方法与公正性审计</title>
+<title>Network Watch v4.9 — 专业测速结果</title>
 <style>
 :root{--bg:#f6f8f7;--card:#fff;--ink:#193330;--secondary:#617771;--line:#e2eae7;--mint:#118473;--mint-dark:#09685b;--mint-light:#e3f4ed;--blue:#3873b6;--blue-light:#e9f1fc;--amber:#aa742e;--amber-light:#fcf3e4;--red:#b64f48;--red-light:#fbedeb;--shadow:0 6px 22px rgba(21,53,44,.04);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box}
@@ -361,12 +361,37 @@ body.on-detail .compact-nav{display:flex}
 .method-details .detail-inner{padding-top:0}
 @media(min-width:880px){.roster-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:390px){.roster-grid{grid-template-columns:1fr}}
+
+/* v4.9 result-forward performance board — independent of previous speed card styles */
+.benchmark-panel{margin-top:14px;background:linear-gradient(145deg,#f6fbf8 0%,#fff 62%);border:1px solid #dceae3;border-radius:17px;padding:15px}
+.benchmark-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:0 0 13px}
+.benchmark-heading>div{display:flex;flex-direction:column;gap:3px}
+.benchmark-eyebrow{font-size:10px;letter-spacing:.11em;color:#7a9c8e;font-weight:800}
+.benchmark-heading strong{font-size:13px;color:#27574a}
+.benchmark-method{display:inline-block;padding:5px 9px;background:#e9f5ee;color:#356c5d;font-size:10px;font-weight:730;border-radius:9px}
+.benchmark-primary{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.benchmark-main-number{padding:17px 13px;background:#0f7869;color:#fff;border-radius:14px;min-width:0}
+.benchmark-main-number.upload{background:#e8f2f9;color:#27536f}
+.benchmark-main-number>span{font-size:11px;display:block;opacity:.83;font-weight:750}
+.benchmark-main-number strong{display:block;font-size:clamp(27px,6vw,43px);font-weight:850;letter-spacing:-.055em;line-height:1.3;margin:6px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.benchmark-main-number strong em{font-style:normal;font-size:12px;font-weight:650;letter-spacing:0}
+.benchmark-main-number strong:has(em){white-space:nowrap}
+.benchmark-main-number small{display:block;font-size:10px;line-height:1.4;opacity:.75}
+.benchmark-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:11px}
+.benchmark-metrics>div{border-radius:11px;border:1px solid #e2ece6;background:#fff;padding:11px;min-width:0}
+.benchmark-metrics small{font-size:10px;color:#719086;display:block}
+.benchmark-metrics strong{display:block;font-size:20px;margin:4px 0;letter-spacing:-.035em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.benchmark-metrics strong em{font-size:10px;color:#738b81;font-weight:650;font-style:normal}
+.benchmark-metrics span{font-size:10px;display:block;color:#92a69c}
+.benchmark-foot{border-top:1px solid #e0ebe5;padding-top:10px;margin-top:11px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#70877b;font-size:10px}
+@media(min-width:760px){.benchmark-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.benchmark-panel{padding:20px}.benchmark-main-number{padding:23px}}
+@media(max-width:390px){.benchmark-primary{gap:7px}.benchmark-main-number{padding:12px 9px}.benchmark-main-number strong{font-size:clamp(22px,6.8vw,30px)}.benchmark-main-number>span{font-size:10px}.benchmark-metrics{gap:6px}.benchmark-metrics>div{padding:9px}.benchmark-metrics strong{font-size:17px}}
 </style>
 </head>
 <body>
 <main class="container">
 <header>
-<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.8</span></small></div></div>
+<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.9</span></small></div></div>
 <div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span><button type="button" class="install-trigger" id="installHelp" aria-label="添加到手机主屏幕" aria-haspopup="dialog" aria-expanded="false">＋</button></div>
 </header>
 <aside class="desktop-sidebar" aria-label="桌面功能导航">
@@ -495,7 +520,7 @@ body.on-detail .compact-nav{display:flex}
 </section>
 <section class="view" id="page-local">
 <div class="container-card">
-<div class="row"><div><h2>基准下载与延迟</h2><p class="sub">测量本设备到 Cloudflare 节点的吞吐，实际节点可能在境外</p></div><button class="btn small" id="startLocal">开始测速</button></div>
+<div class="row"><div><h2>专业测速结果</h2><p class="sub">下载与上传、空闲与负载 HTTP 延迟分开测量；服务器地区不保证</p></div><button class="btn small" id="startLocal">开始测速</button></div>
  <div class="wifi-entry"><div><strong>Wi-Fi 专项测速</strong><small>查看 Wi-Fi 速度趋势、历史测试及 4G/5G 对照</small></div><button type="button" class="btn btn-muted small" data-go="wifi">进入 Wi-Fi 测速 ›</button></div>
  <div class="connection-pick" aria-label="标注本轮测试的网络">
  <span>本轮网络（手动标注）</span>
@@ -505,22 +530,33 @@ body.on-detail .compact-nav{display:flex}
  <button type="button" id="pickEthernet" data-net="Ethernet">有线</button>
  </div>
  <p class="note" id="networkPickHint">请先在系统设置里切换实际网络，选择按钮只用于结果归属，不会替你切换 Wi-Fi 或蜂窝连接。</p>
-<div class="mini-grid">
-<div class="cell"><small>中位下载</small><strong id="localMedian">— <em>Mbps</em></strong></div>
-<div class="cell"><small>低速 P10</small><strong id="localP10">— <em>Mbps</em></strong></div>
-<div class="cell"><small>HTTP 耗时</small><strong id="localLatency">— <em>ms</em></strong></div>
-</div>
-<div class="mini-grid">
-<div class="cell"><small>耗时波动</small><strong id="localJitter">— <em>ms</em></strong></div>
-<div class="cell"><small>上传速率</small><strong id="localUpload">—</strong></div>
-<div class="cell"><small>下载用量</small><strong id="localBytes">— <em>MB</em></strong></div>
+<div class="benchmark-panel" aria-label="专业测速摘要">
+ <div class="benchmark-heading">
+  <div><span class="benchmark-eyebrow">NETWORK PERFORMANCE</span><strong id="benchStage">等待首次测速</strong></div>
+  <span class="benchmark-method" id="benchMethod">单请求 · Cloudflare HTTP</span>
+ </div>
+ <div class="benchmark-primary">
+  <div class="benchmark-main-number"><span>↓ 下载速度 · P50（中位数）</span><strong id="localMedian">— <em>Mbps</em></strong><small>不同测速模式不可直接比较</small></div>
+  <div class="benchmark-main-number upload"><span>↑ 上传速度</span><strong id="localUpload">未测</strong><small>须启用上传，受跨域支持限制</small></div>
+ </div>
+ <div class="benchmark-metrics">
+  <div><small>空闲 HTTP 延迟</small><strong id="localLatency">— <em>ms</em></strong><span>到本站 Worker</span></div>
+  <div><small>下载期间 HTTP 延迟</small><strong id="benchLoaded">— <em>ms</em></strong><span>并发探测</span></div>
+  <div><small>下载延迟增加</small><strong id="benchInflation">— <em>ms</em></strong><span>与空闲中位数之差</span></div>
+  <div><small>延迟波动</small><strong id="localJitter">— <em>ms</em></strong><span>空闲连续差值中位数</span></div>
+  <div><small>下载 P10</small><strong id="localP10">— <em>Mbps</em></strong><span>较低速样本</span></div>
+  <div><small>下载 P90</small><strong id="benchP90">— <em>Mbps</em></strong><span>较高速样本</span></div>
+  <div><small>上传期间 HTTP 延迟</small><strong id="benchUploadLoaded">— <em>ms</em></strong><span>仅在上传测试成功时</span></div>
+  <div><small>本次下载流量</small><strong id="localBytes">— <em>MB</em></strong><span>不含其他应用流量</span></div>
+ </div>
+ <div class="benchmark-foot"><span id="benchSamples">等待测试 · 不显示估算分数</span><span id="benchLiveDownload">实时采样：未开始</span></div>
 </div>
 <div class="banner" id="localSummary">暂无持续测速记录。</div>
  <p class="note" id="speedMethodInfo">稳定性采样观察分时变化；4 并发可测更高吞吐，但不能与单请求模式直接比较，也不保证等同 Ookla。</p>
 <div class="visual"><svg id="localChart" viewBox="0 0 350 165" role="img" aria-label="基准下载速度变化图"></svg></div>
 </div>
 <div class="container-card"><div class="row"><h2>测试质量与局限</h2><span class="pill muted">HTTP 采样</span></div>
-<p class="note">测速目标为 Cloudflare HTTP 节点，不保证节点位于测速所在国家；并非运营商基站、视频平台或 ICMP Ping。下载采样之间会短暂停顿，以分散覆盖整个时间窗口；流量预算可能导致提前结束下载采样。</p>
+<p class="note">下载目标为 Cloudflare HTTP 节点，不保证物理国家；空闲与负载延迟使用同域 Worker /api/ping，二者与下载服务不一定走完全相同的服务路径，且不是 ICMP Ping。负载探测与下载并发发起，但并不等同于精密 TCP 队列延迟测量。下载采样有间歇，预算可能导致提前结束；未测到的项目保持空白。</p>
 <div id="localFaults" class="note"></div><button class="btn btn-muted small" data-go="home" style="margin-top:12px">返回总览</button>
 </div>
 <details id="allOptions"><summary>高级设置与流量预算 <span class="sub">（默认已设置好）</span></summary><div class="detail-inner">
