@@ -5,6 +5,20 @@ This file is a human-readable index of the Git commit history. **GitHub commits 
 Project: https://github.com/ArthurUker/simba-network-watch  
 Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
+## v4.7 — Wi-Fi speed testing and responsive desktop UI (2026-11-03)
+
+- [4dd6dac](https://github.com/ArthurUker/simba-network-watch/commit/4dd6dac8dbae2ca84f4c726e841ef13fa4d412ee) — New dedicated Wi-Fi speed and comparison page; quick Wi-Fi, 5G, 4G and Ethernet mode selectors; large-screen desktop sidebar and results workspace.
+- [0890df7](https://github.com/ArthurUker/simba-network-watch/commit/0890df7b2b56c7701aef85fa3950307f908b8765) — Persist each completed local speed test as a distinct `speedRuns` snapshot, show Wi-Fi vs 4G/5G historical comparison and timeline, draw Wi-Fi sample graph, and export *all* retained raw speed samples to CSV.
+- [83d6eb5](https://github.com/ArthurUker/simba-network-watch/commit/83d6eb50264635cdfc14a6825dce8541d0051914) — Dedicated Wi-Fi test button returns the actual diagnostic completion promise to callers.
+- [b5406c1](https://github.com/ArthurUker/simba-network-watch/commit/b5406c1b7a9816b62839ac3ab19f488c5381087d) — iPhone-friendly home menu text and prominent Wi-Fi specialty entry within speed-test details. **Exact deployed application source commit.**
+- [f623a56](https://github.com/ArthurUker/simba-network-watch/commit/f623a56258708c1e113a74b5a6982dbe1952ed98) — Updated project README with Wi-Fi test and desktop UI usage/accuracy limitations.
+
+**Cloudflare deployment:** Worker `simba-network-watch`, deployment `9cabf3cd-2130-4349-9538-9a0c217c7bd1` created 2026-11-03 01:54:37 UTC (09:54:37 Singapore time), version `6136ef1b-a4b4-470d-9411-e5dfb98902fd`, 100% traffic confirmed by Cloudflare API. Built from GitHub source `index.html` commit `b5406c1`, together with the previously committed `worker-template.mjs` and `pwa-sw.js` files. GitHub commits preceded deployment.
+
+**Test coverage:** JavaScript syntax + DOM uniqueness check; simulated Wi-Fi local download completed and saved as `kind=wifi` / `network=Wi-Fi`; subsequent 5G local download completed separately; independent Wi-Fi and cellular speed histories, trend graph and CSV export checked; all six existing home menu entries retained, new desktop sidebar navigation rendered in source. Real Wi-Fi and cellular test measurements and visual screenshots in physical desktop/iPhone browsers were **not** executed. Independent web fetch of the public URL was not available from the verification environment.
+
+**Limits:** Connection type is manually selected and must match the device's actual Wi-Fi/4G/5G state. Where a browser definitively reports cellular, the Wi-Fi-specific action warns instead of attributing the result to Wi-Fi. iPhone Safari generally cannot detect SSID, Wi-Fi RF signal strength, channel or negotiated link speed. Cloudflare HTTP throughput is not Wi-Fi LAN throughput, and historical Wi-Fi and cellular measurements are not synchronized experiments.
+
 ## v4.6 — Adaptive Web App / iPhone Home Screen (2026-11-02)
 
 - [018bbb7](https://github.com/ArthurUker/simba-network-watch/commit/018bbb780fbf4f8343ef21c6534c9d7d6f0b87c9) — Actual deployed `index.html`: iPhone dynamic-viewport adaptive launchpad using `100dvh`, safe-area insets, proportional 2×3 menu resizing and short-screen fallback; a compact “add to Home Screen” guide; Web App meta and service worker registration.
