@@ -1,10 +1,21 @@
 # Network Watch (formerly SIMBA Network Watch)
 
-A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.7**
+A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.8**
 
 **Live site:** https://simba-network-watch.renkangguo.workers.dev/
 
 **Development traceability:** [Version history](./CHANGELOG.md) · [GitHub-first development and deployment process](./DEVELOPMENT.md) · [All commits](https://github.com/ArthurUker/simba-network-watch/commits/main/)
+
+## v4.8 — Auditable target selection and multiple speed-measurement profiles
+
+**Public protocol:** [METHODOLOGY.md](./METHODOLOGY.md) explains site inclusion, the exact 7-market/14-site and 6-category/17-site rosters, known news/CDN/market selection biases, browser limitations, open-source reference architectures (Ookla methodology, LibreSpeed, M-Lab ndt7 and Cloudflare Speedtest), data retention and a future multi-provider validation ladder.
+
+- A visible **target-selection audit** now lists every predeclared region/app website and its hostname before users run a test. No destination is dropped or replaced based on the result.
+- A **two-round balanced schedule** uses a recorded seed and fixed roster version (`fixed-roster-2026-11-03`) to rotate/alternate targets across regions and time. Each target gets one attempt per round; an opaque browser fetch is never reported as a verified HTTP 200 response. A record of round, order, seed and request method is written to the CSV and saved for the current scan.
+- In advanced local speed settings, switch between **time-distributed single-request stability samples** (default) and **4-concurrent-request HTTP throughput**. Both use the same Cloudflare baseline, obey the browser's transfer cap, retain the raw samples and carry `profile`, `streams` and `methodVersion` metadata.
+- The concurrent mode resembles a multi-connection capacity probe, but is **not an Ookla Speedtest clone** (no independently selected nearest test-server fleet, no TCP-level diagnostics). Never interpret website HEAD probes as destination-country speed.
+- The original roster is explicitly **not a statistically unbiased sample**: some markets overrepresent news publishers. To support defensible carrier rankings, independent verified CORS-enabled speed-test backends and a stratified audited host panel are still required.
+- Tests verified two independent rounds per site (14 market sites, 17 app sites), reproducible plan/provenance data, single-vs-parallel profile records, traffic budget accounting and profile/round export in CSV.
 
 ## v4.7 — Wi-Fi speed testing and desktop workstation layout
 
