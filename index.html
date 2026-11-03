@@ -624,7 +624,40 @@ const APPS=[
 {name:'即时通讯',id:'Chat',sites:[['WhatsApp Web','https://web.whatsapp.com/'],['Telegram Web','https://web.telegram.org/']]},
 {name:'办公开发',id:'Work',sites:[['GitHub','https://github.com/'],['Microsoft','https://www.microsoft.com/'],['ChatGPT','https://chatgpt.com/']]},
 {name:'网络购物',id:'Shopping',sites:[['Amazon','https://www.amazon.com/'],['Shopee','https://shopee.sg/']]}];
-let data={sessions:[],stalls:[],speedRuns:[],local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null,chartView='smooth',runContext=null,egressInfo=null,statusInfo={rtts:[],checkedAt:null,errors:0},rateInfo=null,liveSamplePoints=null;
+let data={sessions:[],stalls:[],speedRuns:[],probePlans:{},local:null,region:null,apps:null,video:null,remote:null,legacy:[]},running=false,controller=null,activeTab='home',stepIndex=-1,stepDone=[],p=0,stagedText='',toastTimer=null,chartView='smooth',runContext=null,egressInfo=null,statusInfo={rtts:[],checkedAt:null,errors:0},rateInfo=null,liveSamplePoints=null;
+
+const ROSTER_VERSION='fixed-roster-2026-11-03';
+const PROBE_METHOD='browser-no-cors-HEAD-v2';
+function probeSchedule(groups,seed){
+ const plan=[];
+ for(let round=0;round<2;round++){
+  for(let i=0;i<groups.length;i++){
+   const group=groups[(i+(seed%groups.length)+round*3)%groups.length];
+   const count=group.sites.length,offset=(seed+i+round)%count;
+   for(let k=0;k<count;k++){
+    const [name,url]=group.sites[(offset+k)%count];
+    plan.push({group,name,url,round:round+1,order:plan.length+1});
+   }
+  }
+ }
+ return plan
+}
+function renderMethodAudit(){
+ function fill(id,groups){
+  const root=$(id);root.replaceChildren();
+  for(const g of groups)for(const [name,url] of g.sites){
+   const card=document.createElement('div');card.className='roster-item';
+   const title=textNode('strong','',g.name+' · '+name);
+   const hint=textNode('small','',new URL(url).hostname+' · 预设目标 · 不验证服务可用');
+   card.append(title,hint);root.append(card);
+  }
+ }
+ fill('regionRoster',REGIONS);fill('appRoster',APPS);
+ const region=data.probePlans?.region,apps=data.probePlans?.apps;
+ const details=p=>p?'规则 '+p.algorithm+' · 名单 '+p.roster+' · 种子 '+p.seed+' · '+p.total+' 次尝试（2 轮交错）':'尚未执行新版测试；下一轮会记录名单版本、顺序种子和每次尝试。';
+ setValue('regionPlanInfo',details(region));
+ setValue('appPlanInfo',details(apps));
+}
 const format=(n,d=1)=>Number.isFinite(n)?Number(n).toFixed(d):'—';
 const median=a=>{if(!a.length)return NaN;const v=a.slice().sort((a,b)=>a-b);return(v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2};
 const p10=a=>a.length?a.slice().sort((a,b)=>a-b)[Math.floor((a.length-1)*.1)]:NaN;
@@ -741,7 +774,7 @@ function groupStats(group,rows){let attempted=0,returned=0;for(const [name,url] 
 function countSites(rs){const a=getProbed(rs);return{done:a.length,returned:a.filter(x=>x.samples.some(v=>v.result==='opaque')).length}}
 function setComplete(id,ready){$(id).classList.toggle('complete',ready)}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object')data={...data,...x}}catch(e){}
-for(const key of ['sessions','stalls','legacy','speedRuns'])if(!Array.isArray(data[key]))data[key]=[];
+for(const key of ['sessions','stalls','legacy','speedRuns'])if(!Array.isArray(data[key]))data[key]=[];if(!data.probePlans||typeof data.probePlans!=='object')data.probePlans={};
 if(!data._speedHistoryMigrated&&data.local&&Array.isArray(data.local.points)&&data.local.points.length&&!data.speedRuns.length){data.speedRuns.push(data.local);data._speedHistoryMigrated=true;stateSave()}
 try{const pf=JSON.parse(localStorage.getItem(PREF)||localStorage.getItem(PREVPREF)||localStorage.getItem(OLDPREF)||'null');if(pf){for(const id of ['duration','budget','network','location','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator']){const key=id==='nodeConfig'?'nodes':id;if(pf[key]!==undefined&&pf[key]!==null)$(id).value=String(pf[key])}$('upload').checked=!!pf.upload}}catch(e){}$('operatorOther').hidden=$('operator').value!=='other';
 try{if(!data._legacyImported){const hist=JSON.parse(localStorage.getItem('simba-network-watch-v1')||'[]');if(Array.isArray(hist)){data.legacy=hist.filter(x=>x.kind==='test');data.stalls.push(...hist.filter(x=>x.kind==='stall').map(x=>({t:x.t,app:x.app||'历史卡顿'})))}data._legacyImported=true;stateSave()}}catch(e){}
@@ -781,7 +814,7 @@ setValue('localFaults',l&&l.failures&&l.failures.length?l.failures.length+' 次�
 setValue('videoMedian',v?format(v.median)+' Mbps':'—');setValue('videoLow',v?v.low+'/'+v.samples.length:'—');setValue('videoSlow',v?v.slow+'/'+v.samples.length:'—');
 setValue('videoSummary',v?'最近检测 '+time(v.t)+' · 模拟分片 '+v.samples.length+' 组，消耗 '+format(v.bytes/1e6)+' MB，不能当作视频 App 实测':'尚未运行视频分片模拟。');
 const notes=[];if(l&&Number.isFinite(l.speed)){if(l.speed<5)notes.push('基准速度偏低，可能影响视频缓冲；建议同地比较 LTE 和 5G');else if(l.speed<15)notes.push('基准速度中等，建议关注不同时段的变化');else notes.push('基准下载未明显偏低，若视频仍卡顿应进一步检查平台连接')}if(v&&v.low>0)notes.push('视频分片模拟出现 '+v.low+' 次低速');if(!notes.length)notes.push('诊断完成后显示结果；连接探测不能证明视频 App 被单独限速');setValue('insightBanner',notes.join('。')+'。');overviewChips('regionOverview',REGIONS,data.region,'global',data.regionOriginCountry||'',data.regionContext?.egressCountry||'');overviewChips('appOverview',APPS,data.apps,'apps');setValue('stallCount',data.stalls.length+' 次');setValue('stallLast',data.stalls.length?'最近一次 '+time(data.stalls.at(-1).t)+' · '+(data.stalls.at(-1).app||'视频'):'尚未标记卡顿');
-renderWifi();draw('sparkline');draw('localChart');draw('wifiChart');renderGroups('globalGrid','globalDetails',REGIONS,data.region,data.regionOriginCountry||'',data.regionContext?.egressCountry||'');renderGroups('appsGrid','appsDetails',APPS,data.apps);renderRemote();renderRecent();
+renderMethodAudit();renderWifi();draw('sparkline');draw('localChart');draw('wifiChart');renderGroups('globalGrid','globalDetails',REGIONS,data.region,data.regionOriginCountry||'',data.regionContext?.egressCountry||'');renderGroups('appsGrid','appsDetails',APPS,data.apps);renderRemote();renderRecent();
 }
 function draw(id){const svg=$(id);svg.replaceChildren();const lastWifi=getRows(data.speedRuns).filter(x=>x&&x.network==='Wi-Fi'&&Array.isArray(x.points)).at(-1);
 const points=id==='wifiChart'?(lastWifi?.points||[]):Array.isArray(liveSamplePoints)?liveSamplePoints:(data.local&&Array.isArray(data.local.points)?data.local.points:[]);const pts=points.filter(x=>Number.isFinite(x.mbps)&&Number.isFinite(x.second)).slice().sort((a,b)=>a.second-b.second),ns='http://www.w3.org/2000/svg';
@@ -901,12 +934,36 @@ const v=points.map(x=>x.mbps),j=latencies.slice(1).map((x,i)=>Math.abs(x-latenci
 const obj={t:ts(),network,location,originCountry:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt,elapsed,reason,bytes:moved,points,latencies,failures:fails,speed:median(v),p10:p10(v),latency:median(latencies),jitter:median(j),uploadSpeed,endpointType:'Cloudflare region not verified'};
 if(points.length){data.local=obj;data.speedRuns=getRows(data.speedRuns);data.speedRuns.push(obj);data.speedRuns=data.speedRuns.slice(-80)}stateSave();render();return obj}
 async function siteProbe(url,root){const b=bounded(root,4800),start=performance.now();try{const res=await fetch(url,{method:'HEAD',mode:'no-cors',redirect:'follow',cache:'no-store',credentials:'omit',signal:b.signal});return{result:res.type==='opaque'?'opaque':'other',ms:performance.now()-start}}catch(e){return{result:root.aborted?'aborted':b.signal.aborted?'timeout':'restricted',ms:performance.now()-start}}finally{b.close()}}
-async function siteStage(groups,root,kind,lo,span){const existing=[],ctx=runContext||currentContext(),total=groups.reduce((a,g)=>a+g.sites.length,0)*2;let at=0;if(kind==='region'){data.region=[];data.regionOriginCountry=ctx.country;data.regionContext={country:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt}}else{data.apps=[];data.appsOriginCountry=ctx.country}
-for(const group of groups){for(const [name,url] of group.sites){if(root.aborted)break;const samples=[];for(let k=0;k<2;k++){if(root.aborted)break;const sample=await siteProbe(url,root);samples.push(sample);at++;stepUpdate(kind==='region'?1:2,lo+span*at/total,(kind==='region'?'跨境探测':'应用检查')+' · '+group.name+' / '+name+' · '+at+'/'+total);await sleep(220,root)}
-existing.push({name,url,group:group.name,t:ts(),originCountry:ctx.country,operator:ctx.operator,marketCode:group.id,marketCategory:kind==='region'?marketClass(group.id,ctx.country):'app',egressMarketCategory:kind==='region'?marketClass(group.id,ctx.egressCountry):'app',simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,roamingMode:ctx.roamingMode,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,count:samples.length,samples,duration:median(samples.map(s=>s.ms))});
-if(kind==='region')data.region=existing.slice();else data.apps=existing.slice();
-stateSave();render()}
-if(root.aborted)break}return existing}
+async function siteStage(groups,root,kind,lo,span){
+ const ctx=runContext||currentContext(),seed=(Date.now()>>>0),schedule=probeSchedule(groups,seed),existing=[];
+ const rows=new Map();
+ for(const g of groups)for(const [name,url] of g.sites){
+  const x={name,url,group:g.name,t:ts(),originCountry:ctx.country,operator:ctx.operator,marketCode:g.id,marketCategory:kind==='region'?marketClass(g.id,ctx.country):'app',egressMarketCategory:kind==='region'?marketClass(g.id,ctx.egressCountry):'app',simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,roamingMode:ctx.roamingMode,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,count:0,samples:[],duration:NaN,planSeed:seed,method:PROBE_METHOD,rosterVersion:ROSTER_VERSION};
+  rows.set(url,x);existing.push(x);
+ }
+ data.probePlans=data.probePlans||{};
+ data.probePlans[kind]={seed,algorithm:'two-round-balanced-v1',roster:ROSTER_VERSION,total:schedule.length,startedAt:ts(),source:'predeclared-market-list'};
+ if(kind==='region'){
+  data.region=[];data.regionOriginCountry=ctx.country;
+  data.regionContext={country:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt}
+ }else{data.apps=[];data.appsOriginCountry=ctx.country}
+ stateSave();let finished=0;
+ for(const target of schedule){
+  if(root.aborted)break;
+  const x=rows.get(target.url);
+  if(!x)continue;
+  const sample=await siteProbe(target.url,root);
+  x.samples.push({...sample,round:target.round,order:target.order,requestMethod:'HEAD',verification:'status-unavailable'});
+  x.count=x.samples.length;x.duration=median(x.samples.map(s=>s.ms));
+  finished++;
+  const attempted=existing.filter(v=>v.samples.length);
+  if(kind==='region')data.region=attempted.slice();else data.apps=attempted.slice();
+  stateSave();
+  stepUpdate(kind==='region'?1:2,lo+span*finished/schedule.length,(kind==='region'?'网站市场':'应用场景')+' · '+target.group.name+' / '+target.name+' · 第'+target.round+'轮 · '+finished+'/'+schedule.length);
+  render();await sleep(220,root);
+ }
+ return existing.filter(v=>v.samples.length);
+}
 async function videoStage(root,lo,len){const startAt=performance.now(),samples=[];let bytes=0,low=0,slow=0;
 while(!root.aborted&&performance.now()-startAt<20000){if(20000-(performance.now()-startAt)<300)break;
 try{const v=await down(800000,root,(mbps)=>updateRate(mbps,true));updateRate(v.mbps,false);samples.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,seconds:v.seconds});bytes+=v.bytes;if(v.mbps<5)low++;if(v.seconds>2)slow++}catch(e){if(root.aborted)break;samples.push({error:String(e.message||e)});slow++}
@@ -940,6 +997,7 @@ if(data.video)for(const p of getRows(data.video.samples))add('video_simulation',
 for(const x of getRows(data.remote))for(const p of x.samples)add('configured_endpoint',x,'User server',x.id,'',x.url,p.mbps,null,p.error||'server location not independently verified');
 for(const x of getRows(data.stalls))add('manual_stall',x,'App','',x.network,x.app,null,null,x.location);
 for(const x of getRows(data.legacy))add('legacy_measurement',x,'Legacy', '',x.network,'Cloudflare',x.speed,x.latency,'physical location, SIM, egress not recorded');
+for(const x of getProbed(data.region).concat(getProbed(data.apps)))for(const z of x.samples)add('probe_method_audit',x,x.group,x.marketCode,'',x.name,null,z.ms,'source='+ROSTER_VERSION+' method='+(x.method||'legacy-no-cors-HEAD')+' seed='+(x.planSeed??'unknown')+' round='+(z.round??'legacy')+' order='+(z.order??'unknown')+' outcome='+z.result+' HTTP_status=unverified');
 const quote=x=>{const value=/^[=+@-]/.test(x)?"'"+x:x;return '"'+value.replaceAll('"','""')+'"'};
 const content='\ufeff'+rows.map(r=>r.map(quote).join(',')).join('\r\n');
 const uri=URL.createObjectURL(new Blob([content],{type:'text/csv;charset=utf-8'}));
