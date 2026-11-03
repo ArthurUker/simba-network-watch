@@ -5,6 +5,22 @@ This file is a human-readable index of the Git commit history. **GitHub commits 
 Project: https://github.com/ArthurUker/simba-network-watch  
 Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
+## v4.8 — Auditable target selection and Speedtest-inspired benchmark profiles (2026-11-03)
+
+- [aa9c132](https://github.com/ArthurUker/simba-network-watch/commit/aa9c132576078e29c6e666b051265d104a1c2563) — Page-level transparency: full website/app target roster, explicit selection limitations, source-visible audit section and speed-profile selector.
+- [2b6b83b](https://github.com/ArthurUker/simba-network-watch/commit/2b6b83b30122f442c0dcfe7f8b65a41cb6e34490) — Two-round staggered test schedule using recorded seed and fixed roster version, original order and round saved with every site probe, CSV provenance rows.
+- [106da5b](https://github.com/ArthurUker/simba-network-watch/commit/106da5b2dab49c428447636307e3216c49fe4128) — Optional four-concurrent-request aggregate throughput test, retaining the single-request distributed-stability method, transfer budget, original samples and mode metadata.
+- [bd248a9](https://github.com/ArthurUker/simba-network-watch/commit/bd248a9e8259983f655d2fb9bd7b8672cebc13e7) — Opaque cross-site HEAD requests explicitly labeled **unverifiable**, not website-success or remote bandwidth.
+- [9fc2186](https://github.com/ArthurUker/simba-network-watch/commit/9fc2186b9dfbc7700c43f139cb378f1945426c5c) — [METHODOLOGY.md](./METHODOLOGY.md): formal limitations and process; Ookla public methodology, LibreSpeed, M-Lab NDT7 and Cloudflare test-engine references; roadmap for credible server stratification.
+- [620a51c](https://github.com/ArthurUker/simba-network-watch/commit/620a51c3c20eedbbaf1bfdb397f8c3e0a3699251) — Final v4.8 application source deployed: direct methodology link in the site's audit section.
+- [f4e2fdd](https://github.com/ArthurUker/simba-network-watch/commit/f4e2fddcdd34a93ad050a7e96a44dfe72fb585b3) — README v4.8 release notes and known sample-selection bias.
+
+**Cloudflare deployment:** worker `simba-network-watch`; deployment `6271cd36-e7a5-41b2-9c75-6b9facf62aea` created **2026-11-03 05:55:34 UTC** (13:55:34 Asia/Singapore), version `98d73618-a260-4d0d-adea-71778c931e9b`. Cloudflare API reports **100% traffic rollout** and confirms the Worker subdomain is enabled. The Worker was built from `index.html` at GitHub commit `620a51c` with the existing version-controlled `worker-template.mjs` and `pwa-sw.js`.
+
+**Simulated regression evidence:** Parsed script without syntax errors; 14/14 regional and 17/17 app targets each received **two attempts in separate rounds** (28 and 34 total, respectively), saved algorithm, seed and provenance; single-vs-four-concurrent local HTTP runs completed, original sample profiles and transferred bytes stored; CSV contained source-roster, seed, round, profile and stream count. No simulated runtime errors. Browser-level public HTTP opening failed in the verification environment; real iOS/desktop and live carriers were not exercised.
+
+**Interpretation:** The pre-selected roster is transparent, **not statistically unbiased**. Browser opaque responses are not proof that a website is usable or that a target market is reachable via a local server. The four-request profile is not official Ookla Speedtest. Fair international bandwidth tests require independent verified CORS-capable nodes in each country, more diverse operators and stratified site categories.
+
 ## v4.7 — Wi-Fi speed testing and responsive desktop UI (2026-11-03)
 
 - [4dd6dac](https://github.com/ArthurUker/simba-network-watch/commit/4dd6dac8dbae2ca84f4c726e841ef13fa4d412ee) — New dedicated Wi-Fi speed and comparison page; quick Wi-Fi, 5G, 4G and Ethernet mode selectors; large-screen desktop sidebar and results workspace.
