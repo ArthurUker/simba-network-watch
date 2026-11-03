@@ -1,10 +1,29 @@
 # Network Watch (formerly SIMBA Network Watch)
 
-A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.9**
+A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v5.0**
 
 **Live site:** https://simba-network-watch.renkangguo.workers.dev/
 
 **Development traceability:** [Version history](./CHANGELOG.md) · [GitHub-first development and deployment process](./DEVELOPMENT.md) · [All commits](https://github.com/ArthurUker/simba-network-watch/commits/main/)
+
+## v5.0 — Desktop real-time speed-test workstation and measured upload
+
+The desktop homepage (≥1080 CSS px) now opens on a **speed-test performance board**, not six oversized navigation cards. It shows a prominent download percentile and optional upload throughput; idle / download-loaded HTTP timing and timing inflation; P10 and P50 download statistics; transfer usage; a continually updating measured sample chart; the current stage and progress; the reported public-IP region/ASN; and manual Wi-Fi/5G/4G context. A compact strip of six feature destinations remains below the test board. The left sidebar and all cross-border/roaming diagnostics remain intact.
+
+- **Start speed test** runs the existing foreground HTTP baseline directly from the desktop home. **Full diagnosis** remains a separate action; **Stop** cancels an in-progress test.
+- Select **Single-request stability** vs **four-parallel aggregate throughput** without leaving home. These test different properties and their Mbps are not directly comparable.
+- The prominent completed download value uses **sample P90 where v4.9+ records support it** and explicitly labels this choice; historical median-only results are labelled P50 instead. During live sampling, the number represents the current request / current sample statistic, not a final P90.
+- Optional upload now uses a deliberately constrained **same-origin Cloudflare Worker `POST /api/upload`** as a fallback-free direct test: two 500 KB messages, each verified against the server's returned byte count. The server does not store the data; it rejects oversized bodies and foreign browser origins. The reported number includes HTTP overhead and is not a dedicated high-capacity uplink benchmark.
+- New run metadata uses `methodVersion=http-baseline-v50`, with `uploadSource` recorded. v4.9 historical RTT arrays remain readable; earlier methods are never silently reinterpreted.
+- All other dashboard content remains accessible in detail pages. The **iPhone home** stays a compact six-menu app launcher, without the desktop-only measurement board.
+- The PWA shell cache was rotated to `network-watch-shell-v50`.
+- This is an original implementation referencing [Cloudflare Speedtest](https://github.com/cloudflare/speedtest) design and methodology, **not** a copy or bundle of that project's measurement engine.
+
+### Accuracy limits
+
+Download uses `speed.cloudflare.com/__down`; idle/loaded HTTP requests use the site's own Worker `/api/ping`; optional upload uses its `/api/upload`. They can be routed differently. The local HTTP metric is not ICMP Ping, browser Resource Timing network-only RTT, RSRP/RSSI or a trustworthy end-to-end country route. 500 KB upload payloads can **underestimate high uplink capacity**, and no packet-loss score is fabricated. The legacy v4.9 and v5.0 latency method shares the same-origin RTT semantics, while v4.8 uses a different earlier endpoint.
+
+Simulated JavaScript, route and event tests verified the desktop controls, v5.0 upload response, result rendering and history. Production deployment details are maintained in [CHANGELOG.md](./CHANGELOG.md).
 
 ## v4.9 — Result-first performance dashboard and separate loaded HTTP latency
 
