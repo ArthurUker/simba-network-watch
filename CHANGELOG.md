@@ -14,7 +14,13 @@ Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 - [a768212](https://github.com/ArthurUker/simba-network-watch/commit/a768212e73905d122cad5294b7b3069540ce85e3) — Rotated PWA shell cache to `network-watch-shell-v50`.
 - README and METHODOLOGY updated to explain the result-first design, upload payload sizing and remaining methodological differences from official Cloudflare Speedtest.
 
-**Deployment:** Cloudflare Worker `simba-network-watch`, deployment ID `faf1a10a-11e8-4abf-a7f0-6e44895120b7`, created **2026-11-03 07:38:38 UTC** (15:38:38 Singapore time). Version `7b06e968-47a9-4bc9-b424-1d6c95e2267e` receives **100% of traffic** and subdomain is enabled according to Cloudflare API. Source built from GitHub `index.html` at commit `5bc0133`, tracked Worker template at `797068b`, and PWA SW at `a768212`.
+- [1b3526e](https://github.com/ArthurUker/simba-network-watch/commit/1b3526e49ffc76e9a46ddc99b93c013a96512514) — Visual QA fix: prevents desktop title and three action controls from squeezing into a narrow column at a 1152px-wide window. **This is the final deployed application commit.**
+
+**Latest production deployment:** Cloudflare Worker `simba-network-watch`, deployment `eeb8d243-3a97-4e63-9df7-352b90c630f2`, created **2026-11-03 07:42:36 UTC** (15:42:36 Singapore time). Version `a417b6ef-c340-41c8-b07e-4ea32f5fa011` receives **100% traffic** and the public subdomain is enabled. Built from `index.html` at `1b3526e`, Worker template at `797068b` and SW at `a768212`.
+
+**Prior initial deployment:** `faf1a10a-11e8-4abf-a7f0-6e44895120b7` (15:38:38 SGT) at `5bc0133`, superseded by the corrected deployment above.
+
+**Actual browser rendering QA:** Cloudflare Browser Rendering opened the public `?v=5.0` URL and returned real rendered HTML plus a desktop screenshot. The page contained the v5.0 speedboard. At 1152×720 the initial layout squashed the heading; this was corrected in `1b3526e` and a second live screenshot showed a horizontal title and working layout. No real carrier measurements or physical-device tests were performed.
 
 **Simulated verification:** JavaScript syntax + 199 unique DOM IDs; desktop initial state, manual profile/optional upload controls, 4-stream download, actual same-origin Worker upload receipt, RTT and raw chart rendering completed in a simulated environment; source status correctly transitions back to ready. Worker response routing separately tested for a 500,000-byte accepted upload (200 with byte receipt), oversize (413), foreign browser Origin (403), wrong method (405), root HTML (200, version=5.0) and ping (204). External production URL fetching through the verification browser was unavailable, so **real desktop visual QA and carrier measurements are not claimed**; deployment was verified through the Cloudflare API.
 
