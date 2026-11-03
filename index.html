@@ -12,7 +12,7 @@
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <meta name="description" content="Network Watch：多运营商、按测速地点分类的网站连接与基准网速诊断。">
-<title>Network Watch v4.6 — 自适应 Web App</title>
+<title>Network Watch v4.7 — Wi-Fi 与桌面诊断</title>
 <style>
 :root{--bg:#f6f8f7;--card:#fff;--ink:#193330;--secondary:#617771;--line:#e2eae7;--mint:#118473;--mint-dark:#09685b;--mint-light:#e3f4ed;--blue:#3873b6;--blue-light:#e9f1fc;--amber:#aa742e;--amber-light:#fcf3e4;--red:#b64f48;--red-light:#fbedeb;--shadow:0 6px 22px rgba(21,53,44,.04);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box}
@@ -295,14 +295,80 @@ body.on-detail .compact-nav{display:flex}
  body.on-home .container{max-width:800px}
  body.on-home #page-home{max-width:800px}
 }
+
+/* v4.7 shared result surfaces and responsive desktop workspace */
+.desktop-sidebar{display:none}
+.connection-pick{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:13px 0 0}
+.connection-pick span{font-size:11px;color:#6d857c;margin-right:6px;font-weight:700}
+.connection-pick button{padding:7px 12px;border-radius:10px;border:1px solid #dfeae4;background:#f7faf8;color:#51766b;font-size:12px;font-weight:730;min-height:35px}
+.connection-pick button.active{background:#0d816d;color:#fff;border-color:#0d816d}
+.wifi-hero{border-color:#d2e8df}
+.wifi-metrics,.wifi-compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}
+.wifi-metrics>div,.wifi-compare-grid>div{min-width:0;padding:13px;border-radius:12px;background:#f3f8f5;border:1px solid #e5efe9}
+.wifi-metrics small,.wifi-metrics span,.wifi-compare-grid small,.wifi-compare-grid span{display:block;color:#7a9289;font-size:10px}
+.wifi-metrics strong,.wifi-compare-grid strong{display:block;font-size:22px;line-height:1.25;margin:6px 0 2px;letter-spacing:-.035em;overflow:hidden;text-overflow:ellipsis}
+.wifi-actions{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:14px}
+.wifi-disclaimer{margin:10px 0;font-size:11px;color:#7a9086;line-height:1.65}
+.wifi-history-title{font-weight:750;font-size:12px;color:#36574c;margin:14px 0 5px}
+.wifi-history-list .wifi-record{display:flex;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid #e8f0ec;padding:11px 2px}
+.wifi-record:last-child{border:0}.wifi-record strong{font-size:12px}.wifi-record small{display:block;color:#8c9f96;font-size:10px}.wifi-record b{font-size:14px;color:#0e806b}
+@media(min-width:760px){.wifi-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(min-width:1080px){
+ body{background:#f2f6f3}
+ .container{max-width:1510px;display:grid;grid-template-columns:244px minmax(0,1fr);grid-template-rows:auto auto minmax(640px,auto) auto;column-gap:24px;align-items:start;padding:28px 36px 60px}
+ .container>header{grid-column:1/-1;grid-row:1;padding:0 4px 20px;margin-bottom:8px;border-bottom:1px solid #e3ebe6}
+ .desktop-sidebar{grid-column:1;grid-row:2/span 3;display:flex;flex-direction:column;align-self:start;position:sticky;top:22px;background:#fff;border-radius:20px;border:1px solid #e0eae4;padding:20px 14px;box-shadow:0 10px 38px rgba(16,65,49,.05);min-height:610px;gap:5px}
+ .sidebar-caption{display:flex;justify-content:space-between;padding:4px 11px 18px;font-size:11px;color:#0c7966;letter-spacing:.075em;font-weight:860}
+ .sidebar-caption span{font-size:10px;color:#9eafa5;letter-spacing:0}
+ .sidebar-section{font-size:10px;font-weight:750;color:#93a49c;padding:12px 13px 4px}
+ .desktop-sidebar button{display:flex;align-items:center;gap:12px;border:0;background:transparent;border-radius:11px;text-align:left;padding:11px 13px;min-height:44px;color:#4e675e;font-weight:750;font-size:13px}
+ .desktop-sidebar button span{display:grid;place-items:center;width:25px;color:#4b9482;font-size:17px}
+ .desktop-sidebar button:hover{background:#eef7f1}
+ .desktop-sidebar button.active{background:#e4f5ed;color:#097d66}
+ .sidebar-foot{background:#f5f9f6;border-radius:13px;margin-top:auto;padding:14px 12px}
+ .sidebar-foot strong{font-size:12px;color:#345b4d}
+ .sidebar-foot p,.sidebar-foot span{display:block;font-size:10px;line-height:1.7;color:#81978b;margin:7px 0}
+ .container>.compact-nav{display:none!important}
+ .container>.view.active{grid-column:2;grid-row:2/4;min-width:0;width:100%;max-width:none!important}
+ .container>.footer{grid-column:2;grid-row:4}
+ .container>.install-overlay{grid-column:1/-1}
+ .dashboard-head{margin-top:0;padding:23px;border-radius:20px}
+ .dashboard-identity h1{font-size:24px}
+ .overview-metrics strong{font-size:25px}
+ .feature-menu{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+ .feature-tile{min-height:144px;padding:17px 16px}
+ .feature-info strong{font-size:15px}
+ .feature-info small{font-size:11px}
+ .home-actions{max-width:650px}
+ #page-home .dashboard-section-heading{margin-top:26px}
+ #page-status .status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #page-local .visual svg,#page-wifi .visual svg{height:210px}
+ .container-card{border-radius:17px}
+ .page-intro h2{font-size:24px}
+ .bottom-inside{max-width:1370px}
+}
 </style>
 </head>
 <body>
 <main class="container">
 <header>
-<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.6</span></small></div></div>
+<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.7</span></small></div></div>
 <div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span><button type="button" class="install-trigger" id="installHelp" aria-label="添加到手机主屏幕" aria-haspopup="dialog" aria-expanded="false">＋</button></div>
 </header>
+<aside class="desktop-sidebar" aria-label="桌面功能导航">
+  <div class="sidebar-caption">NETWORK WATCH <span>v4.7</span></div>
+  <div class="sidebar-section">工作台</div>
+  <button type="button" data-page="home" class="active"><span>▦</span> 网络总览</button>
+  <button type="button" data-page="wifi"><span>◉</span> Wi-Fi 测速</button>
+  <button type="button" data-page="local"><span>↘</span> 蜂窝 / 综合测速</button>
+  <button type="button" data-page="global"><span>◎</span> 跨境连接</button>
+  <button type="button" data-page="apps"><span>▤</span> 应用体验</button>
+  <div class="sidebar-section">记录与设置</div>
+  <button type="button" data-page="status"><span>◌</span> 网络状态</button>
+  <button type="button" data-page="roam"><span>⇄</span> 漫游分析</button>
+  <button type="button" data-page="history"><span>◷</span> 历史记录</button>
+  <div class="sidebar-foot"><strong>测速提示</strong><p>Wi-Fi、5G、4G 都通过同一 Cloudflare 基准接口测量。对比前请确认已切换实际网络。</p><span>原始采样与测试日期会保留在浏览器。</span></div>
+</aside>
 <nav class="compact-nav" aria-label="页面导航"><button type="button" data-page="home">‹ 返回首页</button><strong id="sectionHeading">功能详情</strong></nav><section class="view active" id="page-home">
   <div class="dashboard-head" aria-label="总体网络状态">
     <div class="dashboard-head-top">
@@ -320,7 +386,7 @@ body.on-detail .compact-nav{display:flex}
   </div>
   <div class="dashboard-section-heading"><div><h2>功能菜单</h2><p class="sub">点击进入各功能区，首页不堆叠详细数据</p></div></div>
   <div class="feature-menu" aria-label="功能菜单">
-    <button type="button" class="feature-tile" data-go="local"><span class="feature-icon">↘</span><span class="feature-info"><strong>网速测试</strong><small>下载、延迟与曲线</small><em id="kLocal">—</em><span id="kLocalSub" class="hidden-data">待测速</span><i id="dotLocal" class="hidden-data"></i></span><span class="feature-chevron">›</span></button>
+    <button type="button" class="feature-tile" data-go="local"><span class="feature-icon">↘</span><span class="feature-info"><strong>Wi-Fi / 蜂窝测速</strong><small>下载、延迟与网络对比</small><em id="kLocal">—</em><span id="kLocalSub" class="hidden-data">待测速</span><i id="dotLocal" class="hidden-data"></i></span><span class="feature-chevron">›</span></button>
     <button type="button" class="feature-tile" data-go="global"><span class="feature-icon">◎</span><span class="feature-info"><strong>跨境连接</strong><small>7 地区网站探测</small><em id="kGlobal">—</em><span id="kGlobalSub" class="hidden-data">待探测</span><i id="dotGlobal" class="hidden-data"></i></span><span class="feature-chevron">›</span></button>
     <button type="button" class="feature-tile" data-go="apps"><span class="feature-icon">▦</span><span class="feature-info"><strong>应用体验</strong><small>视频、社交与办公</small><em id="kApps">—</em><span id="kAppsSub" class="hidden-data">待探测</span><i id="dotApps" class="hidden-data"></i><span id="kVideo" class="hidden-data"></span><span id="kVideoSub" class="hidden-data"></span><i id="dotVideo" class="hidden-data"></i></span><span class="feature-chevron">›</span></button>
     <button type="button" class="feature-tile" data-go="roam"><span class="feature-icon">⇄</span><span class="feature-info"><strong>漫游分析</strong><small>SIM、接入网和出口</small><em id="roamMenuValue">设置与对照</em></span><span class="feature-chevron">›</span></button>
@@ -391,9 +457,39 @@ body.on-detail .compact-nav{display:flex}
 </div>
 
  <div class="container-card"><div class="row"><h2>数据导出</h2><button class="btn btn-ghost small" id="historyExport" type="button">导出 CSV</button></div><p class="sub">包含历史的下载采样、应用探测及漫游上下文。</p></div>
- </section><section class="view" id="page-local">
+ </section><section class="view" id="page-wifi">
+ <div class="page-intro"><h2>Wi-Fi 网速测试</h2><p class="sub">使用正在连接的 Wi-Fi 运行 HTTP 下载采样；将结果与同设备蜂窝测速对比。</p></div>
+ <div class="container-card wifi-hero">
+  <div class="row"><div><h2>Wi-Fi 测速</h2><p class="sub" id="wifiBrowserHint">请先在设备设置中连接 Wi-Fi，再点击开始。</p></div><span class="pill" id="wifiNetworkLabel">手动标注</span></div>
+  <div class="wifi-metrics">
+   <div><small>上次 Wi-Fi 中位速度</small><strong id="wifiMedian">—</strong><span>Mbps · 下载</span></div>
+   <div><small>低速 P10</small><strong id="wifiP10">—</strong><span>Mbps · 下载</span></div>
+   <div><small>HTTP 耗时</small><strong id="wifiLatency">—</strong><span>ms · 基准</span></div>
+   <div><small>测试次数</small><strong id="wifiCount">0</strong><span>Wi-Fi 历史</span></div>
+  </div>
+  <div class="wifi-actions"><button class="btn" id="wifiRun" type="button">▶ 开始 Wi-Fi 测速</button><button class="btn btn-muted" data-go="local" type="button">查看更多参数</button></div>
+  <p class="wifi-disclaimer" id="wifiLastTime">尚未进行 Wi-Fi 测速。浏览器无法读取 SSID、路由器信号和链路协商速度。</p>
+  <div class="visual"><svg id="wifiChart" viewBox="0 0 350 165" role="img" aria-label="最近一次 Wi-Fi 下载速度趋势"></svg></div>
+ </div>
+ <div class="container-card">
+  <div class="row"><h2>Wi-Fi 与蜂窝测速对照</h2><span class="pill muted">同设备 · 不同时间</span></div>
+  <div class="wifi-compare-grid"><div><small>最近 Wi-Fi</small><strong id="compareWifi">—</strong><span>Mbps</span></div><div><small>最近蜂窝</small><strong id="compareMobile">—</strong><span>Mbps</span></div></div>
+  <p class="note" id="wifiComparison">需要至少一次 Wi-Fi 与一次 4G/5G 测试才能比较。对比应在相同位置、相近时段完成。</p>
+  <div class="wifi-history-title">最近测速记录</div><div id="wifiHistory" class="wifi-history-list"></div>
+ </div>
+ <div class="container-card"><h2>Wi-Fi 测试说明</h2><p class="note">网络类型由你手动选择。部分桌面浏览器可报告连接类型，但 iPhone Safari 通常不提供。HTTP 测速不能读取 Wi-Fi 频段、SSID、RSSI、信道、PHY 协商速率或路由器局域网性能；Cloudflare 节点也可能不在当前国家。</p></div>
+</section>
+<section class="view" id="page-local">
 <div class="container-card">
 <div class="row"><div><h2>基准下载与延迟</h2><p class="sub">测量本设备到 Cloudflare 节点的吞吐，实际节点可能在境外</p></div><button class="btn small" id="startLocal">开始测速</button></div>
+ <div class="connection-pick" aria-label="标注本轮测试的网络">
+ <span>本轮网络（手动标注）</span>
+ <button type="button" id="pickWifi" data-net="Wi-Fi">Wi-Fi</button>
+ <button type="button" id="pick5G" data-net="5G">5G</button>
+ <button type="button" id="pick4G" data-net="4G">4G/LTE</button>
+ <button type="button" id="pickEthernet" data-net="Ethernet">有线</button>
+ </div>
+ <p class="note" id="networkPickHint">请先在系统设置里切换实际网络，选择按钮只用于结果归属，不会替你切换 Wi-Fi 或蜂窝连接。</p>
 <div class="mini-grid">
 <div class="cell"><small>中位下载</small><strong id="localMedian">— <em>Mbps</em></strong></div>
 <div class="cell"><small>低速 P10</small><strong id="localP10">— <em>Mbps</em></strong></div>
@@ -415,7 +511,7 @@ body.on-detail .compact-nav{display:flex}
 <div class="fieldrow">
 <div class="field"><label for="duration">基准采样时长</label><select id="duration"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60" selected>60 秒（推荐）</option><option value="120">120 秒</option></select></div>
 <div class="field"><label for="budget">基准下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
-<div class="field"><label for="network">实际手机网络（手动）</label><select id="network"><option value="">未标注</option><option value="4G">4G / LTE</option><option value="5G">5G</option><option value="Wi-Fi">Wi-Fi</option><option value="Ethernet">有线 / Ethernet</option></select></div>
+<div class="field"><label for="network">实际网络类型（手动）</label><select id="network"><option value="">未标注</option><option value="4G">4G / LTE</option><option value="5G">5G</option><option value="Wi-Fi">Wi-Fi</option><option value="Ethernet">有线 / Ethernet</option></select></div>
 <div class="field"><label for="location">城市 / 地点备注（选填）</label><input type="text" id="location" maxlength="45" placeholder="例如：北京朝阳 / Singapore"></div>
 </div>
 <label class="checkbox"><input type="checkbox" id="upload">额外尝试上传测试（可能无法跨域访问）</label>
