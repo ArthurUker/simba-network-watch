@@ -297,6 +297,11 @@ body.on-detail .compact-nav{display:flex}
 }
 
 /* v4.7 shared result surfaces and responsive desktop workspace */
+.wifi-entry{display:flex;justify-content:space-between;align-items:center;gap:10px;border-radius:12px;background:#eaf6f0;padding:12px 13px;margin:14px 0 4px}
+.wifi-entry strong{font-size:13px;color:#155b4b;display:block}.wifi-entry small{display:block;color:#748f81;font-size:10px;margin-top:2px}
+.wifi-entry button{white-space:nowrap}
+@media(max-width:420px){.wifi-entry{align-items:flex-start;flex-direction:column}.wifi-entry button{width:100%}}
+
 .desktop-sidebar{display:none}
 .connection-pick{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:13px 0 0}
 .connection-pick span{font-size:11px;color:#6d857c;margin-right:6px;font-weight:700}
@@ -386,7 +391,7 @@ body.on-detail .compact-nav{display:flex}
   </div>
   <div class="dashboard-section-heading"><div><h2>功能菜单</h2><p class="sub">点击进入各功能区，首页不堆叠详细数据</p></div></div>
   <div class="feature-menu" aria-label="功能菜单">
-    <button type="button" class="feature-tile" data-go="local"><span class="feature-icon">↘</span><span class="feature-info"><strong>Wi-Fi / 蜂窝测速</strong><small>下载、延迟与网络对比</small><em id="kLocal">—</em><span id="kLocalSub" class="hidden-data">待测速</span><i id="dotLocal" class="hidden-data"></i></span><span class="feature-chevron">›</span></button>
+    <button type="button" class="feature-tile" data-go="local"><span class="feature-icon">↘</span><span class="feature-info"><strong>网速测试</strong><small>Wi-Fi / 5G / 4G 对比</small><em id="kLocal">—</em><span id="kLocalSub" class="hidden-data">待测速</span><i id="dotLocal" class="hidden-data"></i></span><span class="feature-chevron">›</span></button>
     <button type="button" class="feature-tile" data-go="global"><span class="feature-icon">◎</span><span class="feature-info"><strong>跨境连接</strong><small>7 地区网站探测</small><em id="kGlobal">—</em><span id="kGlobalSub" class="hidden-data">待探测</span><i id="dotGlobal" class="hidden-data"></i></span><span class="feature-chevron">›</span></button>
     <button type="button" class="feature-tile" data-go="apps"><span class="feature-icon">▦</span><span class="feature-info"><strong>应用体验</strong><small>视频、社交与办公</small><em id="kApps">—</em><span id="kAppsSub" class="hidden-data">待探测</span><i id="dotApps" class="hidden-data"></i><span id="kVideo" class="hidden-data"></span><span id="kVideoSub" class="hidden-data"></span><i id="dotVideo" class="hidden-data"></i></span><span class="feature-chevron">›</span></button>
     <button type="button" class="feature-tile" data-go="roam"><span class="feature-icon">⇄</span><span class="feature-info"><strong>漫游分析</strong><small>SIM、接入网和出口</small><em id="roamMenuValue">设置与对照</em></span><span class="feature-chevron">›</span></button>
@@ -482,6 +487,7 @@ body.on-detail .compact-nav{display:flex}
 <section class="view" id="page-local">
 <div class="container-card">
 <div class="row"><div><h2>基准下载与延迟</h2><p class="sub">测量本设备到 Cloudflare 节点的吞吐，实际节点可能在境外</p></div><button class="btn small" id="startLocal">开始测速</button></div>
+ <div class="wifi-entry"><div><strong>Wi-Fi 专项测速</strong><small>查看 Wi-Fi 速度趋势、历史测试及 4G/5G 对照</small></div><button type="button" class="btn btn-muted small" data-go="wifi">进入 Wi-Fi 测速 ›</button></div>
  <div class="connection-pick" aria-label="标注本轮测试的网络">
  <span>本轮网络（手动标注）</span>
  <button type="button" id="pickWifi" data-net="Wi-Fi">Wi-Fi</button>
