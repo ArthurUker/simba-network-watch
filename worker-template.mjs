@@ -7,6 +7,16 @@ const iconPngBase64="iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAEU0lEQVR42u3
 export default {
  async fetch(request) {
   const url=new URL(request.url);
+  if(url.pathname==="/api/upload"){
+   if(request.method!=="POST")return new Response("Method Not Allowed",{status:405,headers:{allow:"POST"}});
+   const origin=request.headers.get("Origin");
+   if(origin&&origin!==url.origin)return new Response("Forbidden",{status:403});
+   const stated=Number(request.headers.get("content-length")||0);
+   if(stated>1000000)return new Response("Upload too large",{status:413});
+   const buffer=await request.arrayBuffer();
+   if(buffer.byteLength<1||buffer.byteLength>1000000)return new Response("Invalid upload size",{status:413});
+   return new Response(JSON.stringify({bytes:buffer.byteLength}),{headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"}});
+  }
   if(request.method!=="GET")return new Response("Method Not Allowed",{status:405,headers:{allow:"GET"}});
   if(url.pathname==="/manifest.webmanifest")
    return new Response(JSON.stringify(manifest),{headers:{"content-type":"application/manifest+json; charset=utf-8","cache-control":"public, max-age=3600","x-content-type-options":"nosniff"}});
@@ -28,7 +38,7 @@ export default {
   }
   if(url.pathname==="/api/ping")return new Response(null,{status:204,headers:{"cache-control":"no-store","x-content-type-options":"nosniff"}});
   if(url.pathname==="/"||url.pathname==="/index.html")
-   return new Response(html,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"no-cache, no-store, must-revalidate","x-network-watch-version":"4.6","x-content-type-options":"nosniff","referrer-policy":"no-referrer"}});
+   return new Response(html,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"no-cache, no-store, must-revalidate","x-network-watch-version":"5.0","x-content-type-options":"nosniff","referrer-policy":"no-referrer"}});
   return new Response("Not Found",{status:404,headers:{"content-type":"text/plain; charset=utf-8"}});
  }
 };
