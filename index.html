@@ -752,7 +752,7 @@ const marketLabel=(target,origin)=>{const x=marketClass(target,origin);return x=
 const ts=()=>new Date().toISOString();
 const time=t=>{if(!t)return '暂无';return new Date(t).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})};
 function stateSave(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){toast('保存记录失败，请尝试导出 CSV')}}
-function prefs(){return{duration:$('duration').value,budget:$('budget').value,network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,nodes:$('nodeConfig').value,videoApp:$('videoApp').value,originCountry:currentCountry(),operator:$('operator').value,operatorOther:$('operatorOther').value.trim(),roamingMode:$('roamingMode').value,simHomeCountry:$('simHomeCountry').value,visitedOperator:$('visitedOperator').value.trim()}}
+function prefs(){return{duration:$('duration').value,budget:$('budget').value,speedProfile:$('speedProfile').value,network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,nodes:$('nodeConfig').value,videoApp:$('videoApp').value,originCountry:currentCountry(),operator:$('operator').value,operatorOther:$('operatorOther').value.trim(),roamingMode:$('roamingMode').value,simHomeCountry:$('simHomeCountry').value,visitedOperator:$('visitedOperator').value.trim()}}
 function savePrefs(){try{localStorage.setItem(PREF,JSON.stringify(prefs()))}catch(e){}}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3000)}
 function tab(which){
@@ -776,13 +776,13 @@ function setComplete(id,ready){$(id).classList.toggle('complete',ready)}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object')data={...data,...x}}catch(e){}
 for(const key of ['sessions','stalls','legacy','speedRuns'])if(!Array.isArray(data[key]))data[key]=[];if(!data.probePlans||typeof data.probePlans!=='object')data.probePlans={};
 if(!data._speedHistoryMigrated&&data.local&&Array.isArray(data.local.points)&&data.local.points.length&&!data.speedRuns.length){data.speedRuns.push(data.local);data._speedHistoryMigrated=true;stateSave()}
-try{const pf=JSON.parse(localStorage.getItem(PREF)||localStorage.getItem(PREVPREF)||localStorage.getItem(OLDPREF)||'null');if(pf){for(const id of ['duration','budget','network','location','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator']){const key=id==='nodeConfig'?'nodes':id;if(pf[key]!==undefined&&pf[key]!==null)$(id).value=String(pf[key])}$('upload').checked=!!pf.upload}}catch(e){}$('operatorOther').hidden=$('operator').value!=='other';
+try{const pf=JSON.parse(localStorage.getItem(PREF)||localStorage.getItem(PREVPREF)||localStorage.getItem(OLDPREF)||'null');if(pf){for(const id of ['duration','budget','speedProfile','network','location','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator']){const key=id==='nodeConfig'?'nodes':id;if(pf[key]!==undefined&&pf[key]!==null)$(id).value=String(pf[key])}$('upload').checked=!!pf.upload}}catch(e){}$('operatorOther').hidden=$('operator').value!=='other';
 try{if(!data._legacyImported){const hist=JSON.parse(localStorage.getItem('simba-network-watch-v1')||'[]');if(Array.isArray(hist)){data.legacy=hist.filter(x=>x.kind==='test');data.stalls.push(...hist.filter(x=>x.kind==='stall').map(x=>({t:x.t,app:x.app||'历史卡顿'})))}data._legacyImported=true;stateSave()}}catch(e){}
 render()}
 function cards(){
 const l=data.local,r=countSites(data.region),a=countSites(data.apps),v=data.video;
 setValue('kLocal',l&&Number.isFinite(l.speed)?format(l.speed)+' Mbps':'—');
-setValue('kLocalSub',l?l.points.length+' 个样本 · '+time(l.t):'待测速 · Cloudflare 基准');
+setValue('kLocalSub',l?l.points.length+' 个样本 · '+time(l.t)+' · '+(l.profile==='parallel'?'4 并发':'单请求'): '待测速 · Cloudflare 基准');
 setValue('kGlobal',r.done?r.returned+'/'+r.done:'—');
 setValue('kGlobalSub',r.done?(data.regionOriginCountry?'本轮测速地 '+countryName(data.regionOriginCountry)+' · 请求返回不代表可用':'历史测速地未记录 · 不做本地/跨境归类'):'待探测 · 7 地区');
 setValue('kApps',a.done?a.returned+'/'+a.done:'—');
@@ -809,6 +809,7 @@ const scanOrigin=data.regionOriginCountry||'',scanContext=data.regionContext||{}
 setValue('regionSub',scanOrigin?('本轮手机所在地：'+countryName(scanOrigin)+' · '+(scanContext.roamingMode==='roaming'?'漫游':'接入方式未标记为漫游')+' · 公网 IP 地区：'+(scanContext.egressCountry?countryName(scanContext.egressCountry):'未检测')+'。两种市场对照分别显示，均不证明实际路由。'):'暂无带有来源国家的站点结果；请重新测试后分类');setHTML('localMedian',l&&Number.isFinite(l.speed)?format(l.speed):'—','Mbps');
 setHTML('localP10',l?format(l.p10):'—','Mbps');setHTML('localLatency',l?format(l.latency,0):'—','ms');
 setHTML('localJitter',l?format(l.jitter,0):'—','ms');setValue('localUpload',l&&Number.isFinite(l.uploadSpeed)?format(l.uploadSpeed)+' Mbps':l?'未测/不可用':'—');setHTML('localBytes',l?format(l.bytes/1e6,1):'—','MB');
+setValue('speedMethodInfo',l?(l.profile==='parallel'?'最近一次：4 请求并发吞吐模式':'最近一次：单请求分时稳定性模式')+' · Cloudflare HTTP 基准。不同模式的 Mbps 不可直接互相排名。':'选择单请求分时采样或 4 请求并发模式；后者更接近峰值吞吐，但不等于 Ookla 测试。');
 setValue('localSummary',l?time(l.t)+' · '+countryName(l.originCountry)+' / '+(l.operator||'运营商未标注')+(l.roamingMode==='roaming'?'（漫游，接入 '+(l.visitedOperator||'未标注')+'）':'')+' / '+(l.network||'制式未标注')+' · 出口IP地理：'+(l.egressCountry?countryName(l.egressCountry):'未知')+' · '+format(l.elapsed,0)+' 秒 · '+(l.reason||'已完成'):'暂无基准持续测速记录。');
 setValue('localFaults',l&&l.failures&&l.failures.length?l.failures.length+' 次请求异常：'+l.failures.slice(0,2).join('；'):'');
 setValue('videoMedian',v?format(v.median)+' Mbps':'—');setValue('videoLow',v?v.low+'/'+v.samples.length:'—');setValue('videoSlow',v?v.slow+'/'+v.samples.length:'—');
@@ -915,8 +916,21 @@ async function down(bytes,root,onProgress){
   return{bytes:actual,seconds:sec,mbps:speed}
  }finally{b.close()}
 }
+async function parallelDown(bytes,root,onProgress){
+ const total=Math.max(4,Math.floor(bytes)),streams=4,part=Math.floor(total/streams),chunks=[part,part,part,total-part*3];
+ const at=performance.now();
+ const outcomes=await Promise.allSettled(chunks.map(n=>down(n,root)));
+ const success=outcomes.filter(x=>x.status==='fulfilled').map(x=>x.value);
+ const failed=outcomes.length-success.length;
+ if(!success.length)throw Error('4 并发全部请求失败');
+ const transferred=success.reduce((n,x)=>n+x.bytes,0);
+ const seconds=Math.max((performance.now()-at)/1000,.001);
+ const rate=transferred*8/(1e6*seconds);
+ if(onProgress)onProgress(rate);
+ return {bytes:transferred,seconds,mbps:rate,failedStreams:failed};
+}
 async function up(root){const b=bounded(root,15000),size=500000,start=performance.now();try{const res=await fetch(UP,{method:'POST',body:new Uint8Array(size),mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!res.ok)throw Error('HTTP '+res.status);return size*8/(1e6*(performance.now()-start)/1000)}finally{b.close()}}
-async function localStage(root,r0,rlen){const startAt=performance.now(),dur=Number($('duration').value)*1000,limit=Number($('budget').value)*1e6,ctx=runContext||currentContext(),network=ctx.network,location=ctx.location;
+async function localStage(root,r0,rlen){const startAt=performance.now(),dur=Number($('duration').value)*1000,limit=Number($('budget').value)*1e6,ctx=runContext||currentContext(),network=ctx.network,location=ctx.location,profile=$('speedProfile').value==='parallel'?'parallel':'sampled';
 let moved=0,lastMbps=NaN,reason='完成时间窗口',points=[],latencies=[],fails=[],uploadSpeed=null;liveSamplePoints=[];
 const targetSamples=Math.max(7,Math.round(dur/4)),period=dur/targetSamples,maxChunk=Math.min(6000000,Math.floor(limit/targetSamples));
 for(let k=0;k<4;k++){if(root.aborted)break;try{const ping=await down(256,root);moved+=ping.bytes;latencies.push(ping.seconds*1000)}catch(e){if(root.aborted)break;fails.push(String(e.message||e))}}
@@ -926,12 +940,12 @@ if(elapsed-lastProbe>7000){try{const ping=await down(256,root);latencies.push(pi
 if(root.aborted)break;const aim=Number.isFinite(lastMbps)?Math.floor(lastMbps*1e6/8*1.1):1500000;
 const chunk=Math.min(Math.floor(limit-moved),Math.max(600000,Math.min(maxChunk,aim)));
 if(chunk<600000){reason='已达到下载流量预算';break}
-try{const v=await down(chunk,root,(mbps)=>updateRate(mbps,true));moved+=v.bytes;lastMbps=v.mbps;updateRate(v.mbps,false);points.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,bytes:v.bytes});liveSamplePoints=points.slice();draw('sparkline');draw('localChart');if(points.length%2===0){const progress=Math.min(1,(performance.now()-startAt)/dur);stepUpdate(0,r0+rlen*progress,'基准持续采样 · '+points.length+' 组 · 中位 '+format(median(points.map(x=>x.mbps)))+' Mbps · '+format(moved/1e6)+' MB')}}catch(e){if(!root.aborted)fails.push(String(e.message||e))}
+try{const v=profile==='parallel'?await parallelDown(chunk,root,(mbps)=>updateRate(mbps,true)):await down(chunk,root,(mbps)=>updateRate(mbps,true));if(v.failedStreams)fails.push('并发分支失败 '+v.failedStreams+' / 4');moved+=v.bytes;lastMbps=v.mbps;updateRate(v.mbps,false);points.push({second:(performance.now()-startAt)/1000,mbps:v.mbps,bytes:v.bytes});liveSamplePoints=points.slice();draw('sparkline');draw('localChart');if(points.length%2===0){const progress=Math.min(1,(performance.now()-startAt)/dur);stepUpdate(0,r0+rlen*progress,'基准持续采样 · '+points.length+' 组 · 中位 '+format(median(points.map(x=>x.mbps)))+' Mbps · '+format(moved/1e6)+' MB')}}catch(e){if(!root.aborted)fails.push(String(e.message||e))}
 if(root.aborted)break;await sleep(Math.min(Math.max(0,period-(performance.now()-started)),Math.max(0,dur-(performance.now()-startAt))),root)}
 const elapsed=(performance.now()-startAt)/1000;if(root.aborted)reason='已取消';
 if(!root.aborted&&$('upload').checked){try{const nums=[];for(let i=0;i<2;i++){nums.push(await up(root))}uploadSpeed=median(nums)}catch(e){fails.push('上传未完成：'+String(e.message||e))}}
 const v=points.map(x=>x.mbps),j=latencies.slice(1).map((x,i)=>Math.abs(x-latencies[i]));
-const obj={t:ts(),network,location,originCountry:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt,elapsed,reason,bytes:moved,points,latencies,failures:fails,speed:median(v),p10:p10(v),latency:median(latencies),jitter:median(j),uploadSpeed,endpointType:'Cloudflare region not verified'};
+const obj={t:ts(),network,location,originCountry:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt,elapsed,reason,bytes:moved,points,latencies,failures:fails,speed:median(v),p10:p10(v),latency:median(latencies),jitter:median(j),uploadSpeed,profile,streams:profile==='parallel'?4:1,methodVersion:'http-baseline-v48',endpointType:'Cloudflare region not verified'};
 if(points.length){data.local=obj;data.speedRuns=getRows(data.speedRuns);data.speedRuns.push(obj);data.speedRuns=data.speedRuns.slice(-80)}stateSave();render();return obj}
 async function siteProbe(url,root){const b=bounded(root,4800),start=performance.now();try{const res=await fetch(url,{method:'HEAD',mode:'no-cors',redirect:'follow',cache:'no-store',credentials:'omit',signal:b.signal});return{result:res.type==='opaque'?'opaque':'other',ms:performance.now()-start}}catch(e){return{result:root.aborted?'aborted':b.signal.aborted?'timeout':'restricted',ms:performance.now()-start}}finally{b.close()}}
 async function siteStage(groups,root,kind,lo,span){
@@ -991,7 +1005,7 @@ const rows=[names];const add=(type,x,siteGroup,market,network,target,mbps,ms,det
 type,x?.t||'',x?.originCountry||'',x?.operator||'',x?.roamingMode||'',x?.simHomeCountry||'',x?.visitedOperator||'',x?.egressCountry||'',x?.egressAsn||'',x?.marketCategory||'',x?.egressMarketCategory||'',market||'',network||'',siteGroup||'',target||'',mbps??'',ms??'',details||''
 ].map(v=>String(v)));
 for(const x of getRows(data.sessions))add('session',x,x.kind,'',x.network,'',null,null,x.status);
-const baseRuns=getRows(data.speedRuns).length?getRows(data.speedRuns):data.local?[data.local]:[];for(const base of baseRuns)for(const p of getRows(base.points))add('baseline_sample',base,'Cloudflare HTTP','',base.network,'Cloudflare (location unverified)',p.mbps,null,'elapsed_seconds='+p.second+'; bytes='+p.bytes);
+const baseRuns=getRows(data.speedRuns).length?getRows(data.speedRuns):data.local?[data.local]:[];for(const base of baseRuns)for(const p of getRows(base.points))add('baseline_sample',base,'Cloudflare HTTP','',base.network,'Cloudflare (location unverified)',p.mbps,null,'elapsed_seconds='+p.second+'; bytes='+p.bytes+'; profile='+(base.profile||'legacy-sampled')+'; streams='+(base.streams||1)+'; method='+(base.methodVersion||'legacy'));
 for(const x of getProbed(data.region).concat(getProbed(data.apps)))for(const p of x.samples)add('website_probe',x,x.group,x.marketCode,'',x.name,null,p.ms,p.result+' '+x.url);
 if(data.video)for(const p of getRows(data.video.samples))add('video_simulation',data.video,'Video simulation','', '', 'Cloudflare synthetic chunks',p.mbps,null,p.error||'not actual app playback');
 for(const x of getRows(data.remote))for(const p of x.samples)add('configured_endpoint',x,'User server',x.id,'',x.url,p.mbps,null,p.error||'server location not independently verified');
