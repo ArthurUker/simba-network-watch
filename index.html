@@ -811,7 +811,7 @@ function startWifiRun(){
  if(running)return;
  const reported=navigator.connection?.type||navigator.mozConnection?.type||navigator.webkitConnection?.type;
  if(reported==='cellular'){toast('浏览器报告为蜂窝连接：请先接入 Wi-Fi，再测速');return}
- selectNetwork('Wi-Fi');run('wifi')
+ selectNetwork('Wi-Fi');return run('wifi')
 }
 function renderRecent(){const root=$('recentRecords');root.replaceChildren();const ss=getRows(data.sessions).slice(-25).reverse();if(!ss.length){root.className='empty';root.textContent='还没有检测记录';return}root.className='';
 for(const r of ss){const div=textNode('div','list-item',''),left=textNode('div','left',''),right=textNode('div','right',r.status==='完成'?'已完成':r.status||'部分完成');left.append(textNode('b','',r.kind==='full'?'综合网络诊断':r.kind==='wifi'?'Wi-Fi 持续测速':r.kind==='local'?'基准持续测速':r.kind==='region'?'地区站点探测':r.kind==='apps'?'应用服务探测':r.kind==='video'?'视频分片模拟':'测速节点检查'),textNode('small','',time(r.t)+' · '+countryName(r.originCountry)+' / '+(r.operator||'未标注运营商')+(r.roamingMode==='roaming'?' · 漫游':'')+(Number.isFinite(r.speed)?' · '+format(r.speed)+' Mbps':'')));div.append(left,right);root.append(div)}}
