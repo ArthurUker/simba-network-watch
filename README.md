@@ -1,10 +1,22 @@
 # Network Watch (formerly SIMBA Network Watch)
 
-A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.8**
+A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.9**
 
 **Live site:** https://simba-network-watch.renkangguo.workers.dev/
 
 **Development traceability:** [Version history](./CHANGELOG.md) · [GitHub-first development and deployment process](./DEVELOPMENT.md) · [All commits](https://github.com/ArthurUker/simba-network-watch/commits/main/)
+
+## v4.9 — Result-first performance dashboard and separate loaded HTTP latency
+
+- The **网速测试** detail view now puts download P50 and (optional) upload speed first, then shows HTTP idle latency, concurrent-download HTTP latency, inflation, idle jitter, download P10/P90, concurrent-upload HTTP latency and consumed download MB.
+- During the actual transfer, the page shows the **current test-request Mbps** and the sample count. These are not network-wide device traffic measurements.
+- The baseline first sends four small **same-origin Worker /api/ping** requests for idle HTTP timing, then launches a Worker probe concurrently with each downloaded Cloudflare block; only requests overlapping the transfer are accepted as loaded HTTP samples. Optional upload uses its own concurrent probes.
+- The Worker ping endpoint is **not the same server/route as the Cloudflare download endpoint** and timing includes browser and HTTP overhead. The method is a practical application-level congestion indicator, not ICMP ping, TCP queue tracing or an identical implementation of speed.cloudflare.com.
+- P10 is a low-speed sample percentile; P50 is the median, and P90 is an interpolated upper percentile. They describe **discrete transfer samples**, not the vendor's entire formal test methodology.
+- **Correct backward compatibility:** old v4.8 HTTP timing samples were collected from tiny speed-test downloads, so historical values are **not** retroactively shown as v4.9 idle Worker latency. Old raw download histories remain intact.
+- CSV now includes a per-run summary and raw same-origin idle/download-loaded/upload-loaded HTTP RTT samples for runs with `methodVersion=http-baseline-v49`.
+- Upload remains **explicit opt-in** and can be unavailable due to endpoint/CORS restrictions; an unavailable result is not zero upload bandwidth. Existing mobile, Wi-Fi, 5G, desktop, cross-border and roaming pages remain available.
+- Simulated end-to-end tests covered sampled and four-stream modes, HTTP timing provenance, request budgets, upload failure and CSV. Real iPhone and desktop browsers still need external validation.
 
 ## v4.8 — Auditable target selection and multiple speed-measurement profiles
 
