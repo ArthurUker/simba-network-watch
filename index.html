@@ -12,7 +12,7 @@
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <meta name="description" content="Network Watch：多运营商、按测速地点分类的网站连接与基准网速诊断。">
-<title>Network Watch v4.7 — Wi-Fi 与桌面诊断</title>
+<title>Network Watch v4.8 — 测量方法与公正性审计</title>
 <style>
 :root{--bg:#f6f8f7;--card:#fff;--ink:#193330;--secondary:#617771;--line:#e2eae7;--mint:#118473;--mint-dark:#09685b;--mint-light:#e3f4ed;--blue:#3873b6;--blue-light:#e9f1fc;--amber:#aa742e;--amber-light:#fcf3e4;--red:#b64f48;--red-light:#fbedeb;--shadow:0 6px 22px rgba(21,53,44,.04);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box}
@@ -352,12 +352,21 @@ body.on-detail .compact-nav{display:flex}
  .page-intro h2{font-size:24px}
  .bottom-inside{max-width:1370px}
 }
+
+/* v4.8: auditable target selection and explicitly separated speed test profiles */
+.roster-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}
+.roster-item{padding:10px 12px;background:#f6faf7;border-radius:11px;border:1px solid #e5eee8;min-width:0}
+.roster-item strong{font-size:12px;display:block}.roster-item small{font-size:10px;color:#70867b;display:block;overflow-wrap:anywhere;margin-top:3px;line-height:1.5}
+.method-details summary{font-size:12px;color:#175d51}
+.method-details .detail-inner{padding-top:0}
+@media(min-width:880px){.roster-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:390px){.roster-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <main class="container">
 <header>
-<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.7</span></small></div></div>
+<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v4.8</span></small></div></div>
 <div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span><button type="button" class="install-trigger" id="installHelp" aria-label="添加到手机主屏幕" aria-haspopup="dialog" aria-expanded="false">＋</button></div>
 </header>
 <aside class="desktop-sidebar" aria-label="桌面功能导航">
@@ -507,6 +516,7 @@ body.on-detail .compact-nav{display:flex}
 <div class="cell"><small>下载用量</small><strong id="localBytes">— <em>MB</em></strong></div>
 </div>
 <div class="banner" id="localSummary">暂无持续测速记录。</div>
+ <p class="note" id="speedMethodInfo">稳定性采样观察分时变化；4 并发可测更高吞吐，但不能与单请求模式直接比较，也不保证等同 Ookla。</p>
 <div class="visual"><svg id="localChart" viewBox="0 0 350 165" role="img" aria-label="基准下载速度变化图"></svg></div>
 </div>
 <div class="container-card"><div class="row"><h2>测试质量与局限</h2><span class="pill muted">HTTP 采样</span></div>
@@ -516,7 +526,8 @@ body.on-detail .compact-nav{display:flex}
 <details id="allOptions"><summary>高级设置与流量预算 <span class="sub">（默认已设置好）</span></summary><div class="detail-inner">
 <div class="fieldrow">
 <div class="field"><label for="duration">基准采样时长</label><select id="duration"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60" selected>60 秒（推荐）</option><option value="120">120 秒</option></select></div>
-<div class="field"><label for="budget">基准下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
+<div class="field"><label for="speedProfile">测速模式</label><select id="speedProfile"><option value="sampled">稳定性：单请求分时采样</option><option value="parallel">吞吐：4 并发请求</option></select></div>
+ <div class="field"><label for="budget">基准下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
 <div class="field"><label for="network">实际网络类型（手动）</label><select id="network"><option value="">未标注</option><option value="4G">4G / LTE</option><option value="5G">5G</option><option value="Wi-Fi">Wi-Fi</option><option value="Ethernet">有线 / Ethernet</option></select></div>
 <div class="field"><label for="location">城市 / 地点备注（选填）</label><input type="text" id="location" maxlength="45" placeholder="例如：北京朝阳 / Singapore"></div>
 </div>
@@ -528,7 +539,15 @@ body.on-detail .compact-nav{display:flex}
 <div class="container-card"><div class="row"><h2>地区与服务速览</h2><span style="font-size:10px;color:#879a92">请求返回 ≠ 网站可用</span></div><p class="sub">已测试目标的浏览器请求返回情况；点击标签查看详情</p><h3 style="margin-top:13px" id="regionsHeading">7 个地区（请先选择测速地点）</h3><div class="flow-summary" id="regionOverview"></div><h3 style="margin-top:13px">6 类服务</h3><div class="flow-summary" id="appOverview"></div></div>
 <div class="container-card">
 <div class="row"><div><h2>同地区 / 跨地区网站连接</h2><p class="sub" id="regionSub">请先选择测速国家或地区 · 14 站点 · 每站重复 2 次</p></div><button class="btn small" id="startGlobal">开始探测</button></div>
-<div class="banner warn">以测速地对照网站所属市场进行分组；CDN 可能在任何地区响应。浏览器受限请求不能验证 HTTP 200，也不能测出目标国的真实 Mbps。这里显示的是请求返回情况，不是跨境线路的成功率。</div>
+<div class="banner warn">跨境网站按市场分组，CDN 实际服务器可能不在该地区。浏览器 no-cors 的不透明响应不能验证 HTTP 状态码或实际页面可用性。本页只显示有限连接线索，不展示虚假的跨境测速 Mbps。</div>
+<details class="method-details" id="regionMethodology">
+ <summary>选站依据与完整测试名单（可审计）</summary>
+ <div class="detail-inner">
+  <p class="note">目标不是从网速结果中挑选的：固定公示完整名单，所有目标都测，每站 2 轮且轮间打散。测试顺序有可复现种子，避免固定顺序让某些地区总在最后。该样本仍是人工挑选，不能声称统计公正或代表整国互联网。</p>
+  <p class="note" id="regionPlanInfo">等待新一次探测记录测试顺序。</p>
+  <div id="regionRoster" class="roster-grid"></div>
+ </div>
+</details>
 <div id="globalGrid" class="category-grid"></div>
 <div id="globalDetails"></div></div>
 <details><summary>进阶：配置指定地区的真实测速节点</summary><div class="detail-inner">
@@ -541,7 +560,8 @@ body.on-detail .compact-nav{display:flex}
 <section class="view" id="page-apps">
 <div class="container-card">
 <div class="row"><div><h2>日常应用访问</h2><p class="sub">普通网页 / 视频 / 社交 / 通讯 / 办公 / 购物</p></div><button class="btn small" id="startApps">开始探测</button></div>
-<div class="banner">这里测试各平台官网的有限 HTTP 连接行为，不能直接读取 YouTube、TikTok、Netflix 等原生 App 的视频卡顿率或传输速度。</div>
+<div class="banner">测试对象是各服务官网，不是原生 App 的真实播放、消息或数据服务；浏览器不透明响应不能判断登录/播放成功。</div>
+<details class="method-details"><summary>查看 17 个测试目标与服务抽样规则</summary><div class="detail-inner"><p class="note">按网页、视频、社交、通讯、办公、购物六个类别覆盖不同使用场景；当前品牌名单为公开、人工预设而非随机抽样。所有名单同时公开，两个测量轮次使用不同交错顺序。</p><p class="note" id="appPlanInfo">等待新一轮应用探测。</p><div id="appRoster" class="roster-grid"></div></div></details>
 <div id="appsGrid" class="category-grid"></div>
 <div id="appsDetails"></div>
 </div>
