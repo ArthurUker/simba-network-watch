@@ -1,6 +1,6 @@
 # Network Watch — Measurement and Target-Selection Methodology
 
-Version: **4.9**, 2026-11-03. The repository code and this document, not the visual status badges, are the authoritative description of how the tool measures.
+Version: **5.0**, 2026-11-03. The repository code and this document, not the visual status badges, are the authoritative description of how the tool measures.
 
 ## 1. Core principle: separate different questions
 
@@ -78,6 +78,15 @@ This validation ladder is **not yet implemented** by the v4.8 site, because thir
 - This is **closer to maximum multi-connection HTTP capacity**, but is *not an Ookla implementation*, does not automatically choose between independent servers, and does not prove a specific end-to-end cross-border route. **Do not compare the two profiles as if they had identical definitions.**
 
 Upload may be attempted explicitly through Cloudflare `/__up`; it can fail because of cross-origin or endpoint restrictions. A missing upload result does not equal zero bandwidth.
+
+## 3B. v5.0 desktop speedboard and bounded Worker upload
+
+- At desktop widths ≥1080 CSS px the main page prioritizes the actual download/upload/latency numbers, live chart, manual test-profile selection and control buttons rather than a menu grid. On phones the six-item compact launchpad is preserved.
+- The large completed download number uses the **P90 percentile of individual measured download HTTP sample rates** when the stored run contains a valid P90; old records use their stored median (P50), with a different label. These are not directly Cloudflare's proprietary headline values.
+- Optional uploads target this site's own `/api/upload` Worker endpoint via `POST`, not Cloudflare's public `/__up`. The server parses at most 1 MB per request, acknowledges the accepted byte length and discards it immediately; the browser tests two 500 KB transfers. Success means the submitted bytes reached the Worker endpoint. Reported Mbps uses payload bytes divided by elapsed whole-request time, **including HTTP latency and server work**, so it can substantially underestimate high upload bandwidth.
+- The upload endpoint accepts same-origin browser requests, checks posted size and returns an uncacheable JSON receipt; it stores neither payload nor IP in a database. Public endpoint exposure still consumes Worker usage and should be protected with platform-level controls if traffic grows.
+- The v5.0 record adds `methodVersion=http-baseline-v50` and `uploadSource=Same-origin Worker /api/upload` when available; historical v4.9 data is retained and displayed according to the original sampling definition.
+- **Neither the dashboard layout nor the Worker upload path constitutes the official Cloudflare Speedtest engine.** Official `@cloudflare/speedtest` can collect Resource Timing and loaded latency at repeated intervals while dynamically ramping transfer sizes. This app still performs simpler HTTP-based sampling.
 
 ## 3A. v4.9 HTTP latency method and percentile dashboard
 
