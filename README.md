@@ -1,10 +1,26 @@
 # Network Watch (formerly SIMBA Network Watch)
 
-A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.6**
+A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v4.7**
 
 **Live site:** https://simba-network-watch.renkangguo.workers.dev/
 
 **Development traceability:** [Version history](./CHANGELOG.md) · [GitHub-first development and deployment process](./DEVELOPMENT.md) · [All commits](https://github.com/ArthurUker/simba-network-watch/commits/main/)
+
+## v4.7 — Wi-Fi speed testing and desktop workstation layout
+
+**New Wi-Fi workflow:**
+
+- Open the mobile **网速测试** menu, then **Wi-Fi 专项测速**; desktop users can open **Wi-Fi 测速** directly from the new sidebar.
+- Connect the device to Wi-Fi in **system settings first**. The page labels the next run `Wi-Fi` (manual). On browsers that positively report `cellular` it warns and prevents a misattributed Wi-Fi test. iPhone Safari generally cannot reliably identify the physical radio type or SSID.
+- Run the existing Cloudflare HTTP baseline (download speed, P10, request-time latency and optional upload), now stored as a new chronological record in `speedRuns`. The previous latest `local` result and existing history key remain for compatibility.
+- Compare the latest Wi-Fi result with the latest 4G / 5G result, including their timestamps and speed-difference percentage. This is a **historical** comparison, not simultaneously controlled testing. The page also displays the Wi-Fi trend and the last eight speed tests.
+- The standard speed-test page offers a manual mode selector: Wi-Fi, 5G, 4G/LTE or Ethernet. Selection **does not change the device connection**.
+- CSV now exports the original sample points from every retained speed run (up to 80 runs), including connection type and observation context. Existing prior results are migrated into the speed-history list only once when available.
+- The HTTP download target is a Cloudflare test endpoint, which may be served outside the user's physical location. This is **not** a Wi-Fi signal or LAN link-speed measurement, and the webpage cannot read SSID, RSSI/RSRP, RF channel, negotiated PHY rate, router make or other-app throughput.
+
+**Desktop UI:** On browser widths 1080px and wider, the layout becomes a dashboard workstation with a sticky left navigation sidebar, right content workspace, larger status preview, three-column function cards and roomier chart/results panels. Medium and mobile layouts remain responsive; the iPhone home keeps six compact entries without adding a seventh row.
+
+**Test coverage:** JavaScript parsed, no duplicate IDs, six home cards and desktop sidebar nodes verified, Wi-Fi test and subsequent 5G test simulated to completion, independent Wi-Fi vs 5G results retained, Wi-Fi trend rendered, CSV exported both networks, and page navigation supported. Real hardware Wi-Fi/5G measurements and physical-browser screenshot testing are still required for end-to-end verification.
 
 ## v4.6 — Adaptive iPhone Web App
 
