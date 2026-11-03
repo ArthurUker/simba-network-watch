@@ -5,6 +5,19 @@ This file is a human-readable index of the Git commit history. **GitHub commits 
 Project: https://github.com/ArthurUker/simba-network-watch  
 Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
+## v4.9 — Unified speed dashboard, HTTP idle & loaded latency (2026-11-03)
+
+- [a226051](https://github.com/ArthurUker/simba-network-watch/commit/a226051bdc3a10ba23b063f7c219bae387479bff) — Redesigned speed test detail into a coherent result-first panel: download P50, opt-in upload, idle/load HTTP delay, delay inflation, jitter, P10/P90 and download data usage; responsive iPhone/desktop presentation.
+- [10215dc](https://github.com/ArthurUker/simba-network-watch/commit/10215dcb9110d7a9c378471bf38afaf00f5f578b) — Implemented same-origin Worker /api/ping idle and overlapping download/upload HTTP timing probes, stored raw RTT lists, sample percentiles and method `http-baseline-v49`, updated real-time feedback and detailed CSV export.
+- [7777588](https://github.com/ArthurUker/simba-network-watch/commit/77775888d4308b420cd5406303ae68d02dcc8823) — Exact deployed `index.html` source; prevent historical v4.8 speed-test download timing from being relabeled as v4.9 Worker idle delay.
+- Documentation updates: v4.9 README and METHODOLOGY.md now specify percentile calculations, HTTP paths, overlap sampling, limitations and legacy migration behavior.
+
+**Production deployment:** Cloudflare Worker `simba-network-watch`, deployment `71ebc6e9-7f9b-4100-903e-03d406466e76` created **2026-11-03 06:15:08 UTC** (14:15:08 Singapore time), version `ebfd81c1-9db9-4498-8671-c32563b5757c`, 100% traffic confirmed by Cloudflare API, Workers subdomain enabled. GitHub `index.html` at source commit `7777588` plus unchanged tracked Worker template and service worker were assembled and published.
+
+**Validation:** JavaScript syntax and DOM ID checks; mocked same-origin HTTP 204 ping latency and sampled HTTP download completed; concurrent 4-stream mode completed; result stored with separate idle vs download-loaded timing, P10/P50/P90 and `http-baseline-v49` method; CSV exported raw idle and loaded RTT records. Simulated upload endpoint failure preserved `uploadSpeed=null` and an explicit error rather than fabricating zero. The independent external URL fetch was unavailable in the verification tool; production Worker deployment was verified by its API, but real iPhone/desktop rendering and actual SIMBA/Wi-Fi performance remain unverified.
+
+**Measurement constraints:** The speed payload is downloaded from `speed.cloudflare.com`, while HTTP idle and loaded probes go to this site's own Cloudflare Worker `/api/ping`. They may have differing routing and scheduling. HTTP load overlap is a useful application-level timing indicator, **not** ICMP ping, TCP-queue delay or the official Cloudflare Speedtest algorithm. The optional upload may be blocked by CORS. Old v4.8 RTT is not displayed as new idle RTT.
+
 ## v4.8 — Auditable target selection and Speedtest-inspired benchmark profiles (2026-11-03)
 
 - [aa9c132](https://github.com/ArthurUker/simba-network-watch/commit/aa9c132576078e29c6e666b051265d104a1c2563) — Page-level transparency: full website/app target roster, explicit selection limitations, source-visible audit section and speed-profile selector.
