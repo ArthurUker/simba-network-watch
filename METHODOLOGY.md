@@ -1,6 +1,6 @@
 # Network Watch — Measurement and Target-Selection Methodology
 
-Version: **5.0**, 2026-11-03. The repository code and this document, not the visual status badges, are the authoritative description of how the tool measures.
+Version: **5.1**, 2026-11-04. The repository code and this document, not the visual status badges, are the authoritative description of how the tool measures.
 
 ## 1. Core principle: separate different questions
 
@@ -78,6 +78,16 @@ This validation ladder is **not yet implemented** by the v4.8 site, because thir
 - This is **closer to maximum multi-connection HTTP capacity**, but is *not an Ookla implementation*, does not automatically choose between independent servers, and does not prove a specific end-to-end cross-border route. **Do not compare the two profiles as if they had identical definitions.**
 
 Upload may be attempted explicitly through Cloudflare `/__up`; it can fail because of cross-origin or endpoint restrictions. A missing upload result does not equal zero bandwidth.
+
+## 3C. v5.1 network source selection, mainland fallback and non-mixed samples
+
+- The site still originates at `simba-network-watch.renkangguo.workers.dev`. The current Cloudflare account has no active managed zone/custom Worker domain. Public evidence indicates `workers.dev` may be unreachable from mainland China, including some China Unicom connections. This is a **delivery limitation, not just an in-page JavaScript error**.
+- Default **Auto** chooses this Worker's same-origin `/api/down` endpoint first when current physical location or observed public-IP country is `CN`. Otherwise it probes the external Cloudflare speed-test endpoint briefly. If unavailable, Auto falls back to this Worker's `/api/down`. User can override Auto via advanced settings.
+- A Worker test payload is capped at 6,000,000 bytes/request, returns application/octet-stream with no-store/no-transform and explicit byte length, and does not require access to `speed.cloudflare.com`. **This Worker remains on Cloudflare's global edge; it is not a mainland domestic throughput server.**
+- Every point records which actual endpoint returned data. If an Auto switch occurs mid-test, earlier point samples are removed from the final speed distribution and a method note is logged. Download budget still counts all received bytes; historic successful reports are never overwritten by a run with zero valid download samples.
+- A same-origin health request detects apparent offline PWA shell when live networking is unavailable. The SW has a 5.5-second timeout before falling back to cached HTML or a truthful offline message. **If the hostname itself cannot be reached and no service worker is installed, none of these client-side changes can run.**
+- A proper mainland comparison requires a locally hosted, legally compliant, independently reachable entrypoint and speed endpoint, followed by China Unicom + other ISP field validation. The global Cloudflare Worker should be retained as the **international** comparison target, not marketed as a domestic server.
+- The code continues to avoid inventing signal strength, packet loss, HTTP success from opaque fetches, or country-to-country bandwidth.
 
 ## 3B. v5.0 desktop speedboard and bounded Worker upload
 
