@@ -26,6 +26,16 @@ export default {
    return new Response(iconSvg,{headers:{"content-type":"image/svg+xml; charset=utf-8","cache-control":"public, max-age=604800","x-content-type-options":"nosniff"}});
   if(url.pathname==="/icon-180.png")
    return new Response(Uint8Array.from(atob(iconPngBase64),char=>char.charCodeAt(0)),{headers:{"content-type":"image/png","cache-control":"public, max-age=604800","x-content-type-options":"nosniff"}});
+  if(url.pathname==="/api/health"){
+   return new Response(JSON.stringify({ok:true,version:"5.1",ts:Date.now(),service:"Network Watch Worker",colo:request.cf?.colo||null,country:request.cf?.country||null}),{headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store, no-transform","x-content-type-options":"nosniff"}});
+  }
+  if(url.pathname==="/api/down"){
+   const requested=Number(url.searchParams.get("bytes"));
+   if(!Number.isInteger(requested)||requested<1024)return new Response("Invalid download size",{status:400,headers:{"cache-control":"no-store"}});
+   if(requested>6000000)return new Response("Download size exceeds per-request budget",{status:413,headers:{"cache-control":"no-store"}});
+   const payload=new Uint8Array(requested);
+   return new Response(payload,{headers:{"content-type":"application/octet-stream","cache-control":"no-store, no-transform","content-length":String(requested),"x-network-watch-source":"worker-test-payload","x-content-type-options":"nosniff"}});
+  }
   if(url.pathname==="/api/network-info"){
    const cf=request.cf||{};
    const country=typeof cf.country==="string"&&/^[A-Z]{2}$/.test(cf.country)&&cf.country!=="XX"?cf.country:"";
@@ -38,7 +48,7 @@ export default {
   }
   if(url.pathname==="/api/ping")return new Response(null,{status:204,headers:{"cache-control":"no-store","x-content-type-options":"nosniff"}});
   if(url.pathname==="/"||url.pathname==="/index.html")
-   return new Response(html,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"no-cache, no-store, must-revalidate","x-network-watch-version":"5.0","x-content-type-options":"nosniff","referrer-policy":"no-referrer"}});
+   return new Response(html,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"no-cache, no-store, must-revalidate","x-network-watch-version":"5.1","x-content-type-options":"nosniff","referrer-policy":"no-referrer"}});
   return new Response("Not Found",{status:404,headers:{"content-type":"text/plain; charset=utf-8"}});
  }
 };
