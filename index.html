@@ -12,7 +12,7 @@
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <meta name="description" content="Network Watch：多运营商、按测速地点分类的网站连接与基准网速诊断。">
-<title>Network Watch v5.0 — Cloudflare 风格实时测速工作台</title>
+<title>Network Watch v5.1 — 大陆网络恢复与本域测速</title>
 <style>
 :root{--bg:#f6f8f7;--card:#fff;--ink:#193330;--secondary:#617771;--line:#e2eae7;--mint:#118473;--mint-dark:#09685b;--mint-light:#e3f4ed;--blue:#3873b6;--blue-light:#e9f1fc;--amber:#aa742e;--amber-light:#fcf3e4;--red:#b64f48;--red-light:#fbedeb;--shadow:0 6px 22px rgba(21,53,44,.04);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box}
@@ -471,16 +471,27 @@ body.on-detail .compact-nav{display:flex}
  .speedboard-identity{flex-basis:100%;width:100%}
  .speedboard-topactions{width:100%;justify-content:flex-start}
 }
+
+/* v5.1 network source diagnostics; hidden on healthy connections so iPhone menu stays short */
+.connection-alert[hidden]{display:none!important}
+.connection-alert{background:#fff8eb;border:1px solid #e9cda0;border-radius:13px;padding:12px 14px;margin:10px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.connection-alert strong{font-size:13px;color:#80551d}.connection-alert p{font-size:11px;line-height:1.6;color:#866d44;margin:5px 0 0}
+.connection-alert-actions{display:flex;gap:7px;flex:0 0 auto}
+.connection-alert button,.source-clarity button{background:#fff;border:1px solid #d8e4db;border-radius:9px;padding:8px 10px;color:#176a56;font-size:11px;font-weight:700}
+.source-clarity{display:flex;align-items:center;gap:9px;background:#f6f9f7;border:1px solid #e0eae4;border-radius:11px;padding:11px;margin:12px 0;flex-wrap:wrap}
+.source-clarity strong{font-size:11px;color:#315c4b}.source-clarity span{font-size:11px;color:#6d8378;flex:1 1 180px}
+.connection-checks{padding:9px 0;font-size:11px;line-height:1.7;color:#657d71}
+@media(max-width:560px){.connection-alert{align-items:stretch;flex-direction:column}.connection-alert-actions{justify-content:flex-start}}
 </style>
 </head>
 <body>
 <main class="container">
 <header>
-<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v5.0</span></small></div></div>
+<div class="identity"><div class="logo" aria-hidden="true">⌁</div><div><strong>Network Watch</strong><small>多运营商 · 漫游网络诊断 <span style="color:#a4b2af">/ v5.1</span></small></div></div>
 <div class="header-right"><span class="tag"><i class="ring" id="headerDot"></i><span id="headerState">准备就绪</span></span><button type="button" class="install-trigger" id="installHelp" aria-label="添加到手机主屏幕" aria-haspopup="dialog" aria-expanded="false">＋</button></div>
 </header>
 <aside class="desktop-sidebar" aria-label="桌面功能导航">
-  <div class="sidebar-caption">NETWORK WATCH <span>v5.0</span></div>
+  <div class="sidebar-caption">NETWORK WATCH <span>v5.1</span></div>
   <div class="sidebar-section">工作台</div>
   <button type="button" data-page="home" class="active"><span>▦</span> 网络总览</button>
   <button type="button" data-page="wifi"><span>◉</span> Wi-Fi 测速</button>
@@ -494,6 +505,10 @@ body.on-detail .compact-nav{display:flex}
   <div class="sidebar-foot"><strong>测速提示</strong><p>Wi-Fi、5G、4G 都通过同一 Cloudflare 基准接口测量。对比前请确认已切换实际网络。</p><span>原始采样与测试日期会保留在浏览器。</span></div>
 </aside>
 <nav class="compact-nav" aria-label="页面导航"><button type="button" data-page="home">‹ 返回首页</button><strong id="sectionHeading">功能详情</strong></nav><section class="view active" id="page-home">
+<div id="connectionAlert" class="connection-alert" role="status" hidden>
+ <div><strong id="connectionAlertTitle">连接正在检查</strong><p id="connectionAlertText">当前网络连接可能受到限制。</p></div>
+ <div class="connection-alert-actions"><button id="connectionRetry" type="button">重试诊断</button><button id="connectionDetails" type="button">故障说明</button></div>
+</div>
   <section class="desktop-speedboard" aria-label="实时测速工作台">
     <div class="speedboard-heading">
       <div class="speedboard-identity">
@@ -559,7 +574,7 @@ body.on-detail .compact-nav{display:flex}
         <span>ASN 网络组织 <strong id="desktopAsn">—</strong></span>
         <span>当前标记 <strong id="desktopContext">—</strong></span>
       </div>
-      <p>指标说明：下载数据来自 Cloudflare 测速端点；空闲和负载 HTTP 延迟来自本站 Worker，两者可能走不同路径；不是 ICMP Ping、无线信号值或 Ookla 测试结果。</p>
+      <p>指标说明：测速源由「自动选择 / 本站 Worker / Cloudflare 外部」决定。中国大陆优先尝试本站 Worker，但 Worker 本身不在大陆；空闲/负载延迟来自本站，不代表跨境路径的真实 ICMP 延迟。</p>
     </div>
   </section>
   <div class="dashboard-head" aria-label="总体网络状态">
@@ -705,18 +720,23 @@ body.on-detail .compact-nav{display:flex}
  <div class="benchmark-foot"><span id="benchSamples">等待测试 · 不显示估算分数</span><span id="benchLiveDownload">实时采样：未开始</span></div>
 </div>
 <div class="banner" id="localSummary">暂无持续测速记录。</div>
+<div class="source-clarity"><strong>本次测速服务器</strong><span id="downloadSourceDisplay">尚未测速 · 自动模式会在接口失败时尝试本站 Worker</span><button class="btn btn-ghost small" type="button" id="checkEndpoints">检查网络连接</button></div>
+<p class="note">中国大陆联通网络如果无法访问 workers.dev，本站 Worker 测速也不能工作；需改用大陆可达的独立域名和服务器。单击检查按钮可判断本站和外部测试接口的状态。</p>
  <p class="note" id="speedMethodInfo">稳定性采样观察分时变化；4 并发可测更高吞吐，但不能与单请求模式直接比较，也不保证等同 Ookla。</p>
 <div class="visual"><svg id="localChart" viewBox="0 0 350 165" role="img" aria-label="基准下载速度变化图"></svg></div>
 </div>
 <div class="container-card"><div class="row"><h2>测试质量与局限</h2><span class="pill muted">HTTP 采样</span></div>
 <p class="note">下载目标为 Cloudflare HTTP 节点，不保证物理国家；空闲与负载延迟使用同域 Worker /api/ping，二者与下载服务不一定走完全相同的服务路径，且不是 ICMP Ping。负载探测与下载并发发起，但并不等同于精密 TCP 队列延迟测量。下载采样有间歇，预算可能导致提前结束；未测到的项目保持空白。</p>
-<div id="localFaults" class="note"></div><button class="btn btn-muted small" data-go="home" style="margin-top:12px">返回总览</button>
+<div id="localFaults" class="note"></div>
+<div id="connectionChecks" class="connection-checks" role="status">尚未运行连接检查。</div><button class="btn btn-muted small" data-go="home" style="margin-top:12px">返回总览</button>
 </div>
 <details id="allOptions"><summary>高级设置与流量预算 <span class="sub">（默认已设置好）</span></summary><div class="detail-inner">
 <div class="fieldrow">
 <div class="field"><label for="duration">基准采样时长</label><select id="duration"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60" selected>60 秒（推荐）</option><option value="120">120 秒</option></select></div>
 <div class="field"><label for="speedProfile">测速模式</label><select id="speedProfile"><option value="sampled">稳定性：单请求分时采样</option><option value="parallel">吞吐：4 并发请求</option></select></div>
- <div class="field"><label for="budget">基准下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
+ <div class="field"><label for="downloadTarget">测速数据来源</label>
+<select id="downloadTarget"><option value="auto">自动选择（中国大陆优先本站）</option><option value="worker">本站 Worker（跨境 CDN）</option><option value="external">Cloudflare 外部测速接口</option></select></div>
+<div class="field"><label for="budget">基准下载预算</label><select id="budget"><option value="20">20 MB</option><option value="60">60 MB</option><option value="80" selected>80 MB</option><option value="120">120 MB</option><option value="250">250 MB</option></select></div>
 <div class="field"><label for="network">实际网络类型（手动）</label><select id="network"><option value="">未标注</option><option value="4G">4G / LTE</option><option value="5G">5G</option><option value="Wi-Fi">Wi-Fi</option><option value="Ethernet">有线 / Ethernet</option></select></div>
 <div class="field"><label for="location">城市 / 地点备注（选填）</label><input type="text" id="location" maxlength="45" placeholder="例如：北京朝阳 / Singapore"></div>
 </div>
