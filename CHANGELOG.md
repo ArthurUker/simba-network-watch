@@ -22,6 +22,19 @@ Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
 **Next infrastructure dependency:** provision or connect a legally compliant, independently reachable Chinese-domain frontend + local speed server (e.g. mainland VPS with appropriate ICP filing) and use the existing global Cloudflare Worker only as a cross-border comparator. The current Cloudflare account has no zones to attach a custom domain through the connected API. Attaching an overseas custom domain alone does not guarantee mainland accessibility.
 
+## v5.1 — Mainland China degraded-network recovery (2026-11-04)
+
+- [b4ee484](https://github.com/ArthurUker/simba-network-watch/commit/b4ee4842b72fdb753112cf4d4d5e310c8dd45fa2) — Same-origin bounded Worker `/api/down` and uncached `/api/health` plus version header.
+- [b304e54](https://github.com/ArthurUker/simba-network-watch/commit/b304e54502bcb6fd7971d5c44853540ffeed497b) — Mainland warnings, test-source selection and endpoint diagnostics interface.
+- [086feb4](https://github.com/ArthurUker/simba-network-watch/commit/086feb4c0861ba366975557d94cac48592e0939d) — Automatic mainland/blocked-external fallback and recorded source provenance.
+- [f332a7f](https://github.com/ArthurUker/simba-network-watch/commit/f332a7f0b99c0f81a9ed0fb2d188890360b254cc) — 5.5-second PWA navigation timeout, honest offline fallback and cache rotation.
+- [686a0b0](https://github.com/ArthurUker/simba-network-watch/commit/686a0b0894f7d4cbfc798cdbe6a1400d77be1c57) — Final deployed application source: explicit source labels, connectivity controls and prevention of mixed-server throughput statistics.
+- README and METHODOLOGY updated to distinguish foreign Worker download from a genuine mainland-hosted node.
+
+**Production deployment:** Cloudflare Worker `simba-network-watch`; deployment `bab2fad0-ee29-45c7-a9d1-c580cf9729f0`, created 2026-11-04 12:21:25 UTC (20:21:25 Asia/Shanghai). Version `bf6e3714-d23a-4d25-ae21-d4b0020fe0dc` receives 100% of traffic, according to Cloudflare API. Original domain retained.
+
+**Actual online browser validation:** Cloudflare Browser Rendering loaded the production URL and executed uncached same-origin requests. Health returned `version=5.1`; `GET /api/down?bytes=262144` returned HTTP 200 with exactly **262144 bytes**. Script syntax, unique DOM IDs and simulated China Unicom selection/non-China external failure/total outage flows passed. **Not verified using a physical China Unicom SIM or mainland Internet route.** This Cloudflare account lists no managed DNS zones or Worker custom domains. The `workers.dev` public entrypoint may itself be inaccessible over mainland carriers; frontend fallback cannot cure a blocked hostname.
+
 ## v5.0 — Desktop results-first live speed workstation (2026-11-03)
 
 - [278bb46](https://github.com/ArthurUker/simba-network-watch/commit/278bb466bf7dfc4595179ad5315351f92b456e65) — Desktop home performance board: large download and upload metrics, idle/download-loaded latency and inflation, P10/P50, live download curve, progress, manual mode selector, context metadata and compact six-function utility cards.
