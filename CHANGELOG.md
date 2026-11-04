@@ -5,6 +5,23 @@ This file is a human-readable index of the Git commit history. **GitHub commits 
 Project: https://github.com/ArthurUker/simba-network-watch  
 Full history: https://github.com/ArthurUker/simba-network-watch/commits/main/
 
+## v5.1 — China Unicom / Mainland connection degradation & refresh recovery (2026-11-04)
+
+**Cause diagnosis:** Production uses only `simba-network-watch.renkangguo.workers.dev`, and the connected Cloudflare account has **zero managed DNS zones or Worker Custom Domains**. Independent measurements show substantial blocking/interference of `workers.dev` in mainland China; global Cloudflare routing does not provide ordinary mainland edge servers. No JavaScript patch can guarantee that an unresolvable/blocked origin hostname works. The app was also hardcoded to external `speed.cloudflare.com/__down` even when the shell loaded. This release improves graceful degradation when the site itself is reachable; a mainland-accessible self-hosted domain/backend remains necessary for reliability.
+
+- [b4ee484](https://github.com/ArthurUker/simba-network-watch/commit/b4ee4842b72fdb753112cf4d4d5e310c8dd45fa2) — Added bounded same-origin `GET /api/down?bytes=...` (max 6MB; no-store/no-transform) and `GET /api/health` version probe. Test responses contain only generated data; no China-local speed server is implied.
+- [b304e54](https://github.com/ArthurUker/simba-network-watch/commit/b304e54502bcb6fd7971d5c44853540ffeed497b) — New endpoint source selector, connection warning UI and retry/endpoint-diagnosis surfaces.
+- [086feb4](https://github.com/ArthurUker/simba-network-watch/commit/086feb4c0861ba366975557d94cac48592e0939d) — Default auto selection prefers Worker source for mainland physical/observed-IP location; external benchmark failures fall back to Worker; error runs report partial failure instead of success; per-run source metadata preserved.
+- [f332a7f](https://github.com/ArthurUker/simba-network-watch/commit/f332a7f0b99c0f81a9ed0fb2d188890360b254cc) — PWA navigation request times out after 5.5s and reveals cached/offline fallback rather than waiting indefinitely; rotated shell cache to `network-watch-shell-v51`.
+- [686a0b0](https://github.com/ArthurUker/simba-network-watch/commit/686a0b0894f7d4cbfc798cdbe6a1400d77be1c57) — Final deployed application source: initial same-origin self-check, user-facing retry actions, actual server provenance, and prevention of mixed-server speed samples.
+- README and [METHODOLOGY.md](./METHODOLOGY.md) updated with mainland delivery limitations and a domestic deployment requirement.
+
+**Deployment:** Cloudflare Worker `simba-network-watch`, deployment `bab2fad0-ee29-45c7-a9d1-c580cf9729f0` created **2026-11-04 12:21:25 UTC** (20:21:25 China Standard Time). Version `bf6e3714-d23a-4d25-ae21-d4b0020fe0dc` receives **100% traffic** and subdomain is enabled according to Cloudflare API. Source built from GitHub `index.html` commit `686a0b0`, Worker template `b4ee484`, PWA script `f332a7f`.
+
+**Tests:** JS parsed and 208 unique DOM IDs validated; simulated mainland `CN` test ran through Worker with no external Cloudflare requests, auto mode on a non-CN market switched from failed external endpoint to Worker, and neither endpoint succeeding resulted in `部分失败` with no invented speed. A Worker route mock returned 1,048,576 requested bytes (200), rejected invalid or oversized values (400/413), returned health JSON (5.1) and the correct version header. Cloudflare's actual headless browser opened the new public site and fetched `/api/health` and `/api/down?bytes=262144` successfully (HTTP 200, exactly 262144 bytes). This did **not** test China Unicom, China mainland DNS blocking, or a real phone: the public `workers.dev` hostname can still be unavailable even though the deployment succeeded.
+
+**Next infrastructure dependency:** provision or connect a legally compliant, independently reachable Chinese-domain frontend + local speed server (e.g. mainland VPS with appropriate ICP filing) and use the existing global Cloudflare Worker only as a cross-border comparator. The current Cloudflare account has no zones to attach a custom domain through the connected API. Attaching an overseas custom domain alone does not guarantee mainland accessibility.
+
 ## v5.0 — Desktop results-first live speed workstation (2026-11-03)
 
 - [278bb46](https://github.com/ArthurUker/simba-network-watch/commit/278bb466bf7dfc4595179ad5315351f92b456e65) — Desktop home performance board: large download and upload metrics, idle/download-loaded latency and inflation, P10/P50, live download curve, progress, manual mode selector, context metadata and compact six-function utility cards.
