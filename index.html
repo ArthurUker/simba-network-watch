@@ -818,7 +818,58 @@ body.on-detail .compact-nav{display:flex}
 'use strict';
 const $=id=>document.getElementById(id);
 const KEY='simba-network-watch-v3',PREF='network-watch-v42-prefs',PREVPREF='network-watch-v41-prefs',OLDPREF='simba-network-watch-v4-prefs';
-const DOWN='https://speed.cloudflare.com/__down',UP='https://speed.cloudflare.com/__up';
+const DOWN='https://speed.cloudflare.com/__down',WORKER_DOWN='/api/down';
+let selectedDownloadSource='external',downloadFallbackReason='';
+const downloadLabel=mode=>mode==='worker'?'本站 Worker（跨境 CDN）':mode==='external'?'Cloudflare 外部测速接口':'尚未确定';
+function reportDownloadSource(){
+ setValue('downloadSourceDisplay',downloadLabel(selectedDownloadSource)+(downloadFallbackReason?' · '+downloadFallbackReason:''));
+}
+function connectionWarning(title,details){
+ $('connectionAlert').hidden=false;setValue('connectionAlertTitle',title);setValue('connectionAlertText',details)
+}
+async function healthRequest(url,timeoutMs=4000){
+ const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),timeoutMs),started=performance.now();
+ try{
+  const response=await fetch(url,{method:'GET',cache:'no-store',credentials:'omit',signal:ctl.signal});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const buffer=await response.arrayBuffer();
+  return {ok:true,ms:performance.now()-started,bytes:buffer.byteLength}
+ }catch(err){return {ok:false,ms:performance.now()-started,error:ctl.signal.aborted?'超时':String(err.message||err)}}
+ finally{clearTimeout(timer)}
+}
+async function checkConnectivity(includeExternal=false){
+ const host=await healthRequest('/api/health?ts='+Date.now(),4500);
+ let result='本站 Worker：'+(host.ok?'可访问 · '+format(host.ms,0)+' ms':'无法连接 · '+host.error);
+ if(includeExternal){
+  const external=await healthRequest(DOWN+'?bytes=16384&rnd='+Date.now(),4000);
+  result+='；外部 Cloudflare 测速：'+(external.ok&&external.bytes>=16384?'可访问 · '+format(external.ms,0)+' ms':'不可用 · '+(external.error||'数据不足'));
+ }
+ setValue('connectionChecks',result);
+ if(!host.ok)connectionWarning('本站连接失败或只显示了离线缓存','中国联通网络可能无法访问 workers.dev。当前页面可能来自旧缓存，刷新或测试无法真正访问服务器；需要大陆可达的自有域名/独立服务。');
+ else if(includeExternal){$('connectionAlert').hidden=false;setValue('connectionAlertTitle','连接检查已完成');setValue('connectionAlertText',result)}
+ return host.ok
+}
+async function chooseDownloadSource(root){
+ downloadFallbackReason='';
+ const requested=$('downloadTarget').value;
+ if(requested==='worker'||(requested==='auto'&&(currentCountry()==='CN'||egressInfo?.country==='CN'))){
+  selectedDownloadSource='worker';downloadFallbackReason=requested==='auto'?'检测到中国大陆，优先使用本站测速':'手动指定';
+  reportDownloadSource();return selectedDownloadSource
+ }
+ if(requested==='external'){selectedDownloadSource='external';reportDownloadSource();return selectedDownloadSource}
+ const b=bounded(root,3800);
+ try{
+  const response=await fetch(DOWN+'?bytes=16384&rnd='+Date.now(),{mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const bytes=(await response.arrayBuffer()).byteLength;if(bytes<1024)throw Error('数据不足');
+  selectedDownloadSource='external'
+ }catch(err){
+  if(root.aborted)throw err;
+  selectedDownloadSource='worker';downloadFallbackReason='外部测速接口不可达，已自动切换';
+  connectionWarning('已切换下载测速来源','外部 speed.cloudflare.com 无法使用，改用本站 Worker 测速。两个来源不应直接作为同服务器速度对比。')
+ }finally{b.close()}
+ reportDownloadSource();return selectedDownloadSource
+}
 const REGIONS=[
 {name:'新加坡',id:'SG',sites:[['Gov.sg','https://www.gov.sg/'],['CNA','https://www.channelnewsasia.com/']]},
 {name:'马来西亚',id:'MY',sites:[['The Star','https://www.thestar.com.my/'],['Malay Mail','https://www.malaymail.com/']]},
@@ -880,7 +931,7 @@ const currentContext=()=>({country:currentCountry(),operator:currentOperator(),n
 const egressAgeMs=()=>egressInfo?.checkedAt?Date.now()-Date.parse(egressInfo.checkedAt):Infinity;
 async function refreshEgress(quiet=false){
  const btn=$('detectEgress');btn.disabled=true;$('egressStatus').textContent='检测中…';
- const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),5500);
+ const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),running?2500:5500);
  try{const response=await fetch('/api/network-info?ts='+Date.now(),{cache:'no-store',credentials:'omit',signal:ctl.signal});
  if(!response.ok)throw Error('HTTP '+response.status);
  const body=await response.json();if(!body||typeof body.country!=='string')throw Error('缺少出口地信息');
@@ -963,7 +1014,7 @@ const marketLabel=(target,origin)=>{const x=marketClass(target,origin);return x=
 const ts=()=>new Date().toISOString();
 const time=t=>{if(!t)return '暂无';return new Date(t).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})};
 function stateSave(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){toast('保存记录失败，请尝试导出 CSV')}}
-function prefs(){return{duration:$('duration').value,budget:$('budget').value,speedProfile:$('speedProfile').value,network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,nodes:$('nodeConfig').value,videoApp:$('videoApp').value,originCountry:currentCountry(),operator:$('operator').value,operatorOther:$('operatorOther').value.trim(),roamingMode:$('roamingMode').value,simHomeCountry:$('simHomeCountry').value,visitedOperator:$('visitedOperator').value.trim()}}
+function prefs(){return{duration:$('duration').value,budget:$('budget').value,speedProfile:$('speedProfile').value,downloadTarget:$('downloadTarget').value,network:$('network').value,location:$('location').value.trim(),upload:$('upload').checked,nodes:$('nodeConfig').value,videoApp:$('videoApp').value,originCountry:currentCountry(),operator:$('operator').value,operatorOther:$('operatorOther').value.trim(),roamingMode:$('roamingMode').value,simHomeCountry:$('simHomeCountry').value,visitedOperator:$('visitedOperator').value.trim()}}
 function savePrefs(){try{localStorage.setItem(PREF,JSON.stringify(prefs()))}catch(e){}}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3000)}
 function tab(which){
@@ -987,7 +1038,7 @@ function setComplete(id,ready){$(id).classList.toggle('complete',ready)}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object')data={...data,...x}}catch(e){}
 for(const key of ['sessions','stalls','legacy','speedRuns'])if(!Array.isArray(data[key]))data[key]=[];if(!data.probePlans||typeof data.probePlans!=='object')data.probePlans={};
 if(!data._speedHistoryMigrated&&data.local&&Array.isArray(data.local.points)&&data.local.points.length&&!data.speedRuns.length){data.speedRuns.push(data.local);data._speedHistoryMigrated=true;stateSave()}
-try{const pf=JSON.parse(localStorage.getItem(PREF)||localStorage.getItem(PREVPREF)||localStorage.getItem(OLDPREF)||'null');if(pf){for(const id of ['duration','budget','speedProfile','network','location','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator']){const key=id==='nodeConfig'?'nodes':id;if(pf[key]!==undefined&&pf[key]!==null)$(id).value=String(pf[key])}$('upload').checked=!!pf.upload}}catch(e){}$('operatorOther').hidden=$('operator').value!=='other';
+try{const pf=JSON.parse(localStorage.getItem(PREF)||localStorage.getItem(PREVPREF)||localStorage.getItem(OLDPREF)||'null');if(pf){for(const id of ['duration','budget','speedProfile','downloadTarget','network','location','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator']){const key=id==='nodeConfig'?'nodes':id;if(pf[key]!==undefined&&pf[key]!==null)$(id).value=String(pf[key])}$('upload').checked=!!pf.upload}}catch(e){}$('operatorOther').hidden=$('operator').value!=='other';
 try{if(!data._legacyImported){const hist=JSON.parse(localStorage.getItem('simba-network-watch-v1')||'[]');if(Array.isArray(hist)){data.legacy=hist.filter(x=>x.kind==='test');data.stalls.push(...hist.filter(x=>x.kind==='stall').map(x=>({t:x.t,app:x.app||'历史卡顿'})))}data._legacyImported=true;stateSave()}}catch(e){}
 render()}
 function cards(){
@@ -1143,29 +1194,36 @@ function finish(){running=false;controller=null;runContext=null;liveSamplePoints
 function stop(){if(controller)controller.abort()}
 function bounded(root,ms){const c=new AbortController(),timeout=setTimeout(()=>c.abort(),ms),fn=()=>c.abort();if(root.aborted)c.abort();else root.addEventListener('abort',fn,{once:true});return{signal:c.signal,close(){clearTimeout(timeout);root.removeEventListener('abort',fn)}}}
 async function sleep(ms,root){if(ms<=0||root.aborted)return;await new Promise(resolve=>{const t=setTimeout(end,ms);function end(){root.removeEventListener('abort',cancel);resolve()}function cancel(){clearTimeout(t);end()}root.addEventListener('abort',cancel,{once:true})})}
-async function down(bytes,root,onProgress){
- const b=bounded(root,16000),start=performance.now();let actual=0,lastReport=0;
+async function down(bytes,root,onProgress,canFallback=true){
+ const b=bounded(root,12000),start=performance.now();let actual=0,lastReport=0;
+ const serving=selectedDownloadSource==='worker'?'worker':'external';
+ const url=serving==='worker'?WORKER_DOWN:DOWN;
  try{
-  const res=await fetch(DOWN+'?bytes='+bytes+'&rnd='+Date.now()+Math.random(),{method:'GET',mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});
-  if(!res.ok)throw Error('HTTP '+res.status);
-  if(res.body&&typeof res.body.getReader==='function'){
-   const reader=res.body.getReader();
+  const resp=await fetch(url+'?bytes='+bytes+'&rnd='+Date.now()+Math.random(),{method:'GET',mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});
+  if(!resp.ok)throw Error('HTTP '+resp.status);
+  if(resp.body&&typeof resp.body.getReader==='function'){
+   const reader=resp.body.getReader();
    try{
     while(true){
-     const part=await reader.read();
-     if(part.done)break;
-     actual+=part.value?.byteLength||0;
+     const chunk=await reader.read();if(chunk.done)break;actual+=chunk.value?.byteLength||0;
      const elapsed=performance.now()-start;
-     if(onProgress&&elapsed-lastReport>=250&&actual>0){lastReport=elapsed;onProgress(actual*8/(Math.max(elapsed,1)*1000))}
+     if(onProgress&&actual>0&&elapsed-lastReport>=250){lastReport=elapsed;onProgress(actual*8/(Math.max(elapsed,1)*1000))}
     }
    }finally{reader.releaseLock()}
-  }else{
-   const raw=await res.arrayBuffer();actual=raw.byteLength;
-  }
-  if(actual<64)throw Error('空数据');
-  const sec=Math.max((performance.now()-start)/1000,.001),speed=actual*8/(sec*1e6);
+  }else actual=(await resp.arrayBuffer()).byteLength;
+  if(actual<1024)throw Error('下载响应数据不足');
+  const seconds=Math.max((performance.now()-start)/1000,.001);
+  const speed=actual*8/(seconds*1e6);
   if(onProgress)onProgress(speed);
-  return{bytes:actual,seconds:sec,mbps:speed}
+  return{bytes:actual,seconds,mbps:speed,source:serving}
+ }catch(error){
+  if(canFallback&&!root.aborted&&serving==='external'&&$('downloadTarget').value==='auto'){
+   selectedDownloadSource='worker';downloadFallbackReason='外部测速途中失败，自动切换到本站';
+   reportDownloadSource();
+   connectionWarning('正在使用备用下载接口','外部 Cloudflare 测速在本次运行中失败，已改用本站 Worker。当前记录按最终服务器标注，来源切换前后样本不可严格对比。');
+   return down(bytes,root,onProgress,false)
+  }
+  throw error
  }finally{b.close()}
 }
 async function parallelDown(bytes,root,onProgress){
@@ -1217,7 +1275,7 @@ async function localStage(root,r0,rlen){
   if(dur-elapsed<300)break;
   if(limit-moved<600000){reason='已达到下载流量预算';break}
   const aim=Number.isFinite(lastMbps)?Math.floor(lastMbps*1e6/8*1.1):1500000;
-  const chunk=Math.min(Math.floor(limit-moved),Math.max(600000,Math.min(maxChunk,aim)));
+  const chunk=Math.min(6000000,Math.floor(limit-moved),Math.max(600000,Math.min(maxChunk,aim)));
   if(chunk<600000){reason='已达到下载流量预算';break}
   const rttTask=baselinePing(root).catch(()=>null),transferStarted=performance.now();
   try{
@@ -1252,7 +1310,7 @@ async function localStage(root,r0,rlen){
  }
  const v=points.map(x=>x.mbps),j=latencies.slice(1).map((x,i)=>Math.abs(x-latencies[i]));
  const idle=median(latencies),loaded=median(loadedRtts);
- const obj={t:ts(),network,location,originCountry:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt,elapsed,reason,bytes:moved,points,latencies,downloadLoadedRtts:loadedRtts,uploadLoadedRtts,failures:fails,speed:median(v),p10:p10(v),p50:quantile(v,.5),p90:quantile(v,.9),latency:idle,idleLatency:idle,downloadLoadedLatency:loaded,uploadLoadedLatency:median(uploadLoadedRtts),latencyInflation:loaded-idle,jitter:median(j),uploadSpeed,profile,streams:profile==='parallel'?4:1,methodVersion:'http-baseline-v50',uploadSource:Number.isFinite(uploadSpeed)?'Same-origin Worker /api/upload':null,endpointType:'Cloudflare region not verified'};
+ const obj={t:ts(),network,location,originCountry:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn,egressCheckedAt:ctx.egressCheckedAt,elapsed,reason,bytes:moved,points,latencies,downloadLoadedRtts:loadedRtts,uploadLoadedRtts,failures:fails,speed:median(v),p10:p10(v),p50:quantile(v,.5),p90:quantile(v,.9),latency:idle,idleLatency:idle,downloadLoadedLatency:loaded,uploadLoadedLatency:median(uploadLoadedRtts),latencyInflation:loaded-idle,jitter:median(j),uploadSpeed,profile,streams:profile==='parallel'?4:1,methodVersion:'http-baseline-v50',uploadSource:Number.isFinite(uploadSpeed)?'Same-origin Worker /api/upload':null,downloadSource:selectedDownloadSource==='worker'?'Same-origin Worker /api/down':'Cloudflare speed.cloudflare.com/__down',downloadFallbackReason,endpointType:'Cloudflare region not verified'};
  if(points.length){data.local=obj;data.speedRuns=getRows(data.speedRuns);data.speedRuns.push(obj);data.speedRuns=data.speedRuns.slice(-80)}
  stateSave();render();return obj
 }
@@ -1295,16 +1353,26 @@ const obj={t:ts(),originCountry:(runContext||currentContext()).country,operator:
 function configuredNodes(){const list=[];for(const line of $('nodeConfig').value.split('\n')){const i=line.indexOf('|');if(i<1)continue;const id=line.slice(0,i).trim().toUpperCase();if(!['SG','MY','CN','JP','US','UK','AU'].includes(id))continue;try{const u=new URL(line.slice(i+1).trim());if(u.protocol==='https:'&&!u.username&&!u.password)list.push({id,url:u.toString()})}catch(e){}if(list.length>=8)break}return list}
 async function nodeStage(root){const list=configuredNodes();if(!list.length){toast('请先填写有效的海外 HTTPS 节点');return}const out=[];for(let i=0;i<list.length;i++){if(root.aborted)break;const s=[];for(let k=0;k<3;k++){if(root.aborted)break;const b=bounded(root,16000),start=performance.now();try{const url=new URL(list[i].url);url.searchParams.set('bytes','1000000');url.searchParams.set('nocache',String(Date.now()+Math.random()));const resp=await fetch(url.toString(),{mode:'cors',cache:'no-store',credentials:'omit',signal:b.signal});if(!resp.ok)throw Error('HTTP '+resp.status);const arr=await resp.arrayBuffer();if(arr.byteLength<500000)throw Error('数据少于预期');s.push({mbps:arr.byteLength*8/((performance.now()-start)/1000)/1e6,bytes:arr.byteLength})}catch(e){s.push({error:String(e.message||e)})}finally{b.close()}}
 out.push({...list[i],originCountry:(runContext||currentContext()).country,operator:(runContext||currentContext()).operator,roamingMode:(runContext||currentContext()).roamingMode,simHomeCountry:(runContext||currentContext()).simHomeCountry,visitedOperator:(runContext||currentContext()).visitedOperator,egressCountry:(runContext||currentContext()).egressCountry,egressAsn:(runContext||currentContext()).egressAsn,marketCategory:marketClass(list[i].id,(runContext||currentContext()).country),egressMarketCategory:marketClass(list[i].id,(runContext||currentContext()).egressCountry),samples:s,mbps:median(s.filter(x=>Number.isFinite(x.mbps)).map(x=>x.mbps))});stepUpdate(1,100*(i+1)/list.length,'海外受控节点 '+(i+1)+'/'+list.length);data.remote=out.slice();stateSave();render()}}
-async function run(kind){if(!start())return;const root=controller.signal,started=ts();if(kind!=='full')tab(kind==='local'?'local':kind==='wifi'?'wifi':kind==='region'||kind==='nodes'?'global':'apps');else tab('home');
+async function run(kind){if(!start())return;const root=controller.signal,started=ts();let localHadSamples=true;if(kind!=='full')tab(kind==='local'?'local':kind==='wifi'?'wifi':kind==='region'||kind==='nodes'?'global':'apps');else tab('home');
 try{
 await refreshEgress(true);if(root.aborted)return;runContext=currentContext();
-if(kind==='full'||kind==='local'||kind==='wifi'){stepUpdate(0,2,kind==='wifi'?'Wi-Fi 基准 · 开始持续采样':'基准网络 · 开始持续采样');await localStage(root,3,kind==='full'?32:94);if(!root.aborted)stepDone.push(0);render()}
+if(!root.aborted&&['full','local','wifi','video'].includes(kind)){
+ stepUpdate(0,1,'检查测速服务器可达性…');
+ await chooseDownloadSource(root);
+}
+if(kind==='full'||kind==='local'||kind==='wifi'){
+ stepUpdate(0,2,kind==='wifi'?'Wi-Fi 基准 · 开始持续采样':'基准网络 · 开始持续采样');
+ const baseline=await localStage(root,3,kind==='full'?32:94);
+ localHadSamples=!!baseline?.points?.length;
+ if(!localHadSamples&&!root.aborted)connectionWarning('下载测速无法完成','所选下载端点未成功返回有效数据。请在设置中选择「本站 Worker」并点击「检查网络连接」；若本站自身不可达，必须更换部署入口。');
+ if(!root.aborted&&localHadSamples)stepDone.push(0);render()
+}
 if(!root.aborted&&(kind==='full'||kind==='region')){stepUpdate(1,kind==='full'?36:2,'同地区与跨地区网站 · 7 个市场');await siteStage(REGIONS,root,'region',kind==='full'?36:2,kind==='full'?27:96);if(!root.aborted)stepDone.push(1)}
 if(!root.aborted&&(kind==='full'||kind==='apps')){stepUpdate(2,kind==='full'?64:2,'应用服务 · 6 类');await siteStage(APPS,root,'apps',kind==='full'?64:2,kind==='full'?24:96);if(!root.aborted)stepDone.push(2)}
 if(!root.aborted&&(kind==='full'||kind==='video')){stepUpdate(3,kind==='full'?89:2,'视频分片 · 20 秒模拟');await videoStage(root,kind==='full'?89:2,kind==='full'?10:96);if(!root.aborted)stepDone.push(3)}
 if(!root.aborted&&kind==='nodes'){stepUpdate(1,5,'受控海外节点测试');await nodeStage(root);if(!root.aborted)stepDone.push(1)}
-const status=root.aborted?'已取消':'完成';data.sessions.push({kind,t:started,status,originCountry:(runContext||currentContext()).country,operator:(runContext||currentContext()).operator,network:(runContext||currentContext()).network,roamingMode:(runContext||currentContext()).roamingMode,simHomeCountry:(runContext||currentContext()).simHomeCountry,visitedOperator:(runContext||currentContext()).visitedOperator,egressCountry:(runContext||currentContext()).egressCountry,egressAsn:(runContext||currentContext()).egressAsn,speed:data.local?.speed});data.sessions=data.sessions.slice(-100);stateSave();
-stepUpdate(-1,root.aborted?p:100,root.aborted?'已取消，已完成的阶段已保存':'诊断完成 · 点击上方卡片查看各项结果');if(!root.aborted)toast('网络诊断已完成');render();
+const status=root.aborted?'已取消':((kind==='local'||kind==='wifi'||kind==='full')&&!localHadSamples?'部分失败':'完成');data.sessions.push({kind,t:started,status,originCountry:(runContext||currentContext()).country,operator:(runContext||currentContext()).operator,network:(runContext||currentContext()).network,roamingMode:(runContext||currentContext()).roamingMode,simHomeCountry:(runContext||currentContext()).simHomeCountry,visitedOperator:(runContext||currentContext()).visitedOperator,egressCountry:(runContext||currentContext()).egressCountry,egressAsn:(runContext||currentContext()).egressAsn,speed:data.local?.speed});data.sessions=data.sessions.slice(-100);stateSave();
+stepUpdate(-1,root.aborted?p:100,root.aborted?'已取消，已完成的阶段已保存':'诊断完成 · 点击上方卡片查看各项结果');if(!root.aborted)toast(status==='部分失败'?'测速服务不可达，请查看连接诊断':'网络诊断已完成');render();
 }catch(e){console.error(e);data.sessions.push({kind,t:started,status:'部分失败'});stateSave();stepUpdate(-1,p,'遇到异常：'+String(e.message||e));toast('发生错误，部分数据已保存')}
 finally{finish();render()}}
 function mark(){const ctx=currentContext(),obj={t:ts(),app:$('videoApp').value,network:ctx.network,location:ctx.location,originCountry:ctx.country,operator:ctx.operator,roamingMode:ctx.roamingMode,simHomeCountry:ctx.simHomeCountry,visitedOperator:ctx.visitedOperator,egressCountry:ctx.egressCountry,egressAsn:ctx.egressAsn};data.stalls.push(obj);data.stalls=data.stalls.slice(-500);stateSave();render();toast('已记录 '+obj.app+' 卡顿')}
@@ -1314,7 +1382,7 @@ const rows=[names];const add=(type,x,siteGroup,market,network,target,mbps,ms,det
 type,x?.t||'',x?.originCountry||'',x?.operator||'',x?.roamingMode||'',x?.simHomeCountry||'',x?.visitedOperator||'',x?.egressCountry||'',x?.egressAsn||'',x?.marketCategory||'',x?.egressMarketCategory||'',market||'',network||'',siteGroup||'',target||'',mbps??'',ms??'',details||''
 ].map(v=>String(v)));
 for(const x of getRows(data.sessions))add('session',x,x.kind,'',x.network,'',null,null,x.status);
-const baseRuns=getRows(data.speedRuns).length?getRows(data.speedRuns):data.local?[data.local]:[];for(const base of baseRuns)for(const p of getRows(base.points))add('baseline_sample',base,'Cloudflare HTTP','',base.network,'Cloudflare (location unverified)',p.mbps,null,'elapsed_seconds='+p.second+'; bytes='+p.bytes+'; profile='+(base.profile||'legacy-sampled')+'; streams='+(base.streams||1)+'; method='+(base.methodVersion||'legacy'));
+const baseRuns=getRows(data.speedRuns).length?getRows(data.speedRuns):data.local?[data.local]:[];for(const base of baseRuns)for(const p of getRows(base.points))add('baseline_sample',base,'Cloudflare HTTP','',base.network,'Cloudflare (location unverified)',p.mbps,null,'elapsed_seconds='+p.second+'; bytes='+p.bytes+'; profile='+(base.profile||'legacy-sampled')+'; source='+(base.downloadSource||'legacy-unknown')+'; streams='+(base.streams||1)+'; method='+(base.methodVersion||'legacy'));
 for(const x of getProbed(data.region).concat(getProbed(data.apps)))for(const p of x.samples)add('website_probe',x,x.group,x.marketCode,'',x.name,null,p.ms,p.result+' '+x.url);
 if(data.video)for(const p of getRows(data.video.samples))add('video_simulation',data.video,'Video simulation','', '', 'Cloudflare synthetic chunks',p.mbps,null,p.error||'not actual app playback');
 for(const x of getRows(data.remote))for(const p of x.samples)add('configured_endpoint',x,'User server',x.id,'',x.url,p.mbps,null,p.error||'server location not independently verified');
@@ -1346,7 +1414,7 @@ $('desktopSettings').onclick=()=>{$('openOptions').onclick()};
 $('startFull').onclick=()=>run('full');$('quickLocal').onclick=()=>run('local');$('startLocal').onclick=()=>run('local');$('startGlobal').onclick=()=>run('region');$('startApps').onclick=()=>run('apps');$('startVideo').onclick=()=>run('video');$('startNodes').onclick=()=>run('nodes');
 $('openOptions').onclick=()=>{tab('local');$('allOptions').open=true;$('allOptions').scrollIntoView({behavior:'smooth',block:'start'})};
 $('stopBtn').onclick=stop;$('quickStall').onclick=mark;$('floatingStall').onclick=mark;$('markStall').onclick=mark;$('exportHome').onclick=csv;$('historyExport').onclick=csv;$('menuExport').onclick=csv;$('roamRefresh').onclick=()=>refreshEgress(false);
-for(const id of ['duration','budget','speedProfile','network','location','upload','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).addEventListener('change',()=>{if(id==='operator')$('operatorOther').hidden=$('operator').value!=='other';savePrefs();render()});
+for(const id of ['duration','budget','speedProfile','downloadTarget','network','location','upload','nodeConfig','videoApp','originCountry','operator','operatorOther','roamingMode','simHomeCountry','visitedOperator'])$(id).addEventListener('change',()=>{if(id==='operator')$('operatorOther').hidden=$('operator').value!=='other';savePrefs();render()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){stop();toast('已离开前台，测速将停止，已完成数据保留')}else if(!document.hidden&&!running){if(egressAgeMs()>60000)refreshStatus();else renderStatus()}});
 $('detectEgress').onclick=()=>refreshEgress(false);window.addEventListener('offline',()=>{if(running)stop();renderStatus();toast('网络连接已断开')});window.addEventListener('online',()=>{if(!running)refreshStatus()});const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;if(connection&&typeof connection.addEventListener==='function')connection.addEventListener('change',()=>{renderStatus();if(!running)refreshStatus()});
 $('installHelp').onclick=()=>{$('installOverlay').hidden=false;$('installHelp').setAttribute('aria-expanded','true')};
