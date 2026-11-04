@@ -1,10 +1,26 @@
 # Network Watch (formerly SIMBA Network Watch)
 
-A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v5.0**
+A mobile-first, multi-carrier network diagnostic dashboard. Supports SIMBA, China Unicom, China Mobile, China Telecom, Singtel, and other providers, with manual location-aware domestic/cross-market reporting. **v5.1**
 
 **Live site:** https://simba-network-watch.renkangguo.workers.dev/
 
 **Development traceability:** [Version history](./CHANGELOG.md) · [GitHub-first development and deployment process](./DEVELOPMENT.md) · [All commits](https://github.com/ArthurUker/simba-network-watch/commits/main/)
+
+## v5.1 — Mainland China / China Unicom degraded-network recovery
+
+**Root-cause boundaries:** The public site currently uses `*.workers.dev`; the connected Cloudflare account has no registered zones or Worker custom domains. Public mainland network measurements indicate that the `workers.dev` domain may be blocked or unreliable. **A self-hosted CDN fallback cannot fix a domain that cannot be reached in the first place.** A separately hosted, verified mainland-accessible domain/backend is required for reliable operation; do not assume that attaching any arbitrary overseas domain guarantees mainland connectivity.
+
+- A bounded `GET /api/health` returns the serving Worker version and diagnostic metadata without caching. The page tests the same-origin health route and displays an explicit **connection failure / possibly offline-cached shell** warning if it cannot reach the Worker.
+- `GET /api/down?bytes=...` accepts up to 6 MB per request, serves an uncacheable octet-stream response, and is a **same-origin fallback** download test. Its data is generated at the Cloudflare edge **outside mainland China** under normal global routing, not at a local Chinese server. It measures a different path from `speed.cloudflare.com`.
+- Advanced settings now allow **Auto**, **This Worker** and **External Cloudflare**. Auto prefers the Worker for `CN` physical country labels or detected public-IP country. Elsewhere, a short external-preflight attempt chooses Cloudflare if reachable and falls back to this Worker when unavailable. In-run failures can trigger one fallback for Auto.
+- Every speed run stores `downloadSource`, `downloadFallbackReason`, and sample `source` fields; CSV exports the source for the raw speed samples. If the server switches during a run, the earlier samples are excluded from the new server's summary, so speed statistics never mix incompatible endpoints.
+- No valid download samples means the run is reported **部分失败**, not “completed”; the previous successful run remains available but is not replaced by invented zeros. Visible diagnostics and retry buttons make network/API failure explicit.
+- The PWA shell now uses a **bounded 5.5-second navigation attempt** and, if it falls back to cached HTML, uses an `x-network-watch-offline` response marker and the app's self-check to warn the user. SW cache namespace updated to `network-watch-shell-v51`. Network/API traffic is not cached.
+- Simulated integration tests covered CN → Worker selection with the external endpoint unreachable; non-CN → automatic fallback to Worker; and Worker + external down → **partial failure** with no fabricated speed. Worker health and download route sizes / validation also tested.
+
+### Mainland deployment limitation
+
+The Cloudflare account does not currently own/manage a domain zone, so the Worker cannot be given a new custom domain in this account without onboarding a domain. An Internet-facing site hosted on a **mainland server with the appropriate domain/ICP setup** and a local measurement backend is the reliable architecture for Chinese SIM testing. Keep the Cloudflare Worker as an overseas comparator, not the exclusive primary entrypoint. If the entire `workers.dev` hostname is unreachable, the user must use the independently hosted entrypoint; neither this release nor HTTP retries can bypass a blocked hostname.
 
 ## v5.0 — Desktop real-time speed-test workstation and measured upload
 
